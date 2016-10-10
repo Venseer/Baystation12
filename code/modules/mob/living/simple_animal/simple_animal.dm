@@ -66,16 +66,6 @@
 	var/supernatural = 0
 	var/purge = 0
 
-/mob/living/simple_animal/New()
-	..()
-	verbs -= /mob/verb/observe
-
-/mob/living/simple_animal/Login()
-	if(src && src.client)
-		src.client.screen = list()
-		src.client.screen += src.client.void
-	..()
-
 /mob/living/simple_animal/updatehealth()
 	return
 
@@ -315,6 +305,7 @@
 /mob/living/simple_animal/death(gibbed, deathmessage = "dies!")
 	icon_state = icon_dead
 	density = 0
+	walk_to(src,0)
 	return ..(gibbed,deathmessage)
 
 /mob/living/simple_animal/ex_act(severity)

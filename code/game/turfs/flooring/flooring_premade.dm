@@ -3,6 +3,7 @@
 	name = "plating"
 	icon = 'icons/turf/flooring/plating.dmi'
 	icon_state = "plating"
+	plane = PLATING_PLANE
 
 /turf/simulated/floor/carpet
 	name = "carpet"
@@ -108,7 +109,7 @@
 
 /turf/simulated/floor/tiled/steel
 	name = "steel floor"
-	icon_state = "steel_dirty"
+	icon_state = "steel"
 	initial_flooring = /decl/flooring/tiling/steel
 
 /turf/simulated/floor/tiled/steel/airless

@@ -1,13 +1,15 @@
 //Common breathing procs
 
+#define MOB_BREATH_DELAY 2
+
 //Start of a breath chain, calls breathe()
 /mob/living/carbon/handle_breathing()
-	if(life_tick%2==0 || failed_last_breath || (health < config.health_threshold_crit)) 	//First, resolve location and get a breath
+	if((life_tick % MOB_BREATH_DELAY) == 0 || failed_last_breath || (health < config.health_threshold_crit)) 	//First, resolve location and get a breath
 		breathe()
 
 /mob/living/carbon/proc/breathe()
 	//if(istype(loc, /obj/machinery/atmospherics/unary/cryo_cell)) return
-	if(species && (species.flags & NO_BREATHE)) return
+	if(!should_have_organ(BP_LUNGS)) return
 
 	var/datum/gas_mixture/breath = null
 

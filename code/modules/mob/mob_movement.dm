@@ -174,7 +174,7 @@
 		if(mob.control_object.density)
 			step(mob.control_object,direct)
 			if(!mob.control_object)	return
-			mob.control_object.dir = direct
+			mob.control_object.set_dir(direct)
 		else
 			mob.control_object.forceMove(get_step(mob.control_object,direct))
 	return
@@ -308,8 +308,8 @@
 			else if(istype(mob.buckled, /obj/structure/bed/chair/wheelchair))
 				if(ishuman(mob))
 					var/mob/living/carbon/human/driver = mob
-					var/obj/item/organ/external/l_hand = driver.get_organ("l_hand")
-					var/obj/item/organ/external/r_hand = driver.get_organ("r_hand")
+					var/obj/item/organ/external/l_hand = driver.get_organ(BP_L_HAND)
+					var/obj/item/organ/external/r_hand = driver.get_organ(BP_R_HAND)
 					if((!l_hand || l_hand.is_stump()) && (!r_hand || r_hand.is_stump()))
 						return // No hands to drive your chair? Tough luck!
 				//drunk wheelchair driving
@@ -357,7 +357,7 @@
 							M.animate_movement = 2
 							return
 
-		else 
+		else
 			if(mob.confused)
 				switch(mob.m_intent)
 					if("run")
@@ -392,13 +392,13 @@
 ///Allows mobs to run though walls
 /client/proc/Process_Incorpmove(direct)
 	var/turf/T = get_step(mob, direct)
-	if(mob.check_holy(T))
-		mob << "<span class='warning'>You cannot get past holy grounds while you are in this plane of existence!</span>"
+	if(mob.check_is_holy_turf(T))
+		to_chat(mob, "<span class='warning'>You cannot enter holy grounds while you are in this plane of existence!</span>")
 		return
 
 	if(T)
 		mob.forceMove(T)
-	mob.dir = direct
+	mob.set_dir(direct)
 
 	mob.Post_Incorpmove()
 	return 1
@@ -407,7 +407,7 @@
 	return
 
 // Checks whether this mob is allowed to move in space
-// Return 1 for movement, 0 for none, 
+// Return 1 for movement, 0 for none,
 // -1 to allow movement but with a chance of slipping
 /mob/proc/Allow_Spacemove(var/check_drift = 0)
 	if(!Check_Dense_Object()) //Nothing to push off of so end here

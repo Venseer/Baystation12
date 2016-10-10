@@ -8,6 +8,7 @@
 /obj/machinery/drone_fabricator
 	name = "drone fabricator"
 	desc = "A large automated factory for producing maintenance drones."
+	appearance_flags = 0
 
 	density = 1
 	anchored = 1
@@ -79,9 +80,8 @@
 
 	time_last_drone = world.time
 	if(player.mob && player.mob.mind) player.mob.mind.reset()
-	var/mob/living/silicon/robot/drone/new_drone = PoolOrNew(drone_type, get_turf(src))
+	var/mob/living/silicon/robot/drone/new_drone = new drone_type(get_turf(src))
 	new_drone.transfer_personality(player)
-	new_drone.master_fabricator = src
 
 	drone_progress = 0
 	return new_drone

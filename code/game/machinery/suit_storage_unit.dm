@@ -44,6 +44,10 @@
 	req_access = list(access_atmospherics)
 	islocked = 1
 
+/obj/machinery/suit_storage_unit/atmos/alt
+	SUIT_TYPE = /obj/item/clothing/suit/space/void/atmos/alt
+	HELMET_TYPE = /obj/item/clothing/head/helmet/space/void/atmos/alt
+
 /obj/machinery/suit_storage_unit/engineering
 	name = "Engineering Voidsuit Storage Unit"
 	SUIT_TYPE = /obj/item/clothing/suit/space/void/engineering
@@ -51,6 +55,16 @@
 	MASK_TYPE = /obj/item/clothing/mask/breath
 	req_access = list(access_engine)
 	islocked = 1
+
+/obj/machinery/suit_storage_unit/engineering/alt
+	SUIT_TYPE = /obj/item/clothing/suit/space/void/engineering/alt
+	HELMET_TYPE = /obj/item/clothing/head/helmet/space/void/engineering/alt
+	MASK_TYPE = /obj/item/clothing/mask/breath
+
+/obj/machinery/suit_storage_unit/engineering/salvage
+	SUIT_TYPE = /obj/item/clothing/suit/space/void/engineering/salvage
+	HELMET_TYPE = /obj/item/clothing/head/helmet/space/void/engineering/salvage
+	MASK_TYPE = /obj/item/clothing/mask/breath
 
 /obj/machinery/suit_storage_unit/medical
 	name = "Medical Voidsuit Storage Unit"
@@ -60,6 +74,11 @@
 	req_access = list(access_medical)
 	islocked = 1
 
+/obj/machinery/suit_storage_unit/medical/alt
+	SUIT_TYPE = /obj/item/clothing/suit/space/void/medical/alt
+	HELMET_TYPE = /obj/item/clothing/head/helmet/space/void/medical/alt
+	MASK_TYPE = /obj/item/clothing/mask/breath
+
 /obj/machinery/suit_storage_unit/mining
 	name = "Mining Voidsuit Storage Unit"
 	SUIT_TYPE = /obj/item/clothing/suit/space/void/mining
@@ -67,6 +86,11 @@
 	MASK_TYPE = /obj/item/clothing/mask/breath
 	req_access = list(access_mining)
 	islocked = 1
+
+/obj/machinery/suit_storage_unit/mining/alt
+	SUIT_TYPE = /obj/item/clothing/suit/space/void/mining/alt
+	HELMET_TYPE = /obj/item/clothing/head/helmet/space/void/mining/alt
+	MASK_TYPE = /obj/item/clothing/mask/breath
 
 /obj/machinery/suit_storage_unit/science
 	name = "Excavation Voidsuit Storage Unit"
@@ -83,6 +107,11 @@
 	MASK_TYPE = /obj/item/clothing/mask/breath
 	req_access = list(access_security)
 	islocked = 1
+
+/obj/machinery/suit_storage_unit/security/alt
+	SUIT_TYPE = /obj/item/clothing/suit/space/void/security/alt
+	HELMET_TYPE = /obj/item/clothing/head/helmet/space/void/security/alt
+	MASK_TYPE = /obj/item/clothing/mask/breath
 
 /obj/machinery/suit_storage_unit/merc
 	name = "Nonstandard Voidsuit Storage Unit"
@@ -267,7 +296,7 @@
 	/*if(istype(H)) //Let's check if the guy's wearing electrically insulated gloves
 		if(H.gloves)
 			var/obj/item/clothing/gloves/G = H.gloves
-			if(istype(G,/obj/item/clothing/gloves/yellow))
+			if(istype(G,/obj/item/clothing/gloves/insulated))
 				protected = 1
 
 	if(!protected)
@@ -293,7 +322,7 @@
 	/*if(istype(H)) //Let's check if the guy's wearing electrically insulated gloves
 		if(H.gloves)
 			var/obj/item/clothing/gloves/G = H.gloves
-			if(istype(G,/obj/item/clothing/gloves/yellow) )
+			if(istype(G,/obj/item/clothing/gloves/insulated) )
 				protected = 1
 
 	if(!protected)
@@ -391,18 +420,16 @@
 		sleep(50)
 		if(src.OCCUPANT)
 			OCCUPANT.apply_effect(50, IRRADIATE, blocked = OCCUPANT.getarmor(null, "rad"))
-			var/obj/item/organ/diona/nutrients/rad_organ = locate() in OCCUPANT.internal_organs
+			var/obj/item/organ/internal/diona/nutrients/rad_organ = locate() in OCCUPANT.internal_organs
 			if (!rad_organ)
+				if (OCCUPANT.can_feel_pain())
+					OCCUPANT.emote("scream")
 				if(src.issuperUV)
 					var/burndamage = rand(28,35)
 					OCCUPANT.take_organ_damage(0,burndamage)
-					if (!(OCCUPANT.species && (OCCUPANT.species.flags & NO_PAIN)))
-						OCCUPANT.emote("scream")
 				else
 					var/burndamage = rand(6,10)
 					OCCUPANT.take_organ_damage(0,burndamage)
-					if (!(OCCUPANT.species && (OCCUPANT.species.flags & NO_PAIN)))
-						OCCUPANT.emote("scream")
 		if(i==3) //End of the cycle
 			if(!src.issuperUV)
 				if(src.HELMET)

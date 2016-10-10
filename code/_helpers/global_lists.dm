@@ -62,7 +62,6 @@ var/datum/visualnet/camera/cameranet = new()
 
 // Runes
 var/global/list/rune_list = new()
-var/global/list/escape_list = list()
 var/global/list/endgame_exits = list()
 var/global/list/endgame_safespawns = list()
 
@@ -102,7 +101,7 @@ var/global/list/string_slot_flags = list(
 /////Initial Building/////
 //////////////////////////
 
-/proc/populateGlobalLists()
+/hook/global_init/proc/populateGlobalLists()
     possible_cable_coil_colours = sortAssoc(list(
 		"Yellow" = COLOR_YELLOW,
 		"Green" = COLOR_LIME,
@@ -113,17 +112,17 @@ var/global/list/string_slot_flags = list(
 		"Red" = COLOR_RED,
 		"White" = COLOR_WHITE
 	))
+    return 1
 
 /proc/get_mannequin(var/ckey)
 	if(!mannequins_)
 		mannequins_ = new()
-
 	. = mannequins_[ckey]
 	if(!.)
 		. = new/mob/living/carbon/human/dummy/mannequin()
 		mannequins_[ckey] = .
 
-/proc/makeDatumRefLists()
+/hook/global_init/proc/makeDatumRefLists()
 	var/list/paths
 
 	//Hair - Initialise all /datum/sprite_accessory/hair into an list indexed by hair-style name
@@ -208,3 +207,28 @@ var/global/list/string_slot_flags = list(
 				. += "    has: [t]\n"
 	world << .
 */
+
+//*** params cache
+
+var/global/list/paramslist_cache = list()
+
+#define cached_key_number_decode(key_number_data) cached_params_decode(key_number_data, /proc/key_number_decode)
+#define cached_number_list_decode(number_list_data) cached_params_decode(number_list_data, /proc/number_list_decode)
+
+/proc/cached_params_decode(var/params_data, var/decode_proc)
+	. = paramslist_cache[params_data]
+	if(!.)
+		. = call(decode_proc)(params_data)
+		paramslist_cache[params_data] = .
+
+/proc/key_number_decode(var/key_number_data)
+	var/list/L = params2list(key_number_data)
+	for(var/key in L)
+		L[key] = text2num(L[key])
+	return L
+
+/proc/number_list_decode(var/number_list_data)
+	var/list/L = params2list(number_list_data)
+	for(var/i in 1 to L.len)
+		L[i] = text2num(L[i])
+	return L

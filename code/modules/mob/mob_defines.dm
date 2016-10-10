@@ -1,6 +1,7 @@
 /mob
 	density = 1
-	layer = 4.0
+	plane = MOB_PLANE
+
 	animate_movement = 2
 	flags = PROXMOVE
 	var/list/client_images = list() // List of images applied to/removed from the client on login/logout
@@ -83,8 +84,8 @@
 	var/timeofdeath = 0.0
 
 	var/bodytemperature = 310.055	//98.7 F
-	var/old_x = 0
-	var/old_y = 0
+	var/default_pixel_x = 0
+	var/default_pixel_y = 0
 
 	var/shakecamera = 0
 	var/a_intent = I_HELP//Living

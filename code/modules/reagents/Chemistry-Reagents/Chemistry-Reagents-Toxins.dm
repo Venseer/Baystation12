@@ -8,7 +8,7 @@
 	taste_mult = 1.2
 	reagent_state = LIQUID
 	color = "#CF3600"
-	metabolism = REM * 0.05 // 0.01 by default. They last a while and slowly kill you.
+	metabolism = REM * 0.25 // 0.05 by default. They last a while and slowly kill you.
 	var/strength = 4 // How much damage it deals per unit
 
 /datum/reagent/toxin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
@@ -227,9 +227,14 @@
 /datum/reagent/lexorin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
 		return
-	M.take_organ_damage(3 * removed, 0)
-	if(M.losebreath < 15)
-		M.losebreath++
+	if(alien == IS_SKRELL)
+		M.take_organ_damage(2.4 * removed, 0)
+		if(M.losebreath < 22.5)
+			M.losebreath++
+	else
+		M.take_organ_damage(3 * removed, 0)
+		if(M.losebreath < 15)
+			M.losebreath++
 
 /datum/reagent/mutagen
 	name = "Unstable mutagen"
@@ -249,9 +254,14 @@
 		affect_blood(M, alien, removed)
 
 /datum/reagent/mutagen/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
+
+	if(M.isSynthetic())
+		return
+
 	var/mob/living/carbon/human/H = M
 	if(istype(H) && (H.species.flags & NO_SCAN))
 		return
+
 	if(M.dna)
 		if(prob(removed * 0.1)) // Approx. one mutation per 10 injected/20 ingested/30 touching units
 			randmuti(M)
@@ -294,13 +304,17 @@
 /datum/reagent/soporific/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
 		return
-
-	if(dose < 1)
+		
+	var/threshold = 1	
+	if(alien == IS_SKRELL)
+		threshold = 1.2
+		
+	if(dose < 1 * threshold)
 		if(dose == metabolism * 2 || prob(5))
 			M.emote("yawn")
-	else if(dose < 1.5)
+	else if(dose < 1.5 * threshold)
 		M.eye_blurry = max(M.eye_blurry, 10)
-	else if(dose < 5)
+	else if(dose < 5 * threshold)
 		if(prob(50))
 			M.Weaken(2)
 		M.drowsyness = max(M.drowsyness, 20)
@@ -323,16 +337,20 @@
 	if(alien == IS_DIONA)
 		return
 
-	if(dose == metabolism)
+	var/threshold = 1
+	if(alien == IS_SKRELL)
+		threshold = 1.2
+
+	if(dose == metabolism * threshold)
 		M.confused += 2
 		M.drowsyness += 2
-	else if(dose < 2)
+	else if(dose < 2 * threshold)
 		M.Weaken(30)
 		M.eye_blurry = max(M.eye_blurry, 10)
 	else
 		M.sleeping = max(M.sleeping, 30)
 
-	if(dose > 1)
+	if(dose > 1 * threshold)
 		M.adjustToxLoss(removed)
 
 /datum/reagent/chloralhydrate/beer2 //disguised as normal beer for use by emagged brobots
@@ -361,7 +379,12 @@
 /datum/reagent/space_drugs/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
 		return
-	M.druggy = max(M.druggy, 15)
+		
+	var/drug_strength = 15
+	if(alien == IS_SKRELL)
+		drug_strength = drug_strength * 0.8
+		
+	M.druggy = max(M.druggy, drug_strength)
 	if(prob(10) && isturf(M.loc) && !istype(M.loc, /turf/space) && M.canmove && !M.restrained())
 		step(M, pick(cardinal))
 	if(prob(7))
@@ -398,8 +421,11 @@
 /datum/reagent/cryptobiolin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
 		return
-	M.make_dizzy(4)
-	M.confused = max(M.confused, 20)
+	var/drug_strength = 4
+	if(alien == IS_SKRELL)
+		drug_strength = drug_strength * 0.8
+	M.make_dizzy(drug_strength)
+	M.confused = max(M.confused, drug_strength * 5)
 
 /datum/reagent/impedrezene
 	name = "Impedrezene"
@@ -434,7 +460,10 @@
 /datum/reagent/mindbreaker/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
 		return
-	M.hallucination = max(M.hallucination, 100)
+	if(alien == IS_SKRELL)
+		M.hallucination = max(M.hallucination, (100 * 0.8))
+	else
+		M.hallucination = max(M.hallucination, 100)
 
 /datum/reagent/psilocybin
 	name = "Psilocybin"
@@ -448,14 +477,19 @@
 /datum/reagent/psilocybin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_DIONA)
 		return
+		
+	var/threshold = 1
+	if(alien == IS_SKRELL)
+		threshold = 1.2
+		
 	M.druggy = max(M.druggy, 30)
 
-	if(dose < 1)
+	if(dose < 1 * threshold)
 		M.apply_effect(3, STUTTER)
 		M.make_dizzy(5)
 		if(prob(5))
 			M.emote(pick("twitch", "giggle"))
-	else if(dose < 2)
+	else if(dose < 2 * threshold)
 		M.apply_effect(3, STUTTER)
 		M.make_jittery(5)
 		M.make_dizzy(5)

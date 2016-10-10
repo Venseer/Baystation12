@@ -467,7 +467,7 @@
 	icon_state = "charcoal_suit"
 	item_state = "bl_suit"
 	worn_state = "charcoal_suit"
-	starting_accessories = list(/obj/item/clothing/accessory/navy, /obj/item/clothing/accessory/charcoal_jacket)
+	starting_accessories = list(/obj/item/clothing/accessory/navy, /obj/item/clothing/accessory/toggleable/charcoal_jacket)
 
 /obj/item/clothing/under/suit_jacket/navy
 	name = "navy suit"
@@ -475,7 +475,7 @@
 	icon_state = "navy_suit"
 	item_state = "bl_suit"
 	worn_state = "navy_suit"
-	starting_accessories = list(/obj/item/clothing/accessory/red, /obj/item/clothing/accessory/navy_jacket)
+	starting_accessories = list(/obj/item/clothing/accessory/red, /obj/item/clothing/accessory/toggleable/navy_jacket)
 
 /obj/item/clothing/under/suit_jacket/burgundy
 	name = "burgundy suit"
@@ -483,7 +483,7 @@
 	icon_state = "burgundy_suit"
 	item_state = "r_suit"
 	worn_state = "burgundy_suit"
-	starting_accessories = list(/obj/item/clothing/accessory/black, /obj/item/clothing/accessory/burgundy_jacket)
+	starting_accessories = list(/obj/item/clothing/accessory/black, /obj/item/clothing/accessory/toggleable/burgundy_jacket)
 
 /obj/item/clothing/under/suit_jacket/checkered
 	name = "checkered suit"
@@ -491,7 +491,7 @@
 	icon_state = "checkered_suit"
 	item_state = "gy_suit"
 	worn_state = "checkered_suit"
-	starting_accessories = list(/obj/item/clothing/accessory/black, /obj/item/clothing/accessory/checkered_jacket)
+	starting_accessories = list(/obj/item/clothing/accessory/black, /obj/item/clothing/accessory/toggleable/checkered_jacket)
 
 /obj/item/clothing/under/suit_jacket/tan
 	name = "tan suit"
@@ -499,7 +499,7 @@
 	icon_state = "tan_suit"
 	item_state = "lb_suit"
 	worn_state = "tan_suit"
-	starting_accessories = list(/obj/item/clothing/accessory/yellow, /obj/item/clothing/accessory/tan_jacket)
+	starting_accessories = list(/obj/item/clothing/accessory/yellow, /obj/item/clothing/accessory/toggleable/tan_jacket)
 
 /obj/item/clothing/under/serviceoveralls
 	name = "workman outfit"
@@ -522,3 +522,89 @@
 	icon_state = "blue_blazer"
 	item_state = "blue_blazer"
 	worn_state = "blue_blazer"
+
+/obj/item/clothing/under/harness
+	name = "gear harness"
+	desc = "How... minimalist."
+	icon_state = "gear_harness"
+	worn_state = "gear_harness"
+	body_parts_covered = 0
+
+/obj/item/clothing/under/pcrc
+	name = "\improper PCRC uniform"
+	desc = "A uniform belonging to Proxima Centauri Risk Control, a private security firm."
+	icon_state = "pcrc"
+	item_state = "jensensuit"
+	worn_state = "pcrc"
+
+/obj/item/clothing/under/grayson
+	name = "\improper Grayson overalls"
+	desc = "A set of overalls belonging to Grayson Manufactories, a mining Trans-Stellar."
+	icon_state = "grayson"
+	worn_state = "grayson"
+
+/obj/item/clothing/under/wardt
+	name = "\improper Ward-Takahashi jumpsuit"
+	desc = "A jumpsuit belonging to Ward-Takahashi, a Trans-Stellar in the consumer goods market."
+	icon_state = "wardt"
+	worn_state = "wardt"
+
+/obj/item/clothing/under/mbill
+	name = "\improper Major Bill's uniform"
+	desc = "A uniform belonging to Major Bill's Transportation, a shipping megacorporation."
+	icon_state = "mbill"
+	worn_state = "mbill"
+
+/obj/item/clothing/under/confederacy
+	name = "\improper Confederacy uniform"
+	desc = "A military uniform belonging to the Confederacy of Man, an independent human government."
+	icon_state = "confed"
+	worn_state = "confed"
+
+/obj/item/clothing/under/saare
+	name = "\improper SAARE uniform"
+	desc = "A dress uniform belonging to Stealth Assault Enterprises, a minor private military corporation."
+	icon_state = "saare"
+	worn_state = "saare"
+
+/obj/item/clothing/under/frontier
+	name = "frontier clothes"
+	desc = "A rugged flannel shirt and denim overalls. A popular style among frontier colonists."
+	icon_state = "frontier"
+	worn_state = "frontier"
+
+/obj/item/clothing/under/aether
+	name = "\improper Aether jumpsuit"
+	desc = "A jumpsuit belonging to Aether Atmospherics and Recycling, a Trans-Stellar that supplies recycling and atmospheric systems to colonies."
+	icon_state = "aether"
+	worn_state = "aether"
+
+/obj/item/clothing/under/focal
+	name = "\improper Focal Point jumpsuit"
+	desc = "A jumpsuit belonging to Focal Point Energistics, an engineering megacorporation."
+	icon_state = "focal"
+	worn_state = "focal"
+
+/obj/item/clothing/under/hephaestus
+	name = "\improper Hephaestus jumpsuit"
+	desc = "A jumpsuit belonging to Hephaestus Industries, a Trans-Stellar best known for its arms production."
+	icon_state = "heph"
+	worn_state = "heph"
+
+/obj/item/clothing/under/punpun
+	name = "fancy uniform"
+	desc = "It looks like it was tailored for a monkey."
+	icon_state = "punpun"
+	worn_state = "punpun"
+	species_restricted = list("Monkey")
+	sprite_sheets = list("Monkey" = 'icons/mob/species/monkey/uniform.dmi')
+
+/obj/item/clothing/under/punpants
+	name = "monkey pants"
+	desc = "It looks like it was tailored for a monkey."
+	icon_state = "jeansmustang"
+	worn_state = "jeansmustang"
+	species_restricted = list("Monkey")
+	sprite_sheets = list("Monkey" = 'icons/mob/species/monkey/uniform.dmi')
+
+

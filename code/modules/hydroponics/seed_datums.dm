@@ -889,8 +889,8 @@
 	set_trait(TRAIT_PRODUCTION,6)
 	set_trait(TRAIT_YIELD,3)
 	set_trait(TRAIT_POTENCY,10)
-	set_trait(TRAIT_PRODUCT_ICON,"vine")
-	set_trait(TRAIT_PRODUCT_COLOUR,"#B4D4B9")
+	set_trait(TRAIT_PRODUCT_ICON,"vine2")
+	set_trait(TRAIT_PRODUCT_COLOUR,"#F9AB28")
 	set_trait(TRAIT_PLANT_COLOUR,"#BAE8C1")
 	set_trait(TRAIT_PLANT_ICON,"vine2")
 	set_trait(TRAIT_WATER_CONSUMPTION, 6)
@@ -1191,7 +1191,7 @@
 	name = "xenomorph"
 	seed_name = "alien weed"
 	display_name = "alien weeds"
-	force_layer = 3
+	force_layer = OBJ_LAYER
 	chems = list("phoron" = list(1,3))
 
 /datum/seed/xenomorph/New()

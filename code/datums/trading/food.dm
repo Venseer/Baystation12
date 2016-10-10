@@ -11,21 +11,24 @@
 				"hail_deny"         = "Beeeep... I'm sorry, your connection has been severed.",
 
 				"trade_complete"    = "Thank you for choosing ORIGIN!",
-				"trade_refuse"      = "Uhh... I don't think we can do that.",
+				"trade_no_goods"    = "I'm sorry but we only take cash.",
+				"trade_blacklisted" = "Sir thats... highly illegal.",
+				"trade_not_enough"  = "Uhh... thats not enough money for pizza.",
 				"how_much"          = "That pizza will cost you VALUE thalers.",
 
 				"compliment_deny"   = "That's a bit forward, don't you think?",
 				"compliment_accept" = "Thanks, sir! You're very nice!",
 				"insult_good"       = "Please stop that, sir.",
 				"insult_bad"        = "Sir, just because I'm contractually obligated to keep you on the line for a minute doesn't mean I have to take this.",
+
+				"bribe_refusal"     = "Uh... thanks for the cash, sir. As long as you're in the area, we'll be here...",
 				)
 
-/datum/trader/pizzaria/trade(var/atom/movable/offer)
-	var/turf/T = get_turf(offer)
+/datum/trader/pizzaria/trade(var/list/offers, var/num, var/turf/location)
 	. = ..()
 	if(.)
 		var/atom/movable/M = .
-		var/obj/item/pizzabox/box = new(T)
+		var/obj/item/pizzabox/box = new(location)
 		M.loc = box
 		box.pizza = M
 		box.boxtag = "A special order from [origin]"
@@ -61,20 +64,24 @@
 				"hail_deny"          = "We do not take orders from rude customers.",
 
 				"trade_complete"     = "Thank you sir for your patronage.",
-				"trade_refuse"       = "No, I am sorry that is not possible.",
+				"trade_blacklist"    = "No, that is very odd. Why would you trade that away?",
+				"trade_no_goods"     = "I only accept money transfers.",
+				"trade_not_enough"   = "No, I am sorry that is not possible. I need to make a living.",
 				"how_much"           = "I give you ITEM for VALUE thalers. No more, no less.",
 
 				"compliment_deny"    = "That was an odd thing to say, you are very odd.",
 				"compliment_accept"  = "Good philosophy, see good in bad, I like.",
 				"insult_good"        = "As a man said long ago, \"When anger rises, think of the consequences.\" Think on that.",
 				"insult_bad"         = "I do not need to take this from you.",
+
+				"bribe_refusal"     = "Hm... I'll think about it.",
+				"bribe_accept"      = "Oh yes! I think I'll stay a few more minutes, then.",
 				)
 
-/datum/trader/ship/chinese/trade(var/atom/movable/offer)
-	var/turf/T = get_turf(offer)
+/datum/trader/ship/chinese/trade(var/list/offers, var/num, var/turf/location)
 	. = ..()
 	if(.)
-		var/obj/item/weapon/reagent_containers/food/snacks/fortunecookie/cookie = new(T)
+		var/obj/item/weapon/reagent_containers/food/snacks/fortunecookie/cookie = new(location)
 		var/obj/item/weapon/paper/paper = new(cookie)
 		cookie.trash = paper
 		paper.name = "Fortune"
@@ -95,20 +102,27 @@
 							/obj/item/weapon/reagent_containers/food/snacks/fruit_slice                = TRADER_BLACKLIST,
 							/obj/item/weapon/reagent_containers/food/snacks/slice                      = TRADER_BLACKLIST_ALL,
 							/obj/item/weapon/reagent_containers/food/snacks/grown                      = TRADER_BLACKLIST_ALL,
-							/obj/item/weapon/reagent_containers/food/snacks/human                      = TRADER_BLACKLIST_ALL
+							/obj/item/weapon/reagent_containers/food/snacks/human                      = TRADER_BLACKLIST_ALL,
+							/obj/item/weapon/reagent_containers/food/snacks/sliceable/braincake        = TRADER_BLACKLIST,
+							/obj/item/weapon/reagent_containers/food/snacks/meat/human                 = TRADER_BLACKLIST,
+							/obj/item/weapon/reagent_containers/food/snacks/variable                   = TRADER_BLACKLIST_ALL
 							)
 
 	speech = list("hail_generic"     = "Hello, welcome to ORIGIN, grocery store of the future!",
 				"hail_deny"          = "I'm sorry, we've blacklisted your communications due to rude behavior.",
 
 				"trade_complete"     = "Thank you for shopping at ORIGIN!",
-				"trade_refuse"       = "I'm sorry, ORIGIN doesn't think this trade is a good idea.",
+				"trade_blacklist"    = "I... wow that's... no, sir. No.",
+				"trade_no_goods"     = "ORIGIN only accepts cash, sir.",
+				"trade_not_enough"   = "That is not enough money, sir.",
 				"how_much"           = "Sir, that'll cost you VALUE thalers. Will that be all?",
 
 				"compliment_deny"    = "Sir, this is a professional environment. Please don't make me get my manager.",
 				"compliment_accept"  = "Thank you, sir!",
 				"insult_good"        = "Sir, please do not make a scene.",
 				"insult_bad"         = "Sir, I WILL get my manager if you don't calm down.",
+
+				"bribe_refusal"      = "Of course sir! ORIGIN is always here for you!",
 				)
 
 /datum/trader/bakery
@@ -121,13 +135,17 @@
 				"hail_deny"          = "Our food is a privelege, not a right. Goodbye.",
 
 				"trade_complete"     = "Thank you for your purchase! Come again if you're hungry for more!",
-				"trade_refuse"       = "Oh no, I'm afraid I can't make that trade.",
+				"trade_blacklist"    = "We only accept money. Not... that.",
+				"trade_no_goods"     = "Cash for Cakes! That's our business!",
+				"trade_not_enough"   = "Our dishes are much more expensive than that, sir.",
 				"how_much"           = "That lovely dish will cost you VALUE thalers.",
 
 				"compliment_deny"    = "Oh wow, how nice of you...",
 				"compliment_accept"  = "You're almost as sweet as my pies!",
 				"insult_good"        = "My pie are NOT knockoffs!",
 				"insult_bad"         = "Well, aren't you a sour apple?",
+
+				"bribe_refusal"      = "Oh ho ho! I'd never think of taking ORIGIN on the road!",
 				)
 	possible_trading_items = list(/obj/item/weapon/reagent_containers/food/snacks/slice/birthdaycake/filled     = TRADER_THIS_TYPE,
 								/obj/item/weapon/reagent_containers/food/snacks/slice/carrotcake/filled         = TRADER_THIS_TYPE,

@@ -34,5 +34,10 @@
 #define R_MOD           0x2000
 #define R_MENTOR        0x4000
 #define R_HOST          0x8000 //higher than this will overflow
+#define R_INVESTIGATE   (R_ADMIN|R_MOD)
 
 #define R_MAXPERMISSION 0x8000 // This holds the maximum value for a permission. It is used in iteration, so keep it updated.
+
+#define ADDANTAG_PLAYER 1	// Any player may call the add antagonist vote.
+#define ADDANTAG_ADMIN 2	// Any player with admin privilegies may call the add antagonist vote.
+#define ADDANTAG_AUTO 4		// The add antagonist vote is available as an alternative for transfer vote.

@@ -117,8 +117,10 @@
 		src.preload_rsc = pick(config.resource_urls)
 	else src.preload_rsc = 1 // If config.resource_urls is not set, preload like normal.
 
-	src << "\red If the title screen is black, resources are still downloading. Please be patient until the title screen appears."
-
+	if(byond_version < DM_VERSION)
+		to_chat(src, "<span class='warning'>You are running an older version of BYOND than the server and may experience issues.</span>")
+		to_chat(src, "<span class='warning'>It is recommended that you update to at least [DM_VERSION] at http://www.byond.com/download/.</span>")
+	to_chat(src, "<span class='warning'>If the title screen is black, resources are still downloading. Please be patient until the title screen appears.</span>")
 
 	clients += src
 	directory[ckey] = src
@@ -162,12 +164,6 @@
 	log_client_to_db()
 
 	send_resources()
-
-	if(!void)
-		void = new()
-		void = void.MakeGreed()
-
-	screen += void
 
 	if(prefs.lastchangelog != changelog_hash) //bolds the changelog button on the interface so we know there are updates.
 		src << "<span class='info'>You have unread updates in the changelog.</span>"

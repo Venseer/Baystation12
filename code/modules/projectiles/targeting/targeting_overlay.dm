@@ -6,7 +6,8 @@
 	anchored = 1
 	density = 0
 	opacity = 0
-	layer = FLY_LAYER
+	plane = ABOVE_HUMAN_PLANE
+	layer = ABOVE_HUMAN_LAYER
 	simulated = 0
 	mouse_opacity = 0
 
@@ -117,7 +118,7 @@ obj/aiming_overlay/proc/update_aiming_deferred()
 		owner << "<span class='warning'>You have lost sight of your target!</span>"
 	else if(owner.incapacitated() || owner.lying || owner.restrained())
 		owner << "<span class='warning'>You must be conscious and standing to keep track of your target!</span>"
-	else if(aiming_at.alpha == 0 || (aiming_at.invisibility > owner.see_invisible))
+	else if(aiming_at.is_invisible_to(owner))
 		owner << "<span class='warning'>Your target has become invisible!</span>"
 	else if(!(aiming_at in view(owner)))
 		owner << "<span class='warning'>Your target is too far away to track!</span>"

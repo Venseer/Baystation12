@@ -405,9 +405,9 @@ Turf and target are seperate in case you want to teleport some distance from a t
 			namecounts[name] = 1
 		if (M.real_name && M.real_name != M.name)
 			name += " \[[M.real_name]\]"
-		if (M.stat == 2)
-			if(istype(M, /mob/observer/ghost/))
-				name += " \[ghost\]"
+		if (M.stat == DEAD)
+			if(isobserver(M))
+				name += " \[observer\]"
 			else
 				name += " \[dead\]"
 		creatures[name] = M
@@ -596,17 +596,6 @@ proc/GaussRandRound(var/sigma,var/roundto)
 	if(A.vars.Find(lowertext(varname))) return 1
 	else return 0
 
-//Returns: all the areas in the world
-/proc/return_areas()
-	var/list/area/areas = list()
-	for(var/area/A in world)
-		areas += A
-	return areas
-
-//Returns: all the areas in the world, sorted.
-/proc/return_sorted_areas()
-	return sortAtom(return_areas())
-
 //Takes: Area type as text string or as typepath OR an instance of the area.
 //Returns: A list of all areas of that type in the world.
 /proc/get_areas(var/areatype)
@@ -646,8 +635,8 @@ proc/GaussRandRound(var/sigma,var/roundto)
 
 	if(!A || !src) return 0
 
-	var/list/turfs_src = get_area_turfs(src.type)
-	var/list/turfs_trg = get_area_turfs(A.type)
+	var/list/turfs_src = get_area_turfs("\ref[src]")
+	var/list/turfs_trg = get_area_turfs("\ref[A]")
 
 	if(!turfs_src.len || !turfs_trg.len) return 0
 
@@ -668,7 +657,7 @@ proc/GaussRandRound(var/sigma,var/roundto)
 
 		var/x_pos = (source.x - src_min_x)
 		var/y_pos = (source.y - src_min_y)
-		
+
 		var/turf/target = locate(trg_min_x + x_pos, trg_min_y + y_pos, trg_z)
 		if(!target || target.loc != A)
 			continue
@@ -888,25 +877,19 @@ proc/get_mob_with_client_list()
 
 
 /proc/parse_zone(zone)
-	if(zone == "r_hand") return "right hand"
-	else if (zone == "l_hand") return "left hand"
-	else if (zone == "l_arm") return "left arm"
-	else if (zone == "r_arm") return "right arm"
-	else if (zone == "l_leg") return "left leg"
-	else if (zone == "r_leg") return "right leg"
-	else if (zone == "l_foot") return "left foot"
-	else if (zone == "r_foot") return "right foot"
-	else if (zone == "l_hand") return "left hand"
-	else if (zone == "r_hand") return "right hand"
-	else if (zone == "l_foot") return "left foot"
-	else if (zone == "r_foot") return "right foot"
+	if(zone == BP_R_HAND) return "right hand"
+	else if (zone == BP_L_HAND) return "left hand"
+	else if (zone == BP_L_ARM) return "left arm"
+	else if (zone == BP_R_ARM) return "right arm"
+	else if (zone == BP_L_LEG) return "left leg"
+	else if (zone == BP_R_LEG) return "right leg"
+	else if (zone == BP_L_FOOT) return "left foot"
+	else if (zone == BP_R_FOOT) return "right foot"
+	else if (zone == BP_L_HAND) return "left hand"
+	else if (zone == BP_R_HAND) return "right hand"
+	else if (zone == BP_L_FOOT) return "left foot"
+	else if (zone == BP_R_FOOT) return "right foot"
 	else return zone
-
-//gets the turf the atom is located in (or itself, if it is a turf).
-//returns null if the atom is not in a turf.
-/proc/get_turf(atom/movable/A)
-	if(isturf(A)) return A
-	if(A && A.locs.len) return A.locs[1]
 
 /proc/get(atom/loc, type)
 	while(loc)
@@ -1090,9 +1073,8 @@ var/list/WALLITEMS = list(
 	/obj/structure/extinguisher_cabinet, /obj/structure/reagent_dispensers/peppertank,
 	/obj/machinery/status_display, /obj/machinery/requests_console, /obj/machinery/light_switch, /obj/structure/sign,
 	/obj/machinery/newscaster, /obj/machinery/firealarm, /obj/structure/noticeboard,
-	/obj/machinery/computer/security/telescreen,
 	/obj/item/weapon/storage/secure/safe, /obj/machinery/door_timer, /obj/machinery/flasher, /obj/machinery/keycard_auth,
-	/obj/structure/mirror, /obj/structure/fireaxecabinet, /obj/machinery/computer/security/telescreen/entertainment
+	/obj/structure/mirror, /obj/structure/fireaxecabinet
 	)
 /proc/gotwallitem(loc, dir)
 	for(var/obj/O in loc)
@@ -1134,7 +1116,7 @@ var/list/WALLITEMS = list(
 		arglist = list2params(arglist)
 	return "<a href='?src=\ref[D];[arglist]'>[content]</a>"
 
-/proc/get_random_colour(var/simple, var/lower, var/upper)
+/proc/get_random_colour(var/simple = FALSE, var/lower = 0, var/upper = 255)
 	var/colour
 	if(simple)
 		colour = pick(list("FF0000","FF7F00","FFFF00","00FF00","0000FF","4B0082","8F00FF"))
@@ -1142,7 +1124,7 @@ var/list/WALLITEMS = list(
 		for(var/i=1;i<=3;i++)
 			var/temp_col = "[num2hex(rand(lower,upper))]"
 			if(length(temp_col )<2)
-				temp_col  = "0[temp_col]"
+				temp_col = "0[temp_col]"
 			colour += temp_col
 	return "#[colour]"
 
@@ -1179,26 +1161,6 @@ var/mob/dview/dview_mob = new
 	// We don't want to be in any mob lists; we're a dummy not a mob.
 	mob_list -= src
 
-/mob/dview/add_to_living_mob_list()
-	return
-
-/mob/dview/add_to_dead_mob_list()
-	return
-
 // call to generate a stack trace and print to runtime logs
 /proc/crash_with(msg)
 	CRASH(msg)
-
-/proc/screen_loc2turf(scr_loc, turf/origin)
-	if(!origin)
-		return
-	var/tX = splittext(scr_loc, ",")
-	var/tY = splittext(tX[2], ":")
-	var/tZ = origin.z
-	tY = tY[1]
-	tX = splittext(tX[1], ":")
-	tX = tX[1]
-	tX = max(1, min(world.maxx, origin.x + (text2num(tX) - (world.view + 1))))
-	tY = max(1, min(world.maxy, origin.y + (text2num(tY) - (world.view + 1))))
-	return locate(tX, tY, tZ)
-

@@ -31,6 +31,7 @@ REAGENT SCANNER
 	return 1
 
 /obj/item/device/healthanalyzer/attack(mob/living/M, mob/living/user)
+	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 	scan_mob(M, user)
 
 /obj/item/device/healthanalyzer/proc/scan_mob(mob/living/M, mob/living/user)
@@ -44,8 +45,7 @@ REAGENT SCANNER
 		user.show_message("<span class='notice'>Key: Suffocation/Toxin/Burns/Brute</span>", 1)
 		user.show_message("<span class='notice'>Body Temperature: ???</span>", 1)
 		return
-	if (!(istype(usr, /mob/living/carbon/human) || ticker) && ticker.mode.name != "monkey")
-		usr << "<span class='warning'>You don't have the dexterity to do this!</span>"
+	if (!user.IsAdvancedToolUser())
 		return
 	user.visible_message("<span class='notice'>[user] has analyzed [M]'s vitals.</span>","<span class='notice'>You have analyzed [M]'s vitals.</span>")
 
@@ -150,12 +150,12 @@ REAGENT SCANNER
 				continue
 			var/limb = e.name
 			if(e.status & ORGAN_BROKEN)
-				if(((e.name == "l_arm") || (e.name == "r_arm") || (e.name == "l_leg") || (e.name == "r_leg")) && (!e.splinted))
+				if(((e.name == BP_L_ARM) || (e.name == BP_R_ARM) || (e.name == BP_L_LEG) || (e.name == BP_R_LEG)) && (!e.splinted))
 					user << "<span class='warning'>Unsecured fracture in subject [limb]. Splinting recommended for transport.</span>"
 			if(e.has_infected_wound())
 				user << "<span class='warning'>Infected wound detected in subject [limb]. Disinfection recommended.</span>"
 
-		if (H.internal_organs_by_name["stack"])
+		if (H.internal_organs_by_name[BP_STACK])
 			user.show_message("<span class='notice'>Subject has a neural lace implant.</span>")
 
 		for(var/name in H.organs_by_name)
@@ -209,22 +209,14 @@ REAGENT SCANNER
 
 	origin_tech = list(TECH_MAGNET = 1, TECH_ENGINEERING = 1)
 
-/obj/item/device/analyzer/atmosanalyze(var/mob/user)
-	var/air = user.return_air()
-	if (!air)
-		return
-
-	return atmosanalyzer_scan(src, air, user)
-
 /obj/item/device/analyzer/attack_self(mob/user as mob)
 
-	if (user.stat)
+	if (user.incapacitated())
 		return
-	if (!(istype(usr, /mob/living/carbon/human) || ticker) && ticker.mode.name != "monkey")
-		usr << "<span class='warning'>You don't have the dexterity to do this!</span>"
+	if (!user.IsAdvancedToolUser())
 		return
 
-	analyze_gases(src, user)
+	analyze_gases(user.loc, user)
 	return
 
 /obj/item/device/mass_spectrometer
@@ -258,10 +250,9 @@ REAGENT SCANNER
 		icon_state = initial(icon_state)
 
 /obj/item/device/mass_spectrometer/attack_self(mob/user as mob)
-	if (user.stat)
+	if (user.incapacitated())
 		return
-	if (!(istype(user, /mob/living/carbon/human) || ticker) && ticker.mode.name != "monkey")
-		user << "<span class='warning'>You don't have the dexterity to do this!</span>"
+	if (!user.IsAdvancedToolUser())
 		return
 	if(reagents.total_volume)
 		var/list/blood_traces = list()
@@ -309,10 +300,9 @@ REAGENT SCANNER
 /obj/item/device/reagent_scanner/afterattack(obj/O, mob/user as mob, proximity)
 	if(!proximity)
 		return
-	if (user.stat)
+	if (user.incapacitated())
 		return
-	if (!(istype(user, /mob/living/carbon/human) || ticker) && ticker.mode.name != "monkey")
-		user << "<span class='warning'>You don't have the dexterity to do this!</span>"
+	if (!user.IsAdvancedToolUser())
 		return
 	if(!istype(O))
 		return
@@ -380,3 +370,22 @@ REAGENT SCANNER
 	if (T.cores > 1)
 		user.show_message("Anomalious slime core amount detected")
 	user.show_message("Growth progress: [T.amount_grown]/10")
+
+/obj/item/device/price_scanner
+	name = "price scanner"
+	desc = "Using an up-to-date database of various costs and prices, this device estimates the market price of an item up to 0.001% accuracy."
+	icon_state = "price_scanner"
+	slot_flags = SLOT_BELT
+	w_class = 2.0
+	throwforce = 0
+	throw_speed = 3
+	throw_range = 3
+	matter = list(DEFAULT_WALL_MATERIAL = 25, "glass" = 25)
+
+/obj/item/device/price_scanner/afterattack(atom/movable/target, mob/user as mob, proximity)
+	if(!proximity)
+		return
+
+	var/value = get_value(target)
+	user.visible_message("\The [user] scans \the [target] with \the [src]")
+	user.show_message("Price estimation of \the [target]: [value ? value : "N/A"] Thalers")

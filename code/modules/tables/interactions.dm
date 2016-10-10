@@ -91,10 +91,10 @@
 				user << "<span class='danger'>You need a better grip to do that!</span>"
 			else
 				if(user.a_intent == I_HURT)
-					var/blocked = M.run_armor_check("head", "melee")
+					var/blocked = M.run_armor_check(BP_HEAD, "melee")
 					if (prob(30 * blocked_mult(blocked)))
 						M.Weaken(5)
-					M.apply_damage(8, BRUTE, "head", blocked)
+					M.apply_damage(8, BRUTE, BP_HEAD, blocked)
 					visible_message("<span class='danger'>[G.assailant] slams [G.affecting]'s face against \the [src]!</span>")
 					if(material)
 						playsound(loc, material.tableslam_noise, 50, 1)
@@ -106,7 +106,7 @@
 						if(S.sharp && prob(50))
 							M.visible_message("<span class='danger'>\The [S] slices into [M]'s face!</span>",
 							                  "<span class='danger'>\The [S] slices into your face!</span>")
-							M.standard_weapon_hit_effects(S, G.assailant, S.force*2, blocked, "head") //standard weapon hit effects include damage and embedding
+							M.standard_weapon_hit_effects(S, G.assailant, S.force*2, blocked, BP_HEAD) //standard weapon hit effects include damage and embedding
 				else
 					G.affecting.forceMove(src.loc)
 					G.affecting.Weaken(5)
@@ -152,11 +152,9 @@ auto_align() will then place the sprite so the defined center_of_mass is at the 
 closest to where the cursor has clicked on.
 Note: This proc can be overwritten to allow for different types of auto-alignment.
 */
-/obj/item/var/center_of_mass = "x=16;y=16"
-/obj/item/var/place_centered = 0
-var/list/CoM_cache = list() // Global cache for quick requests of center_of_mass offsets that were already translated into numerics once.
+/obj/item/var/center_of_mass = "x=16;y=16" //can be null for no exact placement behaviour
 /obj/structure/table/proc/auto_align(obj/item/W, click_params)
-	if (W.place_centered) // Clothing, material stacks, generally items with large sprites where exact placement would be unhandy.
+	if (!W.center_of_mass) // Clothing, material stacks, generally items with large sprites where exact placement would be unhandy.
 		W.pixel_x = rand(-W.randpixel, W.randpixel)
 		W.pixel_y = rand(-W.randpixel, W.randpixel)
 		W.pixel_z = 0
@@ -164,14 +162,6 @@ var/list/CoM_cache = list() // Global cache for quick requests of center_of_mass
 
 	if (!click_params)
 		return
-
-	// Cache handling for center_of_mass
-	if (!CoM_cache[W.center_of_mass])
-		var/list/L = params2list(W.center_of_mass)
-		L["x"] = text2num(L["x"])
-		L["y"] = text2num(L["y"])
-		CoM_cache[W.center_of_mass] = L
-	var/list/CoM = CoM_cache[W.center_of_mass]
 
 	var/list/click_data = params2list(click_params)
 	if (!click_data["icon-x"] || !click_data["icon-y"])
@@ -184,22 +174,24 @@ var/list/CoM_cache = list() // Global cache for quick requests of center_of_mass
 	var/cell_x = Clamp(round(mouse_x/CELLSIZE), 0, CELLS-1) // Ranging from 0 to CELLS-1
 	var/cell_y = Clamp(round(mouse_y/CELLSIZE), 0, CELLS-1)
 
-	W.pixel_x = (CELLSIZE * (cell_x + 0.5)) - CoM["x"]
-	W.pixel_y = (CELLSIZE * (cell_y + 0.5)) - CoM["y"]
+	var/list/center = cached_key_number_decode(W.center_of_mass)
+
+	W.pixel_x = (CELLSIZE * (cell_x + 0.5)) - center["x"]
+	W.pixel_y = (CELLSIZE * (cell_y + 0.5)) - center["y"]
 	W.pixel_z = 0
 
 /obj/structure/table/rack/auto_align(obj/item/W, click_params)
-	if(W && W.place_centered)
+	if(W && !W.center_of_mass)
 		..(W)
+
 	var/i = -1
 	for (var/obj/item/I in get_turf(src))
-		if (I.anchored || I.place_centered)
+		if (I.anchored || !I.center_of_mass)
 			continue
 		i++
 		I.pixel_x = max(3-i*3, -3) + 1 // There's a sprite layering bug for 0/0 pixelshift, so we avoid it.
 		I.pixel_y = max(4-i*4, -4) + 1
 		I.pixel_z = 0
-
 
 /obj/structure/table/attack_tk() // no telehulk sorry
 	return
