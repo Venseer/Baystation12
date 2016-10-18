@@ -581,8 +581,8 @@
 			user << "Close the panel first."
 		else if(cell)
 			user << "There is a power cell already installed."
-		else if(W.w_class != NORMAL_ITEM)
-			user << "\The [W] is too [W.w_class < NORMAL_ITEM? "small" : "large"] to fit here."
+		else if(W.w_class != ITEM_SIZE_NORMAL)
+			user << "\The [W] is too [W.w_class < ITEM_SIZE_NORMAL? "small" : "large"] to fit here."
 		else
 			user.drop_item()
 			W.loc = src
@@ -725,8 +725,8 @@
 			var/image/eye_overlay = eye_overlays[eye_icon_state]
 			if(!eye_overlay)
 				eye_overlay = image(icon, eye_icon_state)
-				plane = EFFECTS_ABOVE_LIGHTING_PLANE
-				layer = EYE_GLOW_LAYER
+				eye_overlay.plane = EFFECTS_ABOVE_LIGHTING_PLANE
+				eye_overlay.layer = EYE_GLOW_LAYER
 				eye_overlays[eye_icon_state] = eye_overlay
 			overlays += eye_overlay
 
