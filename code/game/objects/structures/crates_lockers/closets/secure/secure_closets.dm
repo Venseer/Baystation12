@@ -1,6 +1,6 @@
 /obj/structure/closet/secure_closet
 	name = "secure locker"
-	desc = "It's an immobile card-locked storage unit."
+	desc = "It's a card-locked storage unit."
 	icon = 'icons/obj/closet.dmi'
 	icon_state = "secure1"
 	density = 1
@@ -46,22 +46,22 @@
 
 /obj/structure/closet/secure_closet/proc/togglelock(mob/user as mob)
 	if(src.opened)
-		user << "<span class='notice'>Close the locker first.</span>"
+		to_chat(user, "<span class='notice'>Close the locker first.</span>")
 		return
 	if(src.broken)
-		user << "<span class='warning'>The locker appears to be broken.</span>"
+		to_chat(user, "<span class='warning'>The locker appears to be broken.</span>")
 		return
 	if(user.loc == src)
-		user << "<span class='notice'>You can't reach the lock from inside.</span>"
+		to_chat(user, "<span class='notice'>You can't reach the lock from inside.</span>")
 		return
 	if(src.allowed(user))
 		src.locked = !src.locked
 		for(var/mob/O in viewers(user, 3))
 			if((O.client && !( O.blinded )))
-				O << "<span class='notice'>The locker has been [locked ? null : "un"]locked by [user].</span>"
+				to_chat(O, "<span class='notice'>The locker has been [locked ? null : "un"]locked by [user].</span>")
 		update_icon()
 	else
-		user << "<span class='notice'>Access Denied</span>"
+		to_chat(user, "<span class='notice'>Access Denied</span>")
 
 /obj/structure/closet/secure_closet/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(src.opened)
@@ -72,7 +72,7 @@
 			if(src.large)
 				src.MouseDrop_T(G.affecting, user)	//act like they were dragged onto the closet
 			else
-				user << "<span class='notice'>The locker is too small to stuff [G.affecting] into!</span>"
+				to_chat(user, "<span class='notice'>The locker is too small to stuff [G.affecting] into!</span>")
 		if(isrobot(user))
 			return
 		if(W.loc != user) // This should stop mounted modules ending up outside the module.
@@ -127,12 +127,15 @@
 		src.add_fingerprint(usr)
 		src.togglelock(usr)
 	else
-		usr << "<span class='warning'>This mob type can't use this verb.</span>"
+		to_chat(usr, "<span class='warning'>This mob type can't use this verb.</span>")
 
 /obj/structure/closet/secure_closet/update_icon()//Putting the welded stuff in updateicon() so it's easy to overwrite for special cases (Fridges, cabinets, and whatnot)
 	overlays.Cut()
+
 	if(!opened)
-		if(locked)
+		if(broken)
+			icon_state = icon_off
+		else if(locked)
 			icon_state = icon_locked
 		else
 			icon_state = icon_closed
@@ -141,24 +144,12 @@
 	else
 		icon_state = icon_opened
 
-
 /obj/structure/closet/secure_closet/req_breakout()
 	if(!opened && locked) return 1
 	return ..() //It's a secure closet, but isn't locked.
 
 /obj/structure/closet/secure_closet/break_open()
 	desc += " It appears to be broken."
-	icon_state = icon_off
-	spawn()
-		flick(icon_broken, src)
-		sleep(10)
-		flick(icon_broken, src)
-		sleep(10)
 	broken = 1
 	locked = 0
-	update_icon()
-	//Do this to prevent contents from being opened into nullspace (read: bluespace)
-	if(istype(loc, /obj/structure/bigDelivery))
-		var/obj/structure/bigDelivery/BD = loc
-		BD.unwrap()
-	open()
+	..()

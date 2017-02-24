@@ -48,9 +48,9 @@
 /obj/machinery/atmospherics/cultify()
 	if(src.invisibility != INVISIBILITY_MAXIMUM)
 		src.invisibility = INVISIBILITY_MAXIMUM
-		density = 0
+		set_density(0)
 
-/obj/machinery/cooking/cultify()
+/obj/machinery/cooker/cultify()
 	new /obj/structure/cult/talisman(loc)
 	qdel(src)
 
@@ -59,13 +59,13 @@
 	qdel(src)
 
 /obj/machinery/door/airlock/external/cultify()
-	new /obj/structure/simple_door/wood(loc)
+	new /obj/machinery/door/unpowered/simple/wood(loc)
 	..()
 
 /obj/machinery/door/cultify()
 	if(invisibility != INVISIBILITY_MAXIMUM)
 		invisibility = INVISIBILITY_MAXIMUM
-		density = 0
+		set_density(0)
 		anim(target = src, a_icon = 'icons/effects/effects.dmi', a_icon_state = "breakdoor", sleeptime = 10)
 		qdel(src)
 
@@ -105,11 +105,11 @@
 /obj/structure/grille/cult/cultify()
 	return
 
-/obj/structure/simple_door/cultify()
-	new /obj/structure/simple_door/wood(loc)
+/obj/machinery/door/unpowered/simple/cultify()
+	new /obj/machinery/door/unpowered/simple/wood(loc)
 	..()
 
-/obj/structure/simple_door/wood/cultify()
+/obj/machinery/door/unpowered/simple/wood/cultify()
 	return
 
 /obj/singularity/cultify()
@@ -131,8 +131,12 @@
 	// Make it a wood-reinforced wooden table.
 	// There are cult materials available, but it'd make the table non-deconstructable with how holotables work.
 	// Could possibly use a new material var for holographic-ness?
-	material = get_material_by_name("wood")
-	reinforced = get_material_by_name("wood")
+	var/material/wood = get_material_by_name("wood")
+	if(material == wood && reinforced == wood)
+		return
+
+	material = wood
+	reinforced = wood
 	update_desc()
 	update_connections(1)
 	update_icon()

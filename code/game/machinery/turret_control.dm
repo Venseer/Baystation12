@@ -65,11 +65,11 @@
 
 /obj/machinery/turretid/proc/isLocked(mob/user)
 	if(ailock && issilicon(user))
-		user << "<span class='notice'>There seems to be a firewall preventing you from accessing this device.</span>"
+		to_chat(user, "<span class='notice'>There seems to be a firewall preventing you from accessing this device.</span>")
 		return 1
 
 	if(locked && !issilicon(user))
-		user << "<span class='notice'>Access denied.</span>"
+		to_chat(user, "<span class='notice'>Access denied.</span>")
 		return 1
 
 	return 0
@@ -87,16 +87,16 @@
 	if(istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/device/pda))
 		if(src.allowed(usr))
 			if(emagged)
-				user << "<span class='notice'>The turret control is unresponsive.</span>"
+				to_chat(user, "<span class='notice'>The turret control is unresponsive.</span>")
 			else
 				locked = !locked
-				user << "<span class='notice'>You [ locked ? "lock" : "unlock"] the panel.</span>"
+				to_chat(user, "<span class='notice'>You [ locked ? "lock" : "unlock"] the panel.</span>")
 		return
 	return ..()
 
 /obj/machinery/turretid/emag_act(var/remaining_charges, var/mob/user)
 	if(!emagged)
-		user << "<span class='danger'>You short out the turret controls' access analysis module.</span>"
+		to_chat(user, "<span class='danger'>You short out the turret controls' access analysis module.</span>")
 		emagged = 1
 		locked = 0
 		ailock = 0
@@ -143,12 +143,19 @@
 	if(..())
 		return 1
 
+
 	if(href_list["command"] && href_list["value"])
+		var/log_action = null
+
+		var/list/toggle = list("disabled","enabled")
+
 		var/value = text2num(href_list["value"])
 		if(href_list["command"] == "enable")
 			enabled = value
+			log_action = "[toggle[enabled+1]] the turrets"
 		else if(href_list["command"] == "lethal")
 			lethal = value
+			log_action = "[toggle[lethal+1]] the turrets lethal mode."
 		else if(href_list["command"] == "check_synth")
 			check_synth = value
 		else if(href_list["command"] == "check_weapons")
@@ -161,6 +168,10 @@
 			check_access = value
 		else if(href_list["command"] == "check_anomalies")
 			check_anomalies = value
+
+		if(!isnull(log_action))
+			log_admin("[key_name(usr)] has [log_action]")
+			message_admins("[key_name_admin(usr)] has [log_action]", 1)
 
 		updateTurrets()
 		return 1
@@ -184,9 +195,9 @@
 	update_icon()
 
 /obj/machinery/turretid/power_change()
-	..()
-	updateTurrets()
-	update_icon()
+	. = ..()
+	if(.)
+		updateTurrets()
 
 /obj/machinery/turretid/update_icon()
 	..()

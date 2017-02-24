@@ -26,8 +26,6 @@
 
 	var/obj/item/wrapped = null // Item currently being held.
 
-	var/force_holder = null //
-
 // VEEEEERY limited version for mining borgs. Basically only for swapping cells and upgrading the drills.
 /obj/item/weapon/gripper/miner
 	name = "drill maintenance gripper"
@@ -36,7 +34,8 @@
 
 	can_hold = list(
 	/obj/item/weapon/cell,
-	/obj/item/weapon/stock_parts
+	/obj/item/weapon/stock_parts,
+	/obj/item/weapon/circuitboard/miningdrill
 	)
 
 /obj/item/weapon/gripper/paperwork
@@ -52,6 +51,15 @@
 		/obj/item/weapon/newspaper
 		)
 
+/obj/item/weapon/gripper/chemistry
+	name = "chemistry gripper"
+	desc = "A simple grasping tool for chemical work."
+
+	can_hold = list(
+		/obj/item/weapon/reagent_containers/glass,
+		/obj/item/weapon/storage/pill_bottle
+		)
+
 /obj/item/weapon/gripper/research //A general usage gripper, used for toxins/robotics/xenobio/etc
 	name = "scientific gripper"
 	icon_state = "gripper-sci"
@@ -63,14 +71,14 @@
 		/obj/item/device/mmi,
 		/obj/item/robot_parts,
 		/obj/item/borg/upgrade,
-		/obj/item/device/flash, //to build borgs,
-		/obj/item/organ/brain, //to insert into MMIs,
-		/obj/item/stack/cable_coil, //again, for borg building,
+		/obj/item/device/flash,
+		/obj/item/organ/internal/brain,
+		/obj/item/stack/cable_coil,
 		/obj/item/weapon/circuitboard,
 		/obj/item/slime_extract,
 		/obj/item/weapon/reagent_containers/glass,
-		/obj/item/weapon/reagent_containers/food/snacks/monkeycube
-
+		/obj/item/weapon/reagent_containers/food/snacks/monkeycube,
+		/obj/item/mecha_parts
 		)
 
 /obj/item/weapon/gripper/service //Used to handle food, drinks, and seeds.
@@ -82,8 +90,19 @@
 		/obj/item/weapon/reagent_containers/glass,
 		/obj/item/weapon/reagent_containers/food,
 		/obj/item/seeds,
-		/obj/item/weapon/grown
+		/obj/item/weapon/grown,
+		/obj/item/weapon/glass_extra
 		)
+
+/obj/item/weapon/gripper/organ //Used to handle organs.
+	name = "organ gripper"
+	icon_state = "gripper"
+	desc = "A simple grasping tool for holding and manipulating organic and mechanical organs, both internal and external."
+
+	can_hold = list(
+	/obj/item/organ,
+	/obj/item/robot_parts
+	)
 
 /obj/item/weapon/gripper/no_use //Used when you want to hold and put items in other things, but not able to 'use' the item
 
@@ -99,6 +118,11 @@
 		/obj/item/stack/material
 		)
 
+/obj/item/weapon/gripper/examine(mob/user)
+	. = ..()
+	if(wrapped)
+		to_chat(user, "It is holding \a [wrapped].")
+
 /obj/item/weapon/gripper/attack_self(mob/user as mob)
 	if(wrapped)
 		return wrapped.attack_self(user)
@@ -108,7 +132,7 @@
 
 	set name = "Drop Item"
 	set desc = "Release an item from your magnetic gripper."
-	set category = "Robot Commands"
+	set category = "Silicon Commands"
 
 	if(!wrapped)
 		//There's some weirdness with items being lost inside the arm. Trying to fix all cases. ~Z
@@ -120,25 +144,16 @@
 		wrapped = null
 		return
 
-	src.loc << "<span class='danger'>You drop \the [wrapped].</span>"
+	to_chat(src.loc, "<span class='danger'>You drop \the [wrapped].</span>")
 	wrapped.loc = get_turf(src)
 	wrapped = null
 	//update_icon()
 
 /obj/item/weapon/gripper/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
-	if(wrapped) 	//The force of the wrapped obj gets set to zero during the attack() and afterattack().
-		force_holder = wrapped.force
-		wrapped.force = 0.0
-		wrapped.attack(M,user)
-		if(deleted(wrapped))
-			wrapped = null
-		return 1
+	// Don't fall through and smack people with gripper, instead just no-op
 	return 0
 
-/obj/item/weapon/gripper/afterattack(var/atom/target, var/mob/living/user, proximity, params)
-
-	if(!proximity)
-		return // This will prevent them using guns at range but adminbuse can add them directly to modules, so eh.
+/obj/item/weapon/gripper/resolve_attackby(var/atom/target, var/mob/living/user, params)
 
 	//There's some weirdness with items being lost inside the arm. Trying to fix all cases. ~Z
 	if(!wrapped)
@@ -148,16 +163,19 @@
 
 	if(wrapped) //Already have an item.
 		//Temporary put wrapped into user so target's attackby() checks pass.
-		wrapped.loc = user
+		wrapped.loc = user //should we use forceMove() here? It is a virtual move after all, that is intended to be reset
+
+		//The force of the wrapped obj gets set to zero during the attack() and afterattack().
+		var/force_holder = wrapped.force
+		wrapped.force = 0.0
 
 		//Pass the attack on to the target. This might delete/relocate wrapped.
-		var/resolved = target.attackby(wrapped,user)
+		var/resolved = wrapped.resolve_attackby(target,user,params)
 		if(!resolved && wrapped && target)
-			wrapped.afterattack(target,user,1)
+			wrapped.afterattack(target,user,1,params)
 
-		//wrapped's force was set to zero.  This resets it to the value it had before.
 		wrapped.force = force_holder
-		force_holder = null
+
 		//If wrapped was neither deleted nor put into target, put it back into the gripper.
 		if(wrapped && user && (wrapped.loc == user))
 			wrapped.loc = src
@@ -182,12 +200,12 @@
 
 		//We can grab the item, finally.
 		if(grab)
-			user << "You collect \the [I]."
+			to_chat(user, "You collect \the [I].")
 			I.loc = src
 			wrapped = I
 			return
 		else
-			user << "<span class='danger'>Your gripper cannot hold \the [target].</span>"
+			to_chat(user, "<span class='danger'>Your gripper cannot hold \the [target].</span>")
 
 	else if(istype(target,/obj/machinery/power/apc))
 		var/obj/machinery/power/apc/A = target
@@ -268,15 +286,15 @@
 			if(!istype(D))
 				return
 
-			D << "<span class='danger'>You begin decompiling [M].</span>"
+			to_chat(D, "<span class='danger'>You begin decompiling [M].</span>")
 
-			if(!do_after(D,50))
-				D << "<span class='danger'>You need to remain still while decompiling such a large object.</span>"
+			if(!do_after(D,50,M))
+				to_chat(D, "<span class='danger'>You need to remain still while decompiling such a large object.</span>")
 				return
 
 			if(!M || !D) return
 
-			D << "<span class='danger'>You carefully and thoroughly decompile [M], storing as much of its resources as you can within yourself.</span>"
+			to_chat(D, "<span class='danger'>You carefully and thoroughly decompile [M], storing as much of its resources as you can within yourself.</span>")
 			qdel(M)
 			new/obj/effect/decal/cleanable/blood/oil(get_turf(src))
 
@@ -311,7 +329,7 @@
 					glass.add_charge(250)
 			else
 				continue
-		else if(istype(W,/obj/effect/decal/remains/robot))
+		else if(istype(W,/obj/item/remains/robot))
 			if(metal)
 				metal.add_charge(2000)
 			if(plastic)
@@ -349,16 +367,16 @@
 		grabbed_something = 1
 
 	if(grabbed_something)
-		user << "<span class='notice'>You deploy your decompiler and clear out the contents of \the [T].</span>"
+		to_chat(user, "<span class='notice'>You deploy your decompiler and clear out the contents of \the [T].</span>")
 	else
-		user << "<span class='danger'>Nothing on \the [T] is useful to you.</span>"
+		to_chat(user, "<span class='danger'>Nothing on \the [T] is useful to you.</span>")
 	return
 
 //PRETTIER TOOL LIST.
 /mob/living/silicon/robot/drone/installed_modules()
 
 	if(weapon_lock)
-		src << "<span class='danger'>Weapon lock active, unable to use modules! Count:[weaponlock_time]</span>"
+		to_chat(src, "<span class='danger'>Weapon lock active, unable to use modules! Count:[weaponlock_time]</span>")
 		return
 
 	if(!module)

@@ -1,13 +1,12 @@
 /obj/item/weapon/gun/launcher
 	name = "launcher"
 	desc = "A device that launches things."
-	w_class = 5.0
+	w_class = ITEM_SIZE_HUGE
 	flags =  CONDUCT
 	slot_flags = SLOT_BACK
 
 	var/release_force = 0
 	var/throw_distance = 10
-	muzzle_flash = 0
 	fire_sound_text = "a launcher firing"
 
 //This normally uses a proc on projectiles and our ammo is not strictly speaking a projectile.
@@ -16,7 +15,7 @@
 
 //Override this to avoid a runtime with suicide handling.
 /obj/item/weapon/gun/launcher/handle_suicide(mob/living/user)
-	user << "\red Shooting yourself with \a [src] is pretty tricky. You can't seem to manage it."
+	to_chat(user, "<span class='warning'>Shooting yourself with \a [src] is pretty tricky. You can't seem to manage it.</span>")
 	return
 
 /obj/item/weapon/gun/launcher/proc/update_release_force(obj/item/projectile)
@@ -26,4 +25,5 @@
 	update_release_force(projectile)
 	projectile.loc = get_turf(user)
 	projectile.throw_at(target, throw_distance, release_force, user)
+	play_fire_sound(user,projectile)
 	return 1

@@ -1,8 +1,8 @@
 /obj/item/device/floor_painter
 	name = "floor painter"
-	icon = 'icons/obj/bureaucracy.dmi'
-	icon_state = "labeler1"
-	item_state = "flight"
+	icon = 'icons/obj/device.dmi'
+	icon_state = "flpainter"
+	item_state = "fl_painter"
 
 	var/decal =        "remove all decals"
 	var/paint_dir =    "precise"
@@ -13,18 +13,19 @@
 		"hazard stripes" =    list("path" = /obj/effect/floor_decal/industrial/warning),
 		"corner, hazard" =    list("path" = /obj/effect/floor_decal/industrial/warning/corner),
 		"hatched marking" =   list("path" = /obj/effect/floor_decal/industrial/hatch, "coloured" = 1),
-		"dotted outline" =    list("path" = /obj/effect/floor_decal/industrial/outline, "coloured" = 1),
+		"dashed outline" =    list("path" = /obj/effect/floor_decal/industrial/outline, "coloured" = 1),
 		"loading sign" =      list("path" = /obj/effect/floor_decal/industrial/loading),
+		"mosaic, large" =     list("path" = /obj/effect/floor_decal/chapel),
 		"1" =                 list("path" = /obj/effect/floor_decal/sign),
 		"2" =                 list("path" = /obj/effect/floor_decal/sign/two),
 		"A" =                 list("path" = /obj/effect/floor_decal/sign/a),
 		"B" =                 list("path" = /obj/effect/floor_decal/sign/b),
 		"C" =                 list("path" = /obj/effect/floor_decal/sign/c),
 		"D" =                 list("path" = /obj/effect/floor_decal/sign/d),
-		"Ex" =                list("path" = /obj/effect/floor_decal/sign/ex),
 		"M" =                 list("path" = /obj/effect/floor_decal/sign/m),
-		"CMO" =               list("path" = /obj/effect/floor_decal/sign/cmo),
 		"V" =                 list("path" = /obj/effect/floor_decal/sign/v),
+		"CMO" =               list("path" = /obj/effect/floor_decal/sign/cmo),
+		"Ex" =                list("path" = /obj/effect/floor_decal/sign/ex),
 		"Psy" =               list("path" = /obj/effect/floor_decal/sign/p),
 		"remove all decals" = list("path" = /obj/effect/floor_decal/reset)
 		)
@@ -46,11 +47,11 @@
 
 	var/turf/simulated/floor/F = A
 	if(!istype(F))
-		user << "<span class='warning'>\The [src] can only be used on station flooring.</span>"
+		to_chat(user, "<span class='warning'>\The [src] can only be used on station flooring.</span>")
 		return
 
-	if(!F.flooring || !F.flooring.can_paint || F.broken || F.burnt)
-		user << "<span class='warning'>\The [src] cannot paint broken or missing tiles.</span>"
+	if(!F.flooring.can_paint || F.broken || F.burnt)
+		to_chat(user, "<span class='warning'>\The [src] cannot paint broken tiles.</span>")
 		return
 
 	var/list/decal_data = decals[decal]
@@ -64,11 +65,11 @@
 			config_error = 1
 
 	if(config_error)
-		user << "<span class='warning'>\The [src] flashes an error light. You might need to reconfigure it.</span>"
+		to_chat(user, "<span class='warning'>\The [src] flashes an error light. You might need to reconfigure it.</span>")
 		return
 
 	if(F.decals && F.decals.len > 5 && painting_decal != /obj/effect/floor_decal/reset)
-		user << "<span class='warning'>\The [F] has been painted too much; you need to clear it off.</span>"
+		to_chat(user, "<span class='warning'>\The [F] has been painted too much; you need to clear it off.</span>")
 		return
 
 	var/painting_dir = 0
@@ -111,8 +112,8 @@
 		choose_colour()
 
 /obj/item/device/floor_painter/examine(mob/user)
-	..(user)
-	user << "It is configured to produce the '[decal]' decal with a direction of '[paint_dir]' using [paint_colour] paint."
+	. = ..(user)
+	to_chat(user, "It is configured to produce the '[decal]' decal with a direction of '[paint_dir]' using [paint_colour] paint.")
 
 /obj/item/device/floor_painter/verb/choose_colour()
 	set name = "Choose Colour"
@@ -125,7 +126,7 @@
 	var/new_colour = input(usr, "Choose a colour.", "Floor painter", paint_colour) as color|null
 	if(new_colour && new_colour != paint_colour)
 		paint_colour = new_colour
-		usr << "<span class='notice'>You set \the [src] to paint with <font color='[paint_colour]'>a new colour</font>.</span>"
+		to_chat(usr, "<span class='notice'>You set \the [src] to paint with <font color='[paint_colour]'>a new colour</font>.</span>")
 
 /obj/item/device/floor_painter/verb/choose_decal()
 	set name = "Choose Decal"
@@ -139,7 +140,7 @@
 	var/new_decal = input("Select a decal.") as null|anything in decals
 	if(new_decal && !isnull(decals[new_decal]))
 		decal = new_decal
-		usr << "<span class='notice'>You set \the [src] decal to '[decal]'.</span>"
+		to_chat(usr, "<span class='notice'>You set \the [src] decal to '[decal]'.</span>")
 
 /obj/item/device/floor_painter/verb/choose_direction()
 	set name = "Choose Direction"
@@ -153,4 +154,4 @@
 	var/new_dir = input("Select a direction.") as null|anything in paint_dirs
 	if(new_dir && !isnull(paint_dirs[new_dir]))
 		paint_dir = new_dir
-		usr << "<span class='notice'>You set \the [src] direction to '[paint_dir]'.</span>"
+		to_chat(usr, "<span class='notice'>You set \the [src] direction to '[paint_dir]'.</span>")

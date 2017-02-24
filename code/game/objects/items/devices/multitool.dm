@@ -10,7 +10,7 @@
 	icon_state = "multitool"
 	flags = CONDUCT
 	force = 5.0
-	w_class = 2.0
+	w_class = ITEM_SIZE_SMALL
 	throwforce = 5.0
 	throw_range = 15
 	throw_speed = 3
@@ -62,7 +62,7 @@
 		return ..(A, user)
 
 	var/obj/O = A
-	var/datum/expansion/multitool/MT = O.expansions[/datum/expansion/multitool]
+	var/datum/extension/interactive/multitool/MT = get_extension(O, /datum/extension/interactive/multitool)
 	if(!MT)
 		return ..(A, user)
 

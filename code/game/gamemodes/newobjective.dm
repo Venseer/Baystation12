@@ -177,7 +177,7 @@
 				if(!killobjectives.len)
 					continue
 				var/datum/objective/assassinate/objective = pickweight(killobjectives)
-				world << objective
+				to_world(objective)
 				for(1 to 10)
 					if(objective.points + total_weight <= 100 || !killobjectives.len)
 						break
@@ -274,7 +274,7 @@ datum
 				var/turf/location = get_turf(target.current.loc)
 				if(!location)
 					return 0
-				if(!target.current:handcuffed && !istype(location, /turf/simulated/shuttle/floor4))
+				if(!target.current.incapacitated(INCAPACITATION_RESTRAINED)) //might also need to check if they are in the shuttle brig, perhaps
 					return 0
 
 				if(location in locate(/area/shuttle/escape/centcom))
@@ -522,7 +522,7 @@ datum
 				if(!location)
 					return 0
 
-				if(owner.current:handcuffed || istype(location, /turf/simulated/shuttle/floor4))
+				if(target.current.incapacitated(INCAPACITATION_RESTRAINED)) //might also need to check if they are in the shuttle brig, perhaps
 					return 0
 
 				if(location in locate(/area/shuttle/escape/centcom))
@@ -1045,7 +1045,7 @@ datum
 					return 20
 			AI
 				steal_target = /obj/structure/AIcore
-				explanation_text = "Steal a finished AI, either by intellicard or stealing the whole construct."
+				explanation_text = "Steal a finished AI, either by inteliCard or stealing the whole construct."
 				weight = 50
 
 				get_points(var/job)

@@ -6,7 +6,7 @@
 	caliber = "357"
 	origin_tech = list(TECH_COMBAT = 2, TECH_MATERIAL = 2)
 	handle_casings = CYCLE_CASINGS
-	max_shells = 7
+	max_shells = 6
 	ammo_type = /obj/item/ammo_casing/a357
 	var/chamber_offset = 0 //how many empty chambers in the cylinder until you hit a round
 
@@ -45,7 +45,6 @@
 	max_shells = 6
 	caliber = "38"
 	origin_tech = list(TECH_COMBAT = 2, TECH_MATERIAL = 2)
-	fire_sound = 'sound/weapons/Gunshot_light.ogg'
 	ammo_type = /obj/item/ammo_casing/c38
 
 /obj/item/weapon/gun/projectile/revolver/detective/verb/rename_gun()
@@ -56,14 +55,14 @@
 	var/mob/M = usr
 	if(!M.mind)	return 0
 	if(!M.mind.assigned_role == "Detective")
-		M << "<span class='notice'>You don't feel cool enough to name this gun, chump.</span>"
+		to_chat(M, "<span class='notice'>You don't feel cool enough to name this gun, chump.</span>")
 		return 0
 
 	var/input = sanitizeSafe(input("What do you want to name the gun?", ,""), MAX_NAME_LEN)
 
 	if(src && input && !M.stat && in_range(M,src))
 		name = input
-		M << "You name the gun [input]. Say hello to your new friend."
+		to_chat(M, "You name the gun [input]. Say hello to your new friend.")
 		return 1
 
 // Blade Runner pistol.
@@ -72,6 +71,9 @@
 	desc = "A custom-built revolver, based off the semi-popular Detective Special model."
 	icon_state = "deckard-empty"
 	ammo_type = /obj/item/ammo_magazine/c38/rubber
+
+/obj/item/weapon/gun/projectile/revolver/deckard/emp
+	ammo_type = /obj/item/ammo_casing/c38/emp
 
 /obj/item/weapon/gun/projectile/revolver/deckard/update_icon()
 	..()

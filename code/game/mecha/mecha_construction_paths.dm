@@ -23,12 +23,12 @@
 		if(C.use(4))
 			playsound(holder, 'sound/items/Deconstruct.ogg', 50, 1)
 		else
-			user << ("There's not enough cable to finish the task.")
+			to_chat(user, ("There's not enough cable to finish the task."))
 			return 0
 	else if(istype(used_atom, /obj/item/stack))
 		var/obj/item/stack/S = used_atom
 		if(S.get_amount() < 5)
-			user << ("There's not enough material in this stack.")
+			to_chat(user, ("There's not enough material in this stack."))
 			return 0
 		else
 			S.use(5)
@@ -55,12 +55,12 @@
 		if(C.use(4))
 			playsound(holder, 'sound/items/Deconstruct.ogg', 50, 1)
 		else
-			user << ("There's not enough cable to finish the task.")
+			to_chat(user, ("There's not enough cable to finish the task."))
 			return 0
 	else if(istype(used_atom, /obj/item/stack))
 		var/obj/item/stack/S = used_atom
 		if(S.get_amount() < 5)
-			user << ("There's not enough material in this stack.")
+			to_chat(user, ("There's not enough material in this stack."))
 			return 0
 		else
 			S.use(5)
@@ -89,7 +89,7 @@
 		const_holder.construct = new /datum/construction/reversible/mecha/ripley(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
 		const_holder.icon_state = "ripley0"
-		const_holder.density = 1
+		const_holder.set_density(1)
 		const_holder.overlays.len = 0
 		spawn()
 			qdel(src)
@@ -97,7 +97,7 @@
 
 
 /datum/construction/reversible/mecha/ripley
-	result = "/obj/mecha/working/ripley"
+	result = /obj/mecha/working/ripley
 	steps = list(
 					//1
 					list("key"=/obj/item/weapon/weldingtool,
@@ -300,14 +300,14 @@
 		const_holder.construct = new /datum/construction/reversible/mecha/gygax(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
 		const_holder.icon_state = "gygax0"
-		const_holder.density = 1
+		const_holder.set_density(1)
 		spawn()
 			qdel(src)
 		return
 
 
 /datum/construction/reversible/mecha/gygax
-	result = "/obj/mecha/combat/gygax"
+	result = /obj/mecha/combat/gygax
 	steps = list(
 					//1
 					list("key"=/obj/item/weapon/weldingtool,
@@ -581,14 +581,14 @@
 		const_holder.construct = new /datum/construction/reversible/mecha/firefighter(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
 		const_holder.icon_state = "fireripley0"
-		const_holder.density = 1
+		const_holder.set_density(1)
 		spawn()
 			qdel(src)
 		return
 
 
 /datum/construction/reversible/mecha/firefighter
-	result = "/obj/mecha/working/ripley/firefighter"
+	result = /obj/mecha/working/ripley/firefighter
 	steps = list(
 					//1
 					list("key"=/obj/item/weapon/weldingtool,
@@ -804,13 +804,13 @@
 		const_holder.construct = new /datum/construction/reversible/mecha/durand(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
 		const_holder.icon_state = "durand0"
-		const_holder.density = 1
+		const_holder.set_density(1)
 		spawn()
 			qdel(src)
 		return
 
 /datum/construction/reversible/mecha/durand
-	result = "/obj/mecha/combat/durand"
+	result = /obj/mecha/combat/durand
 	steps = list(
 					//1
 					list("key"=/obj/item/weapon/weldingtool,
@@ -1063,7 +1063,7 @@
 
 
 /datum/construction/mecha/phazon_chassis
-	result = "/obj/mecha/combat/phazon"
+	result = /obj/mecha/combat/phazon
 	steps = list(list("key"=/obj/item/mecha_parts/part/phazon_torso),//1
 					 list("key"=/obj/item/mecha_parts/part/phazon_left_arm),//2
 					 list("key"=/obj/item/mecha_parts/part/phazon_right_arm),//3
@@ -1107,14 +1107,14 @@
 		const_holder.construct = new /datum/construction/reversible/mecha/odysseus(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
 		const_holder.icon_state = "odysseus0"
-		const_holder.density = 1
+		const_holder.set_density(1)
 		spawn()
 			qdel(src)
 		return
 
 
 /datum/construction/reversible/mecha/odysseus
-	result = "/obj/mecha/medical/odysseus"
+	result = /obj/mecha/medical/odysseus
 	steps = list(
 					//1
 					list("key"=/obj/item/weapon/weldingtool,

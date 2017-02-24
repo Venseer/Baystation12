@@ -39,7 +39,7 @@
 	var/result_amount = 0
 
 	//how far the reaction proceeds each time it is processed. Used with either REACTION_RATE or HALF_LIFE macros.
-	var/reaction_rate = HALF_LIFE(0)
+	var/reaction_rate = HALF_LIFE(1)
 
 	//if less than 1, the reaction will be inhibited if the ratio of products/reagents is too high.
 	//0.5 = 50% yield -> reaction will only proceed halfway until products are removed.
@@ -53,6 +53,7 @@
 	var/reaction_sound = 'sound/effects/bubbles.ogg'
 
 	var/log_is_important = 0 // If this reaction should be considered important for logging. Important recipes message admins when mixed, non-important ones just log to file.
+
 /datum/chemical_reaction/proc/can_happen(var/datum/reagents/holder)
 	//check that all the required reagents are present
 	if(!holder.has_all_reagents(required_reagents))
@@ -316,7 +317,6 @@
 	id = "dexalin"
 	result = "dexalin"
 	required_reagents = list("acetone" = 2, "phoron" = 0.1)
-	catalysts = list("phoron" = 1)
 	inhibitors = list("water" = 1) // Messes with cryox
 	result_amount = 1
 
@@ -368,7 +368,6 @@
 	id = "clonexadone"
 	result = "clonexadone"
 	required_reagents = list("cryoxadone" = 1, "sodium" = 1, "phoron" = 0.1)
-	catalysts = list("phoron" = 5)
 	result_amount = 2
 
 /datum/chemical_reaction/spaceacillin
@@ -543,6 +542,13 @@
 	required_reagents = list("mindbreaker" = 1, "acetone" = 1, "inaprovaline" = 1)
 	result_amount = 3
 
+/datum/chemical_reaction/hair_remover
+	name = "Hair Remover"
+	id = "hair_remover"
+	result = "hair_remover"
+	required_reagents = list("radium" = 1, "potassium" = 1, "hclacid" = 1)
+	result_amount = 3
+
 /* Solidification */
 
 /datum/chemical_reaction/phoronsolidification
@@ -576,11 +582,11 @@
 	required_reagents = list("water" = 1, "potassium" = 1)
 	result_amount = 2
 	mix_message = null
+	reaction_rate = HALF_LIFE(0)
 
 /datum/chemical_reaction/explosion_potassium/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/datum/effect/effect/system/reagents_explosion/e = new()
 	e.set_up(round (created_volume/10, 1), holder.my_atom, 0, 0)
-	e.holder_damage(holder.my_atom)
 	if(isliving(holder.my_atom))
 		e.amount *= 0.5
 		var/mob/living/L = holder.my_atom
@@ -596,6 +602,7 @@
 	result = null
 	required_reagents = list("aluminum" = 1, "potassium" = 1, "sulfur" = 1 )
 	result_amount = null
+	reaction_rate = HALF_LIFE(0)
 
 /datum/chemical_reaction/flash_powder/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
@@ -609,7 +616,7 @@
 					if(istype(M:glasses, /obj/item/clothing/glasses/sunglasses))
 						continue
 
-				flick("e_flash", M.flash)
+				M.flash_eyes()
 				M.Weaken(15)
 
 			if(4 to 5)
@@ -617,7 +624,7 @@
 					if(istype(M:glasses, /obj/item/clothing/glasses/sunglasses))
 						continue
 
-				flick("e_flash", M.flash)
+				M.flash_eyes()
 				M.Stun(5)
 
 /datum/chemical_reaction/emp_pulse
@@ -642,11 +649,11 @@
 	required_reagents = list("glycerol" = 1, "pacid" = 1, "sacid" = 1)
 	result_amount = 2
 	log_is_important = 1
+	reaction_rate = HALF_LIFE(0)
 
 /datum/chemical_reaction/nitroglycerin/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/datum/effect/effect/system/reagents_explosion/e = new()
 	e.set_up(round (created_volume/2, 1), holder.my_atom, 0, 0)
-	e.holder_damage(holder.my_atom)
 	if(isliving(holder.my_atom))
 		e.amount *= 0.5
 		var/mob/living/L = holder.my_atom
@@ -678,6 +685,7 @@
 	result = null
 	required_reagents = list("potassium" = 1, "sugar" = 1, "phosphorus" = 1)
 	result_amount = 0.4
+	reaction_rate = HALF_LIFE(0) //need to process everything at once for the smoke strength calculation to work
 
 /datum/chemical_reaction/chemsmoke/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
@@ -697,12 +705,13 @@
 	required_reagents = list("surfactant" = 1, "water" = 1)
 	result_amount = 2
 	mix_message = "The solution violently bubbles!"
+	reaction_rate = HALF_LIFE(0)
 
 /datum/chemical_reaction/foam/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 
 	for(var/mob/M in viewers(5, location))
-		M << "<span class='warning'>The solution spews out foam!</span>"
+		to_chat(M, "<span class='warning'>The solution spews out foam!</span>")
 
 	var/datum/effect/effect/system/foam_spread/s = new()
 	s.set_up(created_volume, location, holder, 0)
@@ -716,12 +725,13 @@
 	result = null
 	required_reagents = list("aluminum" = 3, "foaming_agent" = 1, "pacid" = 1)
 	result_amount = 5
+	reaction_rate = HALF_LIFE(0)
 
 /datum/chemical_reaction/metalfoam/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 
 	for(var/mob/M in viewers(5, location))
-		M << "<span class='warning'>The solution spews out a metalic foam!</span>"
+		to_chat(M, "<span class='warning'>The solution spews out a metalic foam!</span>")
 
 	var/datum/effect/effect/system/foam_spread/s = new()
 	s.set_up(created_volume, location, holder, 1)
@@ -734,12 +744,13 @@
 	result = null
 	required_reagents = list("iron" = 3, "foaming_agent" = 1, "pacid" = 1)
 	result_amount = 5
+	reaction_rate = HALF_LIFE(0)
 
 /datum/chemical_reaction/ironfoam/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 
 	for(var/mob/M in viewers(5, location))
-		M << "<span class='warning'>The solution spews out a metalic foam!</span>"
+		to_chat(M, "<span class='warning'>The solution spews out a metalic foam!</span>")
 
 	var/datum/effect/effect/system/foam_spread/s = new()
 	s.set_up(created_volume, location, holder, 2)
@@ -984,6 +995,7 @@
 /* Slime cores */
 
 /datum/chemical_reaction/slime
+	reaction_rate = HALF_LIFE(0)
 	var/required = null
 
 /datum/chemical_reaction/slime/can_happen(var/datum/reagents/holder)
@@ -1057,7 +1069,7 @@
 	P.loc = get_turf(holder.my_atom)
 	..()
 
-//Gold - removed
+//Gold
 /datum/chemical_reaction/slime/crit
 	name = "Slime Crit"
 	id = "m_tele"
@@ -1065,7 +1077,20 @@
 	required_reagents = list("phoron" = 1)
 	result_amount = 1
 	required = /obj/item/slime_extract/gold
-	mix_message = "The slime core fizzles disappointingly."
+	var/list/possible_mobs = list(
+							/mob/living/simple_animal/cat,
+							/mob/living/simple_animal/cat/kitten,
+							/mob/living/simple_animal/corgi,
+							/mob/living/simple_animal/corgi/puppy,
+							/mob/living/simple_animal/cow,
+							/mob/living/simple_animal/chick,
+							/mob/living/simple_animal/chicken
+							)
+
+/datum/chemical_reaction/slime/crit/on_reaction(var/datum/reagents/holder)
+	var/type = pick(possible_mobs)
+	new type(get_turf(holder.my_atom))
+	..()
 
 //Silver
 /datum/chemical_reaction/slime/bork
@@ -1081,7 +1106,7 @@
 	playsound(get_turf(holder.my_atom), 'sound/effects/phasein.ogg', 100, 1)
 	for(var/mob/living/carbon/human/M in viewers(get_turf(holder.my_atom), null))
 		if(M.eyecheck() < FLASH_PROTECTION_MODERATE)
-			flick("e_flash", M.flash)
+			M.flash_eyes()
 
 	for(var/i = 1, i <= 4 + rand(1,2), i++)
 		var/chosen = pick(borks)
@@ -1118,7 +1143,7 @@
 	playsound(get_turf(holder.my_atom), 'sound/effects/phasein.ogg', 100, 1)
 	for(var/mob/living/M in range (get_turf(holder.my_atom), 7))
 		M.bodytemperature -= 140
-		M << "<span class='warning'>You feel a chill!</span>"
+		to_chat(M, "<span class='warning'>You feel a chill!</span>")
 
 //Orange
 /datum/chemical_reaction/slime/casp
@@ -1169,6 +1194,7 @@
 	required = /obj/item/slime_extract/yellow
 
 /datum/chemical_reaction/slime/cell/on_reaction(var/datum/reagents/holder, var/created_volume)
+	..()
 	var/obj/item/weapon/cell/slime/P = new /obj/item/weapon/cell/slime
 	P.loc = get_turf(holder.my_atom)
 
@@ -1313,6 +1339,94 @@
 	Z.loc = get_turf(holder.my_atom)
 	Z.announce_to_ghosts()
 
+//Sepia
+/datum/chemical_reaction/slime/film
+	name = "Slime Film"
+	id = "m_film"
+	result = null
+	required_reagents = list("blood" = 1)
+	result_amount = 2
+	required = /obj/item/slime_extract/sepia
+
+/datum/chemical_reaction/slime/film/on_reaction(var/datum/reagents/holder)
+	for(var/i in 1 to result_amount)
+		new /obj/item/device/camera_film(get_turf(holder.my_atom))
+	..()
+
+/datum/chemical_reaction/slime/camera
+	name = "Slime Camera"
+	id = "m_camera"
+	result = null
+	required_reagents = list("phoron" = 1)
+	result_amount = 1
+	required = /obj/item/slime_extract/sepia
+
+/datum/chemical_reaction/slime/camera/on_reaction(var/datum/reagents/holder)
+	new /obj/item/device/camera(get_turf(holder.my_atom))
+	..()
+
+//Bluespace
+/datum/chemical_reaction/slime/teleport
+	name = "Slime Teleport"
+	id = "m_blink"
+	result = null
+	required_reagents = list("phoron" = 1)
+	required = /obj/item/slime_extract/bluespace
+	reaction_sound = 'sound/effects/teleport.ogg'
+
+/datum/chemical_reaction/slime/teleport/on_reaction(var/datum/reagents/holder)
+	var/list/turfs = list()
+	for(var/turf/T in orange(holder.my_atom,6))
+		turfs += T
+	for(var/atom/movable/a in viewers(holder.my_atom,2))
+		if(!a.simulated)
+			continue
+		a.forceMove(pick(turfs))
+	..()
+
+//pyrite
+/datum/chemical_reaction/slime/paint
+	name = "Slime Paint"
+	id = "m_paint"
+	result = null
+	required_reagents = list("phoron" = 1)
+	required = /obj/item/slime_extract/pyrite
+
+/datum/chemical_reaction/slime/paint/on_reaction(var/datum/reagents/holder)
+	new /obj/item/weapon/reagent_containers/glass/paint/random(get_turf(holder.my_atom))
+	..()
+
+//cerulean
+/datum/chemical_reaction/slime/extract_enhance
+	name = "Extract Enhancer"
+	id = "m_enhance"
+	result = null
+	required_reagents = list("phoron" = 1)
+	required = /obj/item/slime_extract/cerulean
+
+/datum/chemical_reaction/slime/extract_enhance/on_reaction(var/datum/reagents/holder)
+	new /obj/item/weapon/slimesteroid2(get_turf(holder.my_atom))
+	..()
+
+/datum/chemical_reaction/soap_key
+	name = "Soap Key"
+	id = "skey"
+	result = null
+	required_reagents = list("frostoil" = 2, "cleaner" = 5)
+	var/strength = 3
+
+/datum/chemical_reaction/soap_key/can_happen(var/datum/reagents/holder)
+	if(holder.my_atom && istype(holder.my_atom, /obj/item/weapon/soap))
+		return ..()
+	return 0
+
+/datum/chemical_reaction/soap_key/on_reaction(var/datum/reagents/holder)
+	var/obj/item/weapon/soap/S = holder.my_atom
+	if(S.key_data)
+		var/obj/item/weapon/key/soap/key = new(get_turf(holder.my_atom), S.key_data)
+		key.uses = strength
+	..()
+
 /* Food */
 
 /datum/chemical_reaction/tofu
@@ -1407,7 +1521,7 @@
 	name = "Dough"
 	id = "dough"
 	result = null
-	required_reagents = list("egg" = 3, "flour" = 10)
+	required_reagents = list("egg" = 3, "flour" = 10, "water" = 5)
 	result_amount = 1
 
 /datum/chemical_reaction/dough/on_reaction(var/datum/reagents/holder, var/created_volume)
@@ -1795,7 +1909,7 @@
 	name = "Allies Cocktail"
 	id = "alliescocktail"
 	result = "alliescocktail"
-	required_reagents = list("classicmartini" = 1, "vodka" = 1)
+	required_reagents = list("martini" = 1, "vodka" = 1)
 	result_amount = 2
 
 /datum/chemical_reaction/demonsblood
@@ -1837,7 +1951,7 @@
 	name = "Sbiten"
 	id = "sbiten"
 	result = "sbiten"
-	required_reagents = list("vodka" = 10, "capsaicin" = 1)
+	required_reagents = list("mead" = 10, "capsaicin" = 1)
 	result_amount = 10
 
 /datum/chemical_reaction/red_mead
@@ -1851,7 +1965,7 @@
 	name = "Mead"
 	id = "mead"
 	result = "mead"
-	required_reagents = list("sugar" = 1, "water" = 1)
+	required_reagents = list("honey" = 1, "water" = 1)
 	catalysts = list("enzyme" = 5)
 	result_amount = 2
 
@@ -2037,9 +2151,44 @@
 	required_reagents = list("space_up" = 1, "bluecuracao" = 1, "melonliquor" = 1)
 	result_amount = 3
 
+/datum/chemical_reaction/rum
+	name = "Rum"
+	id = "rum"
+	result = "rum"
+	required_reagents = list("sugar" = 1, "water" = 1)
+	catalysts = list("enzyme" = 5)
+	result_amount = 2
+
+/datum/chemical_reaction/ships_surgeon
+	name = "Ship's Surgeon"
+	id = "shipssurgeon"
+	result = "shipssurgeon"
+	required_reagents = list("rum" = 1, "dr_gibb" = 2, "ice" = 1)
+	result_amount = 4
+
 /datum/chemical_reaction/luminol
 	name = "Luminol"
 	id = "luminol"
 	result = "luminol"
 	required_reagents = list("hydrogen" = 2, "carbon" = 2, "ammonia" = 2)
 	result_amount = 6
+
+/datum/chemical_reaction/oxyphoron
+	name = "Oxyphoron"
+	id = "oxyphoron"
+	result = "oxyphoron"
+	required_reagents = list("water" = 1, "phoron" = 1)
+	result_amount = 2
+
+/datum/chemical_reaction/deuterium
+	name = "Deuterium"
+	id = "deuterium"
+	result = null
+	required_reagents = list("water" = 10)
+	catalysts = list("oxyphoron" = 5)
+	result_amount = 1
+
+/datum/chemical_reaction/deuterium/on_reaction(var/datum/reagents/holder, var/created_volume)
+	var/turf/T = get_turf(holder.my_atom)
+	if(istype(T)) new /obj/item/stack/material/deuterium(T, created_volume)
+	return

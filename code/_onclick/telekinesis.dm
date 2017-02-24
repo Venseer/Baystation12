@@ -62,17 +62,18 @@ var/const/tk_maxrange = 15
 */
 /obj/item/tk_grab
 	name = "Telekinetic Grab"
-	desc = "Magic"
+	desc = "Magic."
 	icon = 'icons/obj/magic.dmi'//Needs sprites
 	icon_state = "2"
 	flags = NOBLUDGEON
 	//item_state = null
-	w_class = 10.0
-	layer = 20
+	w_class = ITEM_SIZE_NO_CONTAINER
 
 	var/last_throw = 0
 	var/atom/movable/focus = null
 	var/mob/living/host = null
+	plane = HUD_PLANE
+	layer = HUD_ITEM_LAYER
 
 /obj/item/tk_grab/dropped(mob/user as mob)
 	if(focus && user && loc != user && loc != user.loc) // drop_item() gets called when you tk-attack a table/closet with an item
@@ -85,6 +86,7 @@ var/const/tk_maxrange = 15
 
 //stops TK grabs being equipped anywhere but into hands
 /obj/item/tk_grab/equipped(var/mob/user, var/slot)
+	..()
 	if( (slot == slot_l_hand) || (slot== slot_r_hand) )	return
 	qdel(src)
 	return
@@ -105,21 +107,13 @@ var/const/tk_maxrange = 15
 	if(isobj(target) && !isturf(target.loc))
 		return
 
+	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 	var/d = get_dist(user, target)
-	if(focus) d = max(d,get_dist(user,focus)) // whichever is further
-	switch(d)
-		if(0)
-			;
-		if(1 to 5) // not adjacent may mean blocked by window
-			if(!proximity)
-				user.setMoveCooldown(2)
-		if(5 to 7)
-			user.setMoveCooldown(5)
-		if(8 to tk_maxrange)
-			user.setMoveCooldown(10)
-		else
-			user << "<span class='notice'>Your mind won't reach that far.</span>"
-			return
+	if(focus)
+		d = max(d, get_dist(user, focus)) // whichever is further
+	if(d > tk_maxrange)
+		to_chat(user, "<span class='notice'>Your mind won't reach that far.</span>")
+		return
 
 	if(!focus)
 		focus_object(target, user)
@@ -157,10 +151,10 @@ var/const/tk_maxrange = 15
 
 /obj/item/tk_grab/proc/apply_focus_overlay()
 	if(!focus)	return
-	var/obj/effect/overlay/O = PoolOrNew(/obj/effect/overlay, locate(focus.x,focus.y,focus.z))
+	var/obj/effect/overlay/O = new /obj/effect/overlay(locate(focus.x,focus.y,focus.z))
 	O.name = "sparkles"
 	O.anchored = 1
-	O.density = 0
+	O.set_density(0)
 	O.layer = FLY_LAYER
 	O.set_dir(pick(cardinal))
 	O.icon = 'icons/effects/effects.dmi'

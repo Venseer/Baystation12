@@ -17,10 +17,12 @@
 	var/datum/seed/seed
 	var/harvest_time
 	var/min_explode_time = 1200
+	var/global/total_mushrooms = 0
 
 /mob/living/simple_animal/mushroom/New()
 	..()
 	harvest_time = world.time
+	total_mushrooms++
 
 /mob/living/simple_animal/mushroom/verb/spawn_spores()
 
@@ -30,23 +32,24 @@
 	set src = usr
 
 	if(stat == 2)
-		usr << "<span class='danger'>You are dead; it is too late for that.</span>"
+		to_chat(usr, "<span class='danger'>You are dead; it is too late for that.</span>")
 		return
 
 	if(!seed)
-		usr << "<span class='danger'>You are sterile!</span>"
+		to_chat(usr, "<span class='danger'>You are sterile!</span>")
 		return
 
 	if(world.time < harvest_time + min_explode_time)
-		usr << "<span class='danger'>You are not mature enough for that.</span>"
+		to_chat(usr, "<span class='danger'>You are not mature enough for that.</span>")
 		return
 
 	spore_explode()
 
 /mob/living/simple_animal/mushroom/death()
-	if(prob(30))
+	if(total_mushrooms < config.maximum_mushrooms && prob(30))
 		spore_explode()
 		return
+	total_mushrooms--
 	..()
 
 /mob/living/simple_animal/mushroom/proc/spore_explode()

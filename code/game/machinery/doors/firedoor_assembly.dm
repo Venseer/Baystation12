@@ -18,21 +18,21 @@ obj/structure/firedoor_assembly/attackby(C as obj, mob/user as mob)
 	if(istype(C, /obj/item/stack/cable_coil) && !wired && anchored)
 		var/obj/item/stack/cable_coil/cable = C
 		if (cable.get_amount() < 1)
-			user << "<span class='warning'>You need one length of coil to wire \the [src].</span>"
+			to_chat(user, "<span class='warning'>You need one length of coil to wire \the [src].</span>")
 			return
 		user.visible_message("[user] wires \the [src].", "You start to wire \the [src].")
-		if(do_after(user, 40) && !wired && anchored)
+		if(do_after(user, 40, src) && !wired && anchored)
 			if (cable.use(1))
 				wired = 1
-				user << "<span class='notice'>You wire \the [src].</span>"
+				to_chat(user, "<span class='notice'>You wire \the [src].</span>")
 
 	else if(istype(C, /obj/item/weapon/wirecutters) && wired )
 		playsound(src.loc, 'sound/items/Wirecutter.ogg', 100, 1)
 		user.visible_message("[user] cuts the wires from \the [src].", "You start to cut the wires from \the [src].")
 
-		if(do_after(user, 40))
+		if(do_after(user, 40, src))
 			if(!src) return
-			user << "<span class='notice'>You cut the wires!</span>"
+			to_chat(user, "<span class='notice'>You cut the wires!</span>")
 			new/obj/item/stack/cable_coil(src.loc, 1)
 			wired = 0
 
@@ -45,7 +45,7 @@ obj/structure/firedoor_assembly/attackby(C as obj, mob/user as mob)
 			qdel(C)
 			qdel(src)
 		else
-			user << "<span class='warning'>You must secure \the [src] first!</span>"
+			to_chat(user, "<span class='warning'>You must secure \the [src] first!</span>")
 	else if(istype(C, /obj/item/weapon/wrench))
 		anchored = !anchored
 		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
@@ -57,13 +57,13 @@ obj/structure/firedoor_assembly/attackby(C as obj, mob/user as mob)
 		if(WT.remove_fuel(0, user))
 			user.visible_message("<span class='warning'>[user] dissassembles \the [src].</span>",
 			"You start to dissassemble \the [src].")
-			if(do_after(user, 40))
+			if(do_after(user, 40, src))
 				if(!src || !WT.isOn()) return
 				user.visible_message("<span class='warning'>[user] has dissassembled \the [src].</span>",
 									"You have dissassembled \the [src].")
 				new /obj/item/stack/material/steel(src.loc, 2)
 				qdel(src)
 		else
-			user << "<span class='notice'>You need more welding fuel.</span>"
+			to_chat(user, "<span class='notice'>You need more welding fuel.</span>")
 	else
 		..(C, user)

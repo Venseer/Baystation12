@@ -3,8 +3,6 @@
 	if(status_flags & GODMODE)	return 0	//godmode
 
 	if(bodytemperature > 406)
-		for(var/datum/disease/D in viruses)
-			D.cure()
 		for (var/ID in virus2)
 			var/datum/disease2/disease/V = virus2[ID]
 			V.cure(src)
@@ -13,6 +11,8 @@
 		for(var/obj/effect/decal/cleanable/O in view(1,src))
 			if(istype(O,/obj/effect/decal/cleanable/blood))
 				var/obj/effect/decal/cleanable/blood/B = O
+				if(isnull(B.virus2))
+					B.virus2 = list()
 				if(B.virus2.len)
 					for (var/ID in B.virus2)
 						var/datum/disease2/disease/V = B.virus2[ID]
@@ -20,6 +20,8 @@
 
 			else if(istype(O,/obj/effect/decal/cleanable/mucus))
 				var/obj/effect/decal/cleanable/mucus/M = O
+				if(isnull(M.virus2))
+					M.virus2 = list()
 				if(M.virus2.len)
 					for (var/ID in M.virus2)
 						var/datum/disease2/disease/V = M.virus2[ID]

@@ -18,7 +18,7 @@
 	var/list/reagent_names = list()
 
 /obj/item/weapon/reagent_containers/borghypo/surgeon
-	reagent_ids = list("bicaridine", "inaprovaline", "dexalin")
+	reagent_ids = list("bicaridine", "dexalin", "tramadol")
 
 /obj/item/weapon/reagent_containers/borghypo/crisis
 	reagent_ids = list("tricordrazine", "inaprovaline", "tramadol")
@@ -51,34 +51,34 @@
 					reagent_volumes[T] = min(reagent_volumes[T] + 5, volume)
 	return 1
 
-/obj/item/weapon/reagent_containers/borghypo/attack(var/mob/living/M, var/mob/user)
+/obj/item/weapon/reagent_containers/borghypo/attack(var/mob/living/M, var/mob/user, var/target_zone)
 	if(!istype(M))
 		return
 
 	if(!reagent_volumes[reagent_ids[mode]])
-		user << "<span class='warning'>The injector is empty.</span>"
+		to_chat(user, "<span class='warning'>The injector is empty.</span>")
 		return
 
 	var/mob/living/carbon/human/H = M
 	if(istype(H))
-		var/obj/item/organ/external/affected = H.get_organ(user.zone_sel.selecting)
+		var/obj/item/organ/external/affected = H.get_organ(target_zone)
 		if(!affected)
-			user << "<span class='danger'>\The [H] is missing that limb!</span>"
+			to_chat(user, "<span class='danger'>\The [H] is missing that limb!</span>")
 			return
-		else if(affected.status & ORGAN_ROBOT)
-			user << "<span class='danger'>You cannot inject a robotic limb.</span>"
+		else if(affected.robotic >= ORGAN_ROBOT)
+			to_chat(user, "<span class='danger'>You cannot inject a robotic limb.</span>")
 			return
 
-	if (M.can_inject(user, 1))
-		user << "<span class='notice'>You inject [M] with the injector.</span>"
-		M << "<span class='notice'>You feel a tiny prick!</span>"
+	if (M.can_inject(user, target_zone))
+		to_chat(user, "<span class='notice'>You inject [M] with the injector.</span>")
+		to_chat(M, "<span class='notice'>You feel a tiny prick!</span>")
 
 		if(M.reagents)
 			var/t = min(amount_per_transfer_from_this, reagent_volumes[reagent_ids[mode]])
 			M.reagents.add_reagent(reagent_ids[mode], t)
 			reagent_volumes[reagent_ids[mode]] -= t
 			admin_inject_log(user, M, src, reagent_ids[mode], t)
-			user << "<span class='notice'>[t] units injected. [reagent_volumes[reagent_ids[mode]]] units remaining.</span>"
+			to_chat(user, "<span class='notice'>[t] units injected. [reagent_volumes[reagent_ids[mode]]] units remaining.</span>")
 	return
 
 /obj/item/weapon/reagent_containers/borghypo/attack_self(mob/user as mob) //Change the mode
@@ -91,7 +91,7 @@
 		else
 			t += "<a href='?src=\ref[src];reagent=[reagent_ids[i]]'>[reagent_names[i]]</a>"
 	t = "Available reagents: [t]."
-	user << t
+	to_chat(user, t)
 
 	return
 
@@ -102,7 +102,7 @@
 			playsound(loc, 'sound/effects/pop.ogg', 50, 0)
 			mode = t
 			var/datum/reagent/R = chemical_reagents_list[reagent_ids[mode]]
-			usr << "<span class='notice'>Synthesizer is now producing '[R.name]'.</span>"
+			to_chat(usr, "<span class='notice'>Synthesizer is now producing '[R.name]'.</span>")
 
 /obj/item/weapon/reagent_containers/borghypo/examine(mob/user)
 	if(!..(user, 2))
@@ -110,7 +110,7 @@
 
 	var/datum/reagent/R = chemical_reagents_list[reagent_ids[mode]]
 
-	user << "<span class='notice'>It is currently producing [R.name] and has [reagent_volumes[reagent_ids[mode]]] out of [volume] units left.</span>"
+	to_chat(user, "<span class='notice'>It is currently producing [R.name] and has [reagent_volumes[reagent_ids[mode]]] out of [volume] units left.</span>")
 
 /obj/item/weapon/reagent_containers/borghypo/service
 	name = "cyborg drink synthesizer"
@@ -120,7 +120,7 @@
 	charge_cost = 20
 	recharge_time = 3
 	volume = 60
-	possible_transfer_amounts = list(5, 10, 20, 30)
+	possible_transfer_amounts = "5;10;20;30"
 	reagent_ids = list("beer", "kahlua", "whiskey", "wine", "vodka", "gin", "rum", "tequilla", "vermouth", "cognac", "ale", "mead", "water", "sugar", "ice", "tea", "icetea", "cola", "spacemountainwind", "dr_gibb", "space_up", "tonic", "sodawater", "lemon_lime", "orangejuice", "limejuice", "watermelonjuice")
 
 /obj/item/weapon/reagent_containers/borghypo/service/attack(var/mob/M, var/mob/user)
@@ -134,15 +134,15 @@
 		return
 
 	if(!reagent_volumes[reagent_ids[mode]])
-		user << "<span class='notice'>[src] is out of this reagent, give it some time to refill.</span>"
+		to_chat(user, "<span class='notice'>[src] is out of this reagent, give it some time to refill.</span>")
 		return
 
 	if(!target.reagents.get_free_space())
-		user << "<span class='notice'>[target] is full.</span>"
+		to_chat(user, "<span class='notice'>[target] is full.</span>")
 		return
 
 	var/t = min(amount_per_transfer_from_this, reagent_volumes[reagent_ids[mode]])
 	target.reagents.add_reagent(reagent_ids[mode], t)
 	reagent_volumes[reagent_ids[mode]] -= t
-	user << "<span class='notice'>You transfer [t] units of the solution to [target].</span>"
+	to_chat(user, "<span class='notice'>You transfer [t] units of the solution to [target].</span>")
 	return

@@ -1,3 +1,10 @@
+// simulated/floor is currently plating by default, but there really should be an explicit plating type.
+/turf/simulated/floor/plating
+	name = "plating"
+	icon = 'icons/turf/flooring/plating.dmi'
+	icon_state = "plating"
+	plane = PLATING_PLANE
+
 /turf/simulated/floor/carpet
 	name = "carpet"
 	icon = 'icons/turf/flooring/carpet.dmi'
@@ -9,12 +16,26 @@
 	icon = 'icons/turf/flooring/circuit.dmi'
 	icon_state = "bcircuit"
 	initial_flooring = /decl/flooring/reinforced/circuit
+	light_range = 2
+	light_power = 3
+	light_color = COLOR_BLUE
+
+/turf/simulated/floor/bluegrid/airless
+	oxygen = 0
+	nitrogen = 0
 
 /turf/simulated/floor/greengrid
 	name = "mainframe floor"
 	icon = 'icons/turf/flooring/circuit.dmi'
 	icon_state = "gcircuit"
 	initial_flooring = /decl/flooring/reinforced/circuit/green
+	light_range = 2
+	light_power = 3
+	light_color = COLOR_GREEN
+
+/turf/simulated/floor/greengrid/airless
+	oxygen = 0
+	nitrogen = 0
 
 /turf/simulated/floor/wood
 	name = "wooden floor"
@@ -28,13 +49,18 @@
 	icon_state = "grass0"
 	initial_flooring = /decl/flooring/grass
 
+/turf/simulated/floor/diona
+	name = "biomass"
+	icon = 'icons/turf/floors.dmi'
+	initial_flooring = /decl/flooring/diona
+
 /turf/simulated/floor/carpet/blue
 	name = "blue carpet"
 	icon_state = "bcarpet"
 	initial_flooring = /decl/flooring/carpet/blue
 
 /turf/simulated/floor/tiled
-	name = "floor"
+	name = "steel floor"
 	icon = 'icons/turf/flooring/tiles.dmi'
 	icon_state = "steel"
 	initial_flooring = /decl/flooring/tiling
@@ -95,19 +121,7 @@
 	icon_state = "dark"
 	initial_flooring = /decl/flooring/tiling/dark
 
-/turf/simulated/floor/tiled/red
-	name = "red floor"
-	color = COLOR_RED_GRAY
-	icon_state = "white"
-	initial_flooring = /decl/flooring/tiling/red
-
-/turf/simulated/floor/tiled/steel
-	name = "steel floor"
-	icon_state = "steel_dirty"
-	initial_flooring = /decl/flooring/tiling/steel
-
-
-/turf/simulated/floor/tiled/steel/airless
+/turf/simulated/floor/tiled/dark/airless
 	oxygen = 0
 	nitrogen = 0
 
@@ -115,12 +129,6 @@
 	name = "white floor"
 	icon_state = "white"
 	initial_flooring = /decl/flooring/tiling/white
-
-/turf/simulated/floor/tiled/yellow
-	name = "yellow floor"
-	color = COLOR_BROWN
-	icon_state = "white"
-	initial_flooring = /decl/flooring/tiling/yellow
 
 /turf/simulated/floor/tiled/freezer
 	name = "tiles"

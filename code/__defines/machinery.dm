@@ -1,10 +1,15 @@
 var/global/defer_powernet_rebuild = 0      // True if net rebuild will be called manually after an event.
 
-#define CELLRATE 0.002 // Multiplier for watts per tick <> cell storage (e.g., 0.02 means if there is a load of 1000 watts, 20 units will be taken from a cell per second)
-                       // It's a conversion constant. power_used*CELLRATE = charge_provided, or charge_used/CELLRATE = power_provided
+#define KILOWATTS *1000
+#define MEGAWATTS *1000000
+#define GIGAWATTS *1000000000
+
+#define MACHINERY_TICKRATE 2		// Tick rate for machinery in seconds. As it affects CELLRATE calculation it is kept as define here
+
+#define CELLRATE (1 / ( 3600 / MACHINERY_TICKRATE )) // Multiplier for charge units. Converts cell charge units(watthours) to joules. Takes into consideration that our machinery ticks once per two seconds.
 
 // Doors!
-#define DOOR_CRUSH_DAMAGE 20
+#define DOOR_CRUSH_DAMAGE 40
 #define ALIEN_SELECT_AFK_BUFFER  1    // How many minutes that a person can be AFK before not being allowed to be an alien.
 
 // Channel numbers for power.
@@ -28,24 +33,22 @@ var/global/defer_powernet_rebuild = 0      // True if net rebuild will be called
 
 // Camera networks
 #define NETWORK_CRESCENT "Crescent"
-#define NETWORK_CIVILIAN_EAST "Civilian East"
-#define NETWORK_CIVILIAN_WEST "Civilian West"
-#define NETWORK_COMMAND "Command"
-#define NETWORK_ENGINE "Engine"
 #define NETWORK_ENGINEERING "Engineering"
-#define NETWORK_ENGINEERING_OUTPOST "Engineering Outpost"
 #define NETWORK_ERT "ZeEmergencyResponseTeam"
 #define NETWORK_EXODUS "Exodus"
 #define NETWORK_MEDICAL "Medical"
 #define NETWORK_MERCENARY "MercurialNet"
-#define NETWORK_MINE "MINE"
+#define NETWORK_MINE "Mining"
 #define NETWORK_RESEARCH "Research"
-#define NETWORK_RESEARCH_OUTPOST "Research Outpost"
 #define NETWORK_ROBOTS "Robots"
-#define NETWORK_PRISON "Prison"
 #define NETWORK_SECURITY "Security"
-#define NETWORK_TELECOM "Tcomsat"
 #define NETWORK_THUNDER "Thunderdome"
+
+#define NETWORK_ALARM_ATMOS "Atmosphere Alarms"
+#define NETWORK_ALARM_CAMERA "Camera Alarms"
+#define NETWORK_ALARM_FIRE "Fire Alarms"
+#define NETWORK_ALARM_MOTION "Motion Alarms"
+#define NETWORK_ALARM_POWER "Power Alarms"
 
 // Those networks can only be accessed by pre-existing terminals. AIs and new terminals can't use them.
 var/list/restricted_camera_networks = list(NETWORK_ERT,NETWORK_MERCENARY,"Secret")
@@ -58,14 +61,6 @@ var/list/restricted_camera_networks = list(NETWORK_ERT,NETWORK_MERCENARY,"Secret
 #define STAGE_FOUR	7
 #define STAGE_FIVE	9
 #define STAGE_SUPER	11
-
-// computer3 error codes, move lower in the file when it passes dev -Sayu
-#define PROG_CRASH          0x1  // Generic crash.
-#define MISSING_PERIPHERAL  0x2  // Missing hardware.
-#define BUSTED_ASS_COMPUTER 0x4  // Self-perpetuating error.  BAC will continue to crash forever.
-#define MISSING_PROGRAM     0x8  // Some files try to automatically launch a program. This is that failing.
-#define FILE_DRM            0x10 // Some files want to not be copied/moved. This is them complaining that you tried.
-#define NETWORK_FAILURE     0x20
 
 // NanoUI flags
 #define STATUS_INTERACTIVE 2 // GREEN Visability
@@ -95,3 +90,18 @@ var/list/restricted_camera_networks = list(NETWORK_ERT,NETWORK_MERCENARY,"Secret
 #define ATMOS_DEFAULT_VOLUME_FILTER 200 // L.
 #define ATMOS_DEFAULT_VOLUME_MIXER  200 // L.
 #define ATMOS_DEFAULT_VOLUME_PIPE   70  // L.
+
+#define TELECOMMS_RECEPTION_NONE 0
+#define TELECOMMS_RECEPTION_SENDER 1
+#define TELECOMMS_RECEPTION_RECEIVER 2
+#define TELECOMMS_RECEPTION_BOTH 3
+
+// These are used by supermatter and supermatter monitor program, mostly for UI updating purposes. Higher should always be worse!
+#define SUPERMATTER_ERROR -1		// Unknown status, shouldn't happen but just in case.
+#define SUPERMATTER_INACTIVE 0		// No or minimal energy
+#define SUPERMATTER_NORMAL 1		// Normal operation
+#define SUPERMATTER_NOTIFY 2		// Ambient temp > 80% of CRITICAL_TEMPERATURE
+#define SUPERMATTER_WARNING 3		// Ambient temp > CRITICAL_TEMPERATURE OR integrity damaged
+#define SUPERMATTER_DANGER 4		// Integrity < 50%
+#define SUPERMATTER_EMERGENCY 5		// Integrity < 25%
+#define SUPERMATTER_DELAMINATING 6	// Pretty obvious.

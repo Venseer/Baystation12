@@ -11,7 +11,7 @@ var/list/dreams = list(
 	"the quartermaster","a cargo technician","the botanist","a shaft miner","the psychologist","the chemist","the geneticist",
 	"the virologist","the roboticist","the chef","the bartender","the chaplain","the librarian","a mouse","an ert member",
 	"a beach","the holodeck","a smokey room","a voice","the cold","a mouse","an operating table","the bar","the rain","a skrell",
-	"a unathi","a tajaran","the ai core","the mining station","the research station","a beaker of strange liquid",
+	"an unathi","a tajaran","the ai core","the mining station","the research station","a beaker of strange liquid",
 	)
 
 mob/living/carbon/proc/dream()
@@ -19,7 +19,7 @@ mob/living/carbon/proc/dream()
 
 	spawn(0)
 		for(var/i = rand(1,4),i > 0, i--)
-			src << "\blue <i>... [pick(dreams)] ...</i>"
+			to_chat(src, "<span class='notice'><i>... [pick(dreams)] ...</i></span>")
 			sleep(rand(40,70))
 			if(paralysis <= 0)
 				dreaming = 0

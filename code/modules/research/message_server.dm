@@ -60,6 +60,7 @@ var/global/list/obj/machinery/message_server/message_servers = list()
 	var/list/datum/data_pda_msg/pda_msgs = list()
 	var/list/datum/data_rc_msg/rc_msgs = list()
 	var/active = 1
+	var/power_failure = 0 // Reboot timer after power outage
 	var/decryptkey = "password"
 
 	//Spam filtering stuff
@@ -89,13 +90,17 @@ var/global/list/obj/machinery/message_server/message_servers = list()
 	return newKey
 
 /obj/machinery/message_server/process()
-	//if(decryptkey == "password")
-	//	decryptkey = generateKey()
 	if(active && (stat & (BROKEN|NOPOWER)))
 		active = 0
+		power_failure = 10
+		update_icon()
 		return
-	update_icon()
-	return
+	else if(stat & (BROKEN|NOPOWER))
+		return
+	else if(power_failure > 0)
+		if(!(--power_failure))
+			active = 1
+			update_icon()
 
 /obj/machinery/message_server/proc/send_pda_message(var/recipient = "",var/sender = "",var/message = "")
 	var/result
@@ -116,7 +121,7 @@ var/global/list/obj/machinery/message_server/message_servers = list()
 	for (var/obj/machinery/requests_console/Console in allConsoles)
 		if (ckey(Console.department) == ckey(recipient))
 			if(Console.inoperable())
-				Console.message_log += "<B>Message lost due to console failure.</B><BR>Please contact [station_name()] system adminsitrator or AI for technical assistance.<BR>"
+				Console.message_log += "<B>Message lost due to console failure.</B><BR>Please contact [station_name()] system administrator or AI for technical assistance.<BR>"
 				continue
 			if(Console.newmessagepriority < priority)
 				Console.newmessagepriority = priority
@@ -136,9 +141,9 @@ var/global/list/obj/machinery/message_server/message_servers = list()
 
 
 /obj/machinery/message_server/attack_hand(user as mob)
-//	user << "\blue There seem to be some parts missing from this server. They should arrive on the station in a few days, give or take a few CentCom delays."
-	user << "You toggle PDA message passing from [active ? "On" : "Off"] to [active ? "Off" : "On"]"
+	to_chat(user, "You toggle PDA message passing from [active ? "On" : "Off"] to [active ? "Off" : "On"]")
 	active = !active
+	power_failure = 0
 	update_icon()
 
 	return
@@ -149,7 +154,7 @@ var/global/list/obj/machinery/message_server/message_servers = list()
 		spamfilter_limit += round(MESSAGE_SERVER_DEFAULT_SPAM_LIMIT / 2)
 		user.drop_item()
 		qdel(O)
-		user << "You install additional memory and processors into message server. Its filtering capabilities been enhanced."
+		to_chat(user, "You install additional memory and processors into message server. Its filtering capabilities been enhanced.")
 	else
 		..(O, user)
 

@@ -56,7 +56,7 @@
 			while(!istype(M, /mob/living))
 				if(!M || !M.loc || count > 6)
 					//For a runtime where M ends up in nullspace (similar to bluespace but less colourful)
-					src << "You are not being carried by anyone!"
+					to_chat(src, "You are not being carried by anyone!")
 					return 0
 				M = M.loc
 				count++
@@ -68,13 +68,13 @@
 				for (var/mob/v in viewers(T))
 					v.show_message("<span class='notice'>[M] presses \his thumb against [P].</span>", 3, "<span class='notice'>[P] makes a sharp clicking sound as it extracts DNA material from [M].</span>", 2)
 				var/datum/dna/dna = M.dna
-				P << "<font color = red><h3>[M]'s UE string : [dna.unique_enzymes]</h3></font>"
+				to_chat(P, "<font color = red><h3>[M]'s UE string : [dna.unique_enzymes]</h3></font>")
 				if(dna.unique_enzymes == P.master_dna)
-					P << "<b>DNA is a match to stored Master DNA.</b>"
+					to_chat(P, "<b>DNA is a match to stored Master DNA.</b>")
 				else
-					P << "<b>DNA does not match stored Master DNA.</b>"
+					to_chat(P, "<b>DNA does not match stored Master DNA.</b>")
 			else
-				P << "[M] does not seem like \he is going to provide a DNA sample willingly."
+				to_chat(P, "[M] does not seem like \he is going to provide a DNA sample willingly.")
 			return 1
 
 /datum/pai_software/radio_config
@@ -121,11 +121,11 @@
 	toggle = 0
 
 	on_ui_interact(mob/living/silicon/pai/user, datum/nanoui/ui=null, force_open=1)
-		data_core.get_manifest_json()
+		data_core.get_manifest_list()
 
 		var/data[0]
 		// This is dumb, but NanoUI breaks if it has no data to send
-		data["manifest"] = list("__json_cache" = ManifestJSON)
+		data["manifest"] = PDA_Manifest
 
 		ui = nanomanager.try_update_ui(user, user, id, ui, data, force_open)
 		if(!ui)
@@ -208,7 +208,10 @@
 					return alert("Communications circuits remain uninitialized.")
 
 				var/target = locate(href_list["target"])
-				P.pda.create_message(P, target, 1)
+				if(target)
+					P.pda.create_message(P, target, 1)
+				else
+					return alert("Failed to send message: the recipient could not be reached.")
 				return 1
 
 /datum/pai_software/med_records
@@ -372,9 +375,9 @@
 	var/turf/T = get_turf_or_move(src.loc)
 	for(var/mob/living/silicon/ai/AI in player_list)
 		if(T.loc)
-			AI << "<font color = red><b>Network Alert: Brute-force encryption crack in progress in [T.loc].</b></font>"
+			to_chat(AI, "<font color = red><b>Network Alert: Brute-force encryption crack in progress in [T.loc].</b></font>")
 		else
-			AI << "<font color = red><b>Network Alert: Brute-force encryption crack in progress. Unable to pinpoint location.</b></font>"
+			to_chat(AI, "<font color = red><b>Network Alert: Brute-force encryption crack in progress. Unable to pinpoint location.</b></font>")
 	var/obj/machinery/door/D = cable.machine
 	if(!istype(D))
 		hack_aborted = 1
@@ -463,18 +466,17 @@
 	name = "Universal Translator"
 	ram_cost = 35
 	id = "translator"
+	var/list/languages = list(LANGUAGE_UNATHI, LANGUAGE_SIIK_MAAS, LANGUAGE_SKRELLIAN, LANGUAGE_RESOMI, LANGUAGE_EAL)
 
 	toggle(mob/living/silicon/pai/user)
 		// 	Sol Common, Tradeband and Gutter are added with New() and are therefore the current default, always active languages
 		user.translator_on = !user.translator_on
 		if(user.translator_on)
-			user.add_language("Sinta'unathi")
-			user.add_language("Siik'tajr")
-			user.add_language("Skrellian")
+			for(var/language in languages)
+				user.add_language(language)
 		else
-			user.remove_language("Sinta'unathi")
-			user.remove_language("Siik'tajr")
-			user.remove_language("Skrellian")
+			for(var/language in languages)
+				user.remove_language(language)
 
 	is_active(mob/living/silicon/pai/user)
 		return user.translator_on

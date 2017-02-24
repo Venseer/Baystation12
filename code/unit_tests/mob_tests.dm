@@ -11,7 +11,7 @@
 #define SUCCESS 1
 #define FAILURE 0
 
-// 
+//
 // Tests Life() and mob breathing in space.
 //
 
@@ -23,7 +23,7 @@ datum/unit_test/human_breath
 	var/ending_oxyloss = null
 	var/mob/living/carbon/human/H
 	async = 1
-	
+
 
 datum/unit_test/human_breath/start_test()
 	var/turf/T = locate(20,20,1) //TODO:  Find better way.
@@ -48,24 +48,24 @@ datum/unit_test/human_breath/check_result()
 		pass("Oxyloss = [ending_oxyloss]")
 	else
 		fail("Mob is not taking oxygen damage.  Damange is [ending_oxyloss]")
-	
+
 	return 1	// return 1 to show we're done and don't want to recheck the result.
 
 // ============================================================================
 
-//#define BRUTE     "brute"
-//#define BURN      "fire"
-//#define TOX       "tox"
-//#define OXY       "oxy"
-//#define CLONE     "clone"
-//#define HALLOSS   "halloss"
-
+/var/default_mobloc = null
 
 proc/create_test_mob_with_mind(var/turf/mobloc = null, var/mobtype = /mob/living/carbon/human)
-	var/list/test_result = list("result" = FAILURE, "msg"    = "", "mobref" = null)	
+	var/list/test_result = list("result" = FAILURE, "msg"    = "", "mobref" = null)
 
 	if(isnull(mobloc))
-		mobloc = pick(tdome1)
+		if(!default_mobloc)
+			for(var/turf/simulated/floor/tiled/T in world)
+				var/pressure = T.zone.air.return_pressure()
+				if(90 < pressure && pressure < 120) // Find a turf between 90 and 120
+					default_mobloc = T
+					break
+		mobloc = default_mobloc
 	if(!mobloc)
 		test_result["msg"] = "Unable to find a location to create test mob"
 		return test_result
@@ -77,17 +77,17 @@ proc/create_test_mob_with_mind(var/turf/mobloc = null, var/mobtype = /mob/living
 	test_result["result"] = SUCCESS
 	test_result["msg"] = "Mob created"
 	test_result["mobref"] = "\ref[H]"
-	
+
 	return test_result
 
-//Generic Check 
+//Generic Check
 // TODO: Need to make sure I didn't just recreate the wheel here.
 
 proc/damage_check(var/mob/living/M, var/damage_type)
 	var/loss = null
 
 	switch(damage_type)
-		if(BRUTE)						 
+		if(BRUTE)
 			loss = M.getBruteLoss()
 		if(BURN)
 			loss = M.getFireLoss()
@@ -97,14 +97,13 @@ proc/damage_check(var/mob/living/M, var/damage_type)
 			loss = M.getOxyLoss()
 		if(CLONE)
 			loss = M.getCloneLoss()
-		if(HALLOSS)
+		if(PAIN)
 			loss = M.getHalLoss()
 
-	if(!loss && istype(M, /mob/living/carbon/human))          // Revert IPC's when?
-		var/mob/living/carbon/human/H = M                 // IPC's have robot limbs which don't report damage to getXXXLoss()
-		if(istype(H.species, /datum/species/machine))     // So we have ot hard code this check or create a different one for them.
-			return 100 - H.health                     // TODO: Find better way to do this then hardcoding this formula
-
+	if(!loss && istype(M, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = M            // Synthetics have robot limbs which don't report damage to getXXXLoss()
+		if(H.isSynthetic())                          // So we have to hard code this check or create a different one for them.
+			return H.species.total_health - H.health
 	return loss
 
 // ==============================================================================================================
@@ -128,7 +127,7 @@ datum/unit_test/mob_damage
 	var/mob_type = /mob/living/carbon/human
 	var/expected_vulnerability = STANDARD
 	var/check_health = 0
-	var/damage_location = "chest"
+	var/damage_location = BP_CHEST
 
 datum/unit_test/mob_damage/start_test()
 	var/list/test = create_test_mob_with_mind(null, mob_type)
@@ -163,9 +162,6 @@ datum/unit_test/mob_damage/start_test()
 
 	H.apply_damage(damage_amount, damagetype, damage_location)
 
-	H.updatehealth() // Just in case, though at this time apply_damage does this for us.
-                         // We operate with the assumption that someone might mess with that proc one day.
-
 	var/ending_damage = damage_check(H, damagetype)
 
 	var/ending_health = H.health
@@ -178,7 +174,7 @@ datum/unit_test/mob_damage/start_test()
 
 	if (ending_damage == 0)
 		damage_ratio = IMMUNE
-	
+
 	else if (ending_damage < damage_amount)
 		damage_ratio = ARMORED
 
@@ -189,7 +185,7 @@ datum/unit_test/mob_damage/start_test()
 		failure = 1
 
 	// Now generate the message for this test.
-	
+
 	var/expected_msg = null
 
 	switch(expected_vulnerability)
@@ -201,7 +197,7 @@ datum/unit_test/mob_damage/start_test()
 			expected_msg = "To take extra damage"
 		if(IMMUNE)
 			expected_msg = "To take no damage"
-		
+
 
 	var/msg = "Damage taken: [ending_damage] out of [damage_amount] || expected: [expected_msg] \[Overall Health:[ending_health] (Initial: [initial_health]\]"
 
@@ -238,7 +234,7 @@ datum/unit_test/mob_damage/clone
 
 datum/unit_test/mob_damage/halloss
 	name = "MOB: Human Halloss damage check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Unathi
@@ -247,12 +243,12 @@ datum/unit_test/mob_damage/halloss
 datum/unit_test/mob_damage/unathi
 	name = "MOB: Unathi damage check template"
 	mob_type = /mob/living/carbon/human/unathi
-	
+
 datum/unit_test/mob_damage/unathi/brute
 	name = "MOB: Unathi Brute Damage Check"
 	damagetype = BRUTE
 	expected_vulnerability = ARMORED
-	
+
 datum/unit_test/mob_damage/unathi/fire
 	name = "MOB: Unathi Fire Damage Check"
 	damagetype = BURN
@@ -271,7 +267,7 @@ datum/unit_test/mob_damage/unathi/clone
 
 datum/unit_test/mob_damage/unathi/halloss
 	name = "MOB: Unathi Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // SpessKahjit aka Tajaran
@@ -305,7 +301,7 @@ datum/unit_test/mob_damage/tajaran/clone
 
 datum/unit_test/mob_damage/tajaran/halloss
 	name = "MOB: Tajaran Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Resomi
@@ -339,10 +335,10 @@ datum/unit_test/mob_damage/resomi/clone
 
 datum/unit_test/mob_damage/resomi/halloss
 	name = "MOB: Resomi Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
-// Skrell 
+// Skrell
 // =================================================================
 
 datum/unit_test/mob_damage/skrell
@@ -371,7 +367,7 @@ datum/unit_test/mob_damage/skrell/clone
 
 datum/unit_test/mob_damage/skrell/halloss
 	name = "MOB: Skrell Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Vox
@@ -405,7 +401,7 @@ datum/unit_test/mob_damage/vox/clone
 
 datum/unit_test/mob_damage/vox/halloss
 	name = "MOB: Vox Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Diona
@@ -439,7 +435,8 @@ datum/unit_test/mob_damage/diona/clone
 
 datum/unit_test/mob_damage/diona/halloss
 	name = "MOB: Diona Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
+	expected_vulnerability = IMMUNE
 
 // =================================================================
 // SPECIAL WHITTLE SNOWFLAKES aka IPC
@@ -452,12 +449,10 @@ datum/unit_test/mob_damage/machine
 datum/unit_test/mob_damage/machine/brute
 	name = "MOB: IPC Brute Damage Check"
 	damagetype = BRUTE
-	expected_vulnerability = EXTRA_VULNERABLE
 
 datum/unit_test/mob_damage/machine/fire
 	name = "MOB: IPC Fire Damage Check"
 	damagetype = BURN
-	expected_vulnerability = EXTRA_VULNERABLE
 
 datum/unit_test/mob_damage/machine/tox
 	name = "MOB: IPC Toxins Damage Check"
@@ -476,7 +471,8 @@ datum/unit_test/mob_damage/machine/clone
 
 datum/unit_test/mob_damage/machine/halloss
 	name = "MOB: IPC Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
+	expected_vulnerability = IMMUNE
 
 
 // ==============================================================================

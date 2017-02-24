@@ -5,6 +5,7 @@
 	critical = 0
 	icon_state = "cardreader"
 	hardware_size = 1
+	origin_tech = list(TECH_DATA = 2)
 
 	var/obj/item/weapon/card/id/stored_card = null
 
@@ -14,4 +15,4 @@
 	if(stored_card)
 		stored_card.forceMove(get_turf(holder2))
 	holder2 = null
-	..()
+	return ..()

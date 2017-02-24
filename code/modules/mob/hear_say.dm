@@ -4,14 +4,14 @@
 	if(!client)
 		return
 
-	if(speaker && !speaker.client && istype(src,/mob/dead/observer) && client.prefs.toggles & CHAT_GHOSTEARS && !speaker in view(src))
+	if(speaker && !speaker.client && isghost(src) && is_preference_enabled(/datum/client_preference/ghost_ears) && !(speaker in view(src)))
 			//Does the speaker have a client?  It's either random stuff that observers won't care about (Experiment 97B says, 'EHEHEHEHEHEHEHE')
 			//Or someone snoring.  So we make it where they won't hear it.
 		return
 
 	//make sure the air can transmit speech - hearer's side
 	var/turf/T = get_turf(src)
-	if ((T) && (!(istype(src, /mob/dead/observer)))) //Ghosts can hear even in vacuum.
+	if ((T) && (!(isghost(src)))) //Ghosts can hear even in vacuum.
 		var/datum/gas_mixture/environment = T.return_air()
 		var/pressure = (environment)? environment.return_pressure() : 0
 		if(pressure < SOUND_MINIMUM_PRESSURE && get_dist(speaker, src) > 1)
@@ -50,21 +50,19 @@
 		message = "<i>[message]</i>"
 
 	var/track = null
-	if(istype(src, /mob/dead/observer))
-		if(italics && client.prefs.toggles & CHAT_GHOSTRADIO)
-			return
+	if(isghost(src))
 		if(speaker_name != speaker.real_name && speaker.real_name)
 			speaker_name = "[speaker.real_name] ([speaker_name])"
 		track = "([ghost_follow_link(speaker, src)]) "
-		if(client.prefs.toggles & CHAT_GHOSTEARS && speaker in view(src))
+		if(is_preference_enabled(/datum/client_preference/ghost_ears) && (speaker in view(src)))
 			message = "<b>[message]</b>"
 
-	if(sdisabilities & DEAF || ear_deaf)
+	if(is_deaf())
 		if(!language || !(language.flags & INNATE)) // INNATE is the flag for audible-emote-language, so we don't want to show an "x talks but you cannot hear them" message if it's set
 			if(speaker == src)
-				src << "<span class='warning'>You cannot hear yourself speak!</span>"
-			else
-				src << "<span class='name'>[speaker_name]</span>[alt_name] talks but you cannot hear \him."
+				to_chat(src, "<span class='warning'>You cannot hear yourself speak!</span>")
+			else if(!is_blind())
+				to_chat(src, "<span class='name'>[speaker_name]</span>[alt_name] talks but you cannot hear \him.")
 	else
 		if(language)
 			on_hear_say("<span class='game say'><span class='name'>[speaker_name]</span>[alt_name] [track][language.format_message(message, verb)]</span>")
@@ -75,13 +73,13 @@
 			src.playsound_local(source, speech_sound, sound_vol, 1)
 
 /mob/proc/on_hear_say(var/message)
-	src << message
+	to_chat(src, message)
 
 /mob/living/silicon/on_hear_say(var/message)
 	var/time = say_timestamp()
-	src << "[time] [message]"
+	to_chat(src, "[time] [message]")
 
-/mob/proc/hear_radio(var/message, var/verb="says", var/datum/language/language=null, var/part_a, var/part_b, var/mob/speaker = null, var/hard_to_hear = 0, var/vname ="")
+/mob/proc/hear_radio(var/message, var/verb="says", var/datum/language/language=null, var/part_a, var/part_b, var/part_c, var/mob/speaker = null, var/hard_to_hear = 0, var/vname ="")
 
 	if(!client)
 		return
@@ -112,7 +110,10 @@
 					message = stars(message)
 
 		if(hard_to_hear)
-			message = stars(message)
+			if(hard_to_hear <= 5)
+				message = stars(message)
+			else // Used for compression
+				message = RadioChat(null, message, 80, 1+(hard_to_hear/10))
 
 	var/speaker_name = speaker.name
 
@@ -177,7 +178,7 @@
 		else
 			track = "<a href='byond://?src=\ref[src];trackname=[html_encode(speaker_name)];track=\ref[speaker]'>[speaker_name] ([jobname])</a>"
 
-	if(istype(src, /mob/dead/observer))
+	if(isghost(src))
 		if(speaker_name != speaker.real_name && !isAI(speaker)) //Announce computer and various stuff that broadcasts doesn't use it's real name but AI's can't pretend to be other mobs.
 			speaker_name = "[speaker.real_name] ([speaker_name])"
 		track = "[speaker_name] ([ghost_follow_link(speaker, src)])"
@@ -189,35 +190,43 @@
 		formatted = "[verb], <span class=\"body\">\"[message]\"</span>"
 	if(sdisabilities & DEAF || ear_deaf)
 		if(prob(20))
-			src << "<span class='warning'>You feel your headset vibrate but can hear nothing from it!</span>"
+			to_chat(src, "<span class='warning'>You feel your headset vibrate but can hear nothing from it!</span>")
 	else
-		on_hear_radio(part_a, speaker_name, track, part_b, formatted)
+		on_hear_radio(part_a, speaker_name, track, part_b, part_c, formatted)
 
 /proc/say_timestamp()
-	return "<span class='say_quote'>\[[worldtime2text()]\]</span>"
+	return "<span class='say_quote'>\[[stationtime2text()]\]</span>"
 
-/mob/proc/on_hear_radio(part_a, speaker_name, track, part_b, formatted)
-	src << "[part_a][speaker_name][part_b][formatted]"
+/mob/proc/on_hear_radio(part_a, speaker_name, track, part_b, part_c, formatted)
+	to_chat(src, "[part_a][speaker_name][part_b][formatted][part_c]")
 
-/mob/dead/observer/on_hear_radio(part_a, speaker_name, track, part_b, formatted)
-	src << "[part_a][track][part_b][formatted]"
+/mob/observer/ghost/on_hear_radio(part_a, speaker_name, track, part_b, part_c, formatted)
+	to_chat(src, "[part_a][track][part_b][formatted][part_c]")
 
-/mob/living/silicon/on_hear_radio(part_a, speaker_name, track, part_b, formatted)
+/mob/living/silicon/on_hear_radio(part_a, speaker_name, track, part_b, part_c, formatted)
 	var/time = say_timestamp()
-	src << "[time][part_a][speaker_name][part_b][formatted]"
+	to_chat(src, "[time][part_a][speaker_name][part_b][formatted][part_c]")
 
-/mob/living/silicon/ai/on_hear_radio(part_a, speaker_name, track, part_b, formatted)
+/mob/living/silicon/ai/on_hear_radio(part_a, speaker_name, track, part_b, part_c, formatted)
 	var/time = say_timestamp()
-	src << "[time][part_a][track][part_b][formatted]"
+	to_chat(src, "[time][part_a][track][part_b][formatted][part_c]")
 
 /mob/proc/hear_signlang(var/message, var/verb = "gestures", var/datum/language/language, var/mob/speaker = null)
 	if(!client)
 		return
 
 	if(say_understands(speaker, language))
-		message = "<B>[src]</B> [verb], \"[message]\""
+		message = "<B>[speaker]</B> [verb], \"[message]\""
 	else
-		message = "<B>[src]</B> [verb]."
+		var/adverb
+		var/length = length(message) * pick(0.8, 0.9, 1.0, 1.1, 1.2)	//Inserts a little fuzziness.
+		switch(length)
+			if(0 to 12) 	adverb = " briefly"
+			if(12 to 30)	adverb = " a short message" 
+			if(30 to 48)	adverb = " a message"
+			if(48 to 90)	adverb = " a lengthy message"
+			else        	adverb = " a very lengthy message"
+		message = "<B>[speaker]</B> [verb][adverb]."
 
 	if(src.status_flags & PASSEMOTES)
 		for(var/obj/item/weapon/holder/H in src.contents)
@@ -230,7 +239,7 @@
 	var/heard = ""
 	if(prob(15))
 		var/list/punctuation = list(",", "!", ".", ";", "?")
-		var/list/messages = text2list(message, " ")
+		var/list/messages = splittext(message, " ")
 		var/R = rand(1, messages.len)
 		var/heardword = messages[R]
 		if(copytext(heardword,1, 1) in punctuation)
@@ -242,4 +251,4 @@
 	else
 		heard = "<span class = 'game_say'>...<i>You almost hear someone talking</i>...</span>"
 
-	src << heard
+	to_chat(src, heard)

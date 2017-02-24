@@ -5,12 +5,12 @@
 	anchored = 1.0
 	unacidable = 1
 	simulated = 0
+	invisibility = 101
 	var/delete_me = 0
 
 /obj/effect/landmark/New()
 	..()
 	tag = text("landmark*[]", name)
-	invisibility = 101
 
 	switch(name)			//some of these are probably obsolete
 		if("monkey")
@@ -41,8 +41,6 @@
 			prisonwarp += loc
 			delete_me = 1
 			return
-		if("Holding Facility")
-			holdingfacility += loc
 		if("tdome1")
 			tdome1 += loc
 		if("tdome2")
@@ -88,12 +86,11 @@
 	icon = 'icons/mob/screen1.dmi'
 	icon_state = "x"
 	anchored = 1.0
+	invisibility = 101
 
 /obj/effect/landmark/start/New()
 	..()
 	tag = "start*[name]"
-	invisibility = 101
-
 	return 1
 
 //Costume spawner landmarks
@@ -143,7 +140,7 @@
 	delete_me = 1
 
 /obj/effect/landmark/costume/butler/New()
-	new /obj/item/clothing/suit/wcoat(src.loc)
+	new /obj/item/clothing/accessory/wcoat(src.loc)
 	new /obj/item/clothing/under/suit_jacket(src.loc)
 	new /obj/item/clothing/head/that(src.loc)
 	delete_me = 1
@@ -162,7 +159,7 @@
 	delete_me = 1
 
 /obj/effect/landmark/costume/prig/New()
-	new /obj/item/clothing/suit/wcoat(src.loc)
+	new /obj/item/clothing/accessory/wcoat(src.loc)
 	new /obj/item/clothing/glasses/monocle(src.loc)
 	var/CHOICE= pick( /obj/item/clothing/head/bowler, /obj/item/clothing/head/that)
 	new CHOICE(src.loc)

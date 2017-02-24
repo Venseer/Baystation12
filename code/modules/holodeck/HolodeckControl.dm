@@ -21,14 +21,17 @@
 	var/mob/last_to_emag = null
 	var/last_change = 0
 	var/last_gravity_change = 0
-	var/list/supported_programs
-	var/list/restricted_programs
+	var/programs_list_id = null
+	var/list/supported_programs = list()
+	var/list/restricted_programs = list()
 
 /obj/machinery/computer/HolodeckControl/New()
 	..()
 	linkedholodeck = locate(linkedholodeck_area)
-	supported_programs = list()
-	restricted_programs = list()
+	if (programs_list_id in using_map.holodeck_supported_programs)
+		supported_programs |= using_map.holodeck_supported_programs[programs_list_id]
+	if (programs_list_id in using_map.holodeck_restricted_programs)
+		restricted_programs |= using_map.holodeck_restricted_programs[programs_list_id]
 
 /obj/machinery/computer/HolodeckControl/attack_ai(var/mob/user as mob)
 	return src.attack_hand(user)
@@ -101,8 +104,8 @@
 
 		if(href_list["program"])
 			var/prog = href_list["program"]
-			if(prog in holodeck_programs)
-				loadProgram(holodeck_programs[prog])
+			if(prog in using_map.holodeck_programs)
+				loadProgram(using_map.holodeck_programs[prog])
 
 		else if(href_list["AIoverride"])
 			if(!issilicon(usr))
@@ -134,8 +137,8 @@
 		emagged = 1
 		safety_disabled = 1
 		update_projections()
-		user << "<span class='notice'>You vastly increase projector power and override the safety and security protocols.</span>"
-		user << "Warning.  Automatic shutoff and derezing protocols have been corrupted.  Please call [company_name] maintenance and do not use the simulator."
+		to_chat(user, "<span class='notice'>You vastly increase projector power and override the safety and security protocols.</span>")
+		to_chat(user, "Warning.  Automatic shutoff and derezing protocols have been corrupted.  Please call [using_map.company_name] maintenance and do not use the simulator.")
 		log_game("[key_name(usr)] emagged the Holodeck Control Computer")
 		return 1
 		src.updateUsrDialog()
@@ -167,9 +170,8 @@
 	..()
 
 /obj/machinery/computer/HolodeckControl/power_change()
-	var/oldstat
-	..()
-	if (stat != oldstat && active && (stat & NOPOWER))
+	. = ..()
+	if (. && active && (stat & NOPOWER))
 		emergencyShutdown()
 
 /obj/machinery/computer/HolodeckControl/process()
@@ -190,7 +192,7 @@
 
 		if(!checkInteg(linkedholodeck))
 			damaged = 1
-			loadProgram(holodeck_programs["turnoff"], 0)
+			loadProgram(using_map.holodeck_programs["turnoff"], 0)
 			active = 0
 			use_power = 1
 			for(var/mob/M in range(10,src))
@@ -232,12 +234,12 @@
 //Why is it called toggle if it doesn't toggle?
 /obj/machinery/computer/HolodeckControl/proc/togglePower(var/toggleOn = 0)
 	if(toggleOn)
-		loadProgram(holodeck_programs["emptycourt"], 0)
+		loadProgram(using_map.holodeck_programs["emptycourt"], 0)
 	else
-		loadProgram(holodeck_programs["turnoff"], 0)
+		loadProgram(using_map.holodeck_programs["turnoff"], 0)
 
 		if(!linkedholodeck.has_gravity)
-			linkedholodeck.gravitychange(1,linkedholodeck)
+			linkedholodeck.gravitychange(1)
 
 		active = 0
 		use_power = 1
@@ -255,7 +257,7 @@
 			if(world.time < (last_change + 15))//To prevent super-spam clicking, reduced process size and annoyance -Sieve
 				return
 			for(var/mob/M in range(3,src))
-				M.show_message("\b ERROR. Recalibrating projection apparatus.")
+				M.show_message("<span class='warning'>ERROR. Recalibrating projection apparatus.</span>")
 				last_change = world.time
 				return
 
@@ -314,7 +316,7 @@
 		if(world.time < (last_gravity_change + 15))//To prevent super-spam clicking
 			return
 		for(var/mob/M in range(3,src))
-			M.show_message("\b ERROR. Recalibrating gravity field.")
+			M.show_message("<span class='warning'>ERROR. Recalibrating gravity field.</span>")
 			last_change = world.time
 			return
 
@@ -329,35 +331,10 @@
 
 /obj/machinery/computer/HolodeckControl/proc/emergencyShutdown()
 	//Turn it back to the regular non-holographic room
-	loadProgram(holodeck_programs["turnoff"], 0)
+	loadProgram(using_map.holodeck_programs["turnoff"], 0)
 
 	if(!linkedholodeck.has_gravity)
 		linkedholodeck.gravitychange(1,linkedholodeck)
 
 	active = 0
 	use_power = 1
-
-/obj/machinery/computer/HolodeckControl/Exodus
-	linkedholodeck_area = /area/holodeck/alphadeck
-
-/obj/machinery/computer/HolodeckControl/Exodus/New()
-	..()
-	supported_programs = list(
-	"Empty Court" 		= "emptycourt",
-	"Basketball Court" 	= "basketball",
-	"Thunderdome Court"	= "thunderdomecourt",
-	"Boxing Ring"		= "boxingcourt",
-	"Beach" 			= "beach",
-	"Desert" 			= "desert",
-	"Space" 			= "space",
-	"Picnic Area" 		= "picnicarea",
-	"Snow Field" 		= "snowfield",
-	"Theatre" 			= "theatre",
-	"Meeting Hall" 		= "meetinghall",
-	"Courtroom" 		= "courtroom"
-	)
-
-	restricted_programs = list(
-	"Atmospheric Burn Simulation" = "burntest",
-	"Wildlife Simulation" = "wildlifecarp"
-	)

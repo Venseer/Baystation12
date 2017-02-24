@@ -42,6 +42,9 @@
 	active_power_usage = 1000 //For heating/cooling rooms. 1000 joules equates to about 1 degree every 2 seconds for a single tile of air.
 	power_channel = ENVIRON
 	req_one_access = list(access_atmospherics, access_engine_equip)
+
+	layer = ABOVE_WINDOW_LAYER
+
 	var/alarm_id = null
 	var/breach_detection = 1 // Whether to use automatic breach detection or not
 	var/frequency = 1439
@@ -91,13 +94,8 @@
 /obj/machinery/alarm/server/New()
 	..()
 	req_access = list(access_rd, access_atmospherics, access_engine_equip)
-	TLV["oxygen"] =			list(-1.0, -1.0,-1.0,-1.0) // Partial pressure, kpa
-	TLV["carbon dioxide"] = list(-1.0, -1.0,   5,  10) // Partial pressure, kpa
-	TLV["phoron"] =			list(-1.0, -1.0, 0.2, 0.5) // Partial pressure, kpa
-	TLV["other"] =			list(-1.0, -1.0, 0.5, 1.0) // Partial pressure, kpa
-	TLV["pressure"] =		list(0,ONE_ATMOSPHERE*0.10,ONE_ATMOSPHERE*1.40,ONE_ATMOSPHERE*1.60) /* kpa */
-	TLV["temperature"] =	list(20, 40, 140, 160) // K
-	target_temperature = 90
+	TLV["temperature"] =	list(T0C-26, T0C, T0C+30, T0C+40) // K
+	target_temperature = T0C+10
 
 /obj/machinery/alarm/Destroy()
 	unregister_radio(src, frequency)
@@ -105,26 +103,21 @@
 	wires = null
 	return ..()
 
-/obj/machinery/alarm/New(var/loc, var/dir, var/building = 0)
-	..()
+/obj/machinery/alarm/New(var/loc, var/dir, atom/frame)
+	..(loc)
 
-	if(building)
-		if(loc)
-			src.loc = loc
+	if(dir)
+		src.set_dir(dir)
 
-		if(dir)
-			src.set_dir(dir)
-
+	if(istype(frame))
 		buildstage = 0
 		wiresexposed = 1
 		pixel_x = (dir & 3)? 0 : (dir == 4 ? -24 : 24)
 		pixel_y = (dir & 3)? (dir ==1 ? -24 : 24) : 0
 		update_icon()
-		return
+		frame.transfer_fingerprints_to(src)
 
-	first_run()
-
-/obj/machinery/alarm/proc/first_run()
+/obj/machinery/alarm/initialize()
 	alarm_area = get_area(src)
 	area_uid = alarm_area.uid
 	if (name == "alarm")
@@ -141,8 +134,6 @@
 	TLV["pressure"] =		list(ONE_ATMOSPHERE*0.80,ONE_ATMOSPHERE*0.90,ONE_ATMOSPHERE*1.10,ONE_ATMOSPHERE*1.20) /* kpa */
 	TLV["temperature"] =	list(T0C-26, T0C, T0C+40, T0C+66) // K
 
-
-/obj/machinery/alarm/initialize()
 	set_frequency(frequency)
 	if (!master_is_operating())
 		elect_master()
@@ -277,6 +268,7 @@
 
 	if (environment_pressure <= pressure_levels[1])		//low pressures
 		if (!(mode == AALARM_MODE_PANIC || mode == AALARM_MODE_CYCLE))
+			playsound(src.loc, 'sound/machines/airalarm.ogg', 25, 0, 4)
 			return 1
 
 	return 0
@@ -398,7 +390,7 @@
 	signal.data["sigtype"] = "command"
 
 	radio_connection.post_signal(src, signal, RADIO_FROM_AIRALARM)
-//			world << text("Signal [] Broadcasted to []", command, target)
+//			log_debug(text("Signal [] Broadcasted to []", command, target))
 
 	return 1
 
@@ -609,7 +601,7 @@
 		return STATUS_CLOSE
 
 	if(aidisabled && isAI(user))
-		user << "<span class='warning'>AI control for \the [src] interface has been disabled.</span>"
+		to_chat(user, "<span class='warning'>AI control for \the [src] interface has been disabled.</span>")
 		return STATUS_CLOSE
 
 	. = shorted ? STATUS_DISABLED : STATUS_INTERACTIVE
@@ -646,7 +638,7 @@
 		var/input_temperature = input("What temperature would you like the system to mantain? (Capped between [min_temperature] and [max_temperature]C)", "Thermostat Controls", target_temperature - T0C) as num|null
 		if(isnum(input_temperature))
 			if(input_temperature > max_temperature || input_temperature < min_temperature)
-				usr << "Temperature must be between [min_temperature]C and [max_temperature]C"
+				to_chat(usr, "Temperature must be between [min_temperature]C and [max_temperature]C")
 			else
 				target_temperature = input_temperature + T0C
 		return 1
@@ -767,9 +759,9 @@
 	switch(buildstage)
 		if(2)
 			if(istype(W, /obj/item/weapon/screwdriver))  // Opening that Air Alarm up.
-				//user << "You pop the Air Alarm's maintence panel open."
+//				to_chat(user, "You pop the Air Alarm's maintence panel open.")
 				wiresexposed = !wiresexposed
-				user << "The wires have been [wiresexposed ? "exposed" : "unexposed"]"
+				to_chat(user, "The wires have been [wiresexposed ? "exposed" : "unexposed"]")
 				update_icon()
 				return
 
@@ -783,66 +775,60 @@
 
 			if (istype(W, /obj/item/weapon/card/id) || istype(W, /obj/item/device/pda))// trying to unlock the interface with an ID card
 				if(stat & (NOPOWER|BROKEN))
-					user << "It does nothing"
+					to_chat(user, "It does nothing")
 					return
 				else
 					if(allowed(usr) && !wires.IsIndexCut(AALARM_WIRE_IDSCAN))
 						locked = !locked
-						user << "<span class='notice'>You [ locked ? "lock" : "unlock"] the Air Alarm interface.</span>"
+						to_chat(user, "<span class='notice'>You [ locked ? "lock" : "unlock"] the Air Alarm interface.</span>")
 					else
-						user << "<span class='warning'>Access denied.</span>"
+						to_chat(user, "<span class='warning'>Access denied.</span>")
 			return
 
 		if(1)
 			if(istype(W, /obj/item/stack/cable_coil))
 				var/obj/item/stack/cable_coil/C = W
 				if (C.use(5))
-					user << "<span class='notice'>You wire \the [src].</span>"
+					to_chat(user, "<span class='notice'>You wire \the [src].</span>")
 					buildstage = 2
 					update_icon()
-					first_run()
 					return
 				else
-					user << "<span class='warning'>You need 5 pieces of cable to do wire \the [src].</span>"
+					to_chat(user, "<span class='warning'>You need 5 pieces of cable to do wire \the [src].</span>")
 					return
 
 			else if(istype(W, /obj/item/weapon/crowbar))
-				user << "You start prying out the circuit."
+				to_chat(user, "You start prying out the circuit.")
 				playsound(src.loc, 'sound/items/Crowbar.ogg', 50, 1)
 				if(do_after(user,20))
-					user << "You pry out the circuit!"
+					to_chat(user, "You pry out the circuit!")
 					var/obj/item/weapon/airalarm_electronics/circuit = new /obj/item/weapon/airalarm_electronics()
-					circuit.loc = user.loc
+					circuit.dropInto(user.loc)
 					buildstage = 0
 					update_icon()
 				return
 		if(0)
 			if(istype(W, /obj/item/weapon/airalarm_electronics))
-				user << "You insert the circuit!"
+				to_chat(user, "You insert the circuit!")
 				qdel(W)
 				buildstage = 1
 				update_icon()
 				return
 
 			else if(istype(W, /obj/item/weapon/wrench))
-				user << "You remove the fire alarm assembly from the wall!"
+				to_chat(user, "You remove the fire alarm assembly from the wall!")
 				new /obj/item/frame/air_alarm(get_turf(user))
 				playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
 				qdel(src)
 
 	return ..()
 
-/obj/machinery/alarm/power_change()
-	..()
-	spawn(rand(0,15))
-		update_icon()
-
 /obj/machinery/alarm/examine(mob/user)
-	..(user)
+	. = ..(user)
 	if (buildstage < 2)
-		user << "It is not wired."
+		to_chat(user, "It is not wired.")
 	if (buildstage < 1)
-		user << "The circuit is missing."
+		to_chat(user, "The circuit is missing.")
 /*
 AIR ALARM CIRCUIT
 Just a object used in constructing air alarms
@@ -852,7 +838,7 @@ Just a object used in constructing air alarms
 	icon = 'icons/obj/doors/door_assembly.dmi'
 	icon_state = "door_electronics"
 	desc = "Looks like a circuit. Probably is."
-	w_class = 2.0
+	w_class = ITEM_SIZE_SMALL
 	matter = list(DEFAULT_WALL_MATERIAL = 50, "glass" = 50)
 
 /*
@@ -956,29 +942,29 @@ FIRE ALARM
 				if(istype(W, /obj/item/stack/cable_coil))
 					var/obj/item/stack/cable_coil/C = W
 					if (C.use(5))
-						user << "<span class='notice'>You wire \the [src].</span>"
+						to_chat(user, "<span class='notice'>You wire \the [src].</span>")
 						buildstage = 2
 						return
 					else
-						user << "<span class='warning'>You need 5 pieces of cable to wire \the [src].</span>"
+						to_chat(user, "<span class='warning'>You need 5 pieces of cable to wire \the [src].</span>")
 						return
 				else if(istype(W, /obj/item/weapon/crowbar))
-					user << "You pry out the circuit!"
+					to_chat(user, "You pry out the circuit!")
 					playsound(src.loc, 'sound/items/Crowbar.ogg', 50, 1)
 					spawn(20)
 						var/obj/item/weapon/firealarm_electronics/circuit = new /obj/item/weapon/firealarm_electronics()
-						circuit.loc = user.loc
+						circuit.dropInto(user.loc)
 						buildstage = 0
 						update_icon()
 			if(0)
 				if(istype(W, /obj/item/weapon/firealarm_electronics))
-					user << "You insert the circuit!"
+					to_chat(user, "You insert the circuit!")
 					qdel(W)
 					buildstage = 1
 					update_icon()
 
 				else if(istype(W, /obj/item/weapon/wrench))
-					user << "You remove the fire alarm assembly from the wall!"
+					to_chat(user, "You remove the fire alarm assembly from the wall!")
 					new /obj/item/frame/fire_alarm(get_turf(user))
 					playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
 					qdel(src)
@@ -1006,11 +992,6 @@ FIRE ALARM
 		alarm()
 
 	return
-
-/obj/machinery/firealarm/power_change()
-	..()
-	spawn(rand(0,15))
-		update_icon()
 
 /obj/machinery/firealarm/attack_hand(mob/user as mob)
 	if(user.stat || stat & (NOPOWER|BROKEN))
@@ -1108,20 +1089,18 @@ FIRE ALARM
 
 
 
-/obj/machinery/firealarm/New(loc, dir, building)
-	..()
-
-	if(loc)
-		src.loc = loc
+/obj/machinery/firealarm/New(loc, dir, atom/frame)
+	..(loc)
 
 	if(dir)
 		src.set_dir(dir)
 
-	if(building)
+	if(istype(frame))
 		buildstage = 0
 		wiresexposed = 1
 		pixel_x = (dir & 3)? 0 : (dir == 4 ? -24 : 24)
 		pixel_y = (dir & 3)? (dir ==1 ? -24 : 24) : 0
+		frame.transfer_fingerprints_to(src)
 
 /obj/machinery/firealarm/proc/set_security_level(var/newlevel)
 	if(seclevel != newlevel)
@@ -1129,7 +1108,7 @@ FIRE ALARM
 		update_icon()
 
 /obj/machinery/firealarm/initialize()
-	if(z in config.contact_levels)
+	if(z in using_map.contact_levels)
 		set_security_level(security_level? get_security_level() : "green")
 
 /*
@@ -1140,8 +1119,8 @@ Just a object used in constructing fire alarms
 	name = "fire alarm electronics"
 	icon = 'icons/obj/doors/door_assembly.dmi'
 	icon_state = "door_electronics"
-	desc = "A circuit. It has a label on it, it says \"Can handle heat levels up to 40 degrees celsius!\""
-	w_class = 2.0
+	desc = "A circuit. It has a label on it, it says \"Can handle heat levels up to 40 degrees celsius!\"."
+	w_class = ITEM_SIZE_SMALL
 	matter = list(DEFAULT_WALL_MATERIAL = 50, "glass" = 50)
 
 /obj/machinery/partyalarm

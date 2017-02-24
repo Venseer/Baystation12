@@ -6,8 +6,6 @@ var/list/gamemode_cache = list()
 
 	var/nudge_script_path = "nudge.py"  // where the nudge.py script is located
 
-	var/list/lobby_screens = list("title") // Which lobby screens are available
-
 	var/log_ooc = 0						// log OOC channel
 	var/log_access = 0					// log login/logout
 	var/log_say = 0						// log client say
@@ -66,16 +64,14 @@ var/list/gamemode_cache = list()
 	var/guest_jobban = 1
 	var/usewhitelist = 0
 	var/kick_inactive = 0				//force disconnect for inactive players after this many minutes, if non-0
-	var/show_mods = 0
-	var/show_mentors = 0
 	var/mods_can_tempban = 0
 	var/mods_can_job_tempban = 0
 	var/mod_tempban_max = 1440
 	var/mod_job_tempban_max = 1440
 	var/load_jobs_from_txt = 0
 	var/ToRban = 0
-	var/automute_on = 0					//enables automuting/spam prevention
 	var/jobs_have_minimal_access = 0	//determines whether jobs use minimal access or expanded access.
+	var/use_cortical_stacks = 0
 
 	var/cult_ghostwriter = 1               //Allows ghosts to write in blood in cult rounds...
 	var/cult_ghostwriter_req_cultists = 10 //...so long as this many cultists are active.
@@ -117,20 +113,20 @@ var/list/gamemode_cache = list()
 	//game_options.txt configs
 
 	var/health_threshold_softcrit = 0
-	var/health_threshold_crit = 0
+	var/health_threshold_crit = -50
 	var/health_threshold_dead = -100
 
-	var/organ_health_multiplier = 1
-	var/organ_regeneration_multiplier = 1
+	var/organ_health_multiplier = 0.9
+	var/organ_regeneration_multiplier = 0.25
 	var/organs_decay
 	var/default_brain_health = 400
 
 	//Paincrit knocks someone down once they hit 60 shock_stage, so by default make it so that close to 100 additional damage needs to be dealt,
-	//so that it's similar to HALLOSS. Lowered it a bit since hitting paincrit takes much longer to wear off than a halloss stun.
+	//so that it's similar to PAIN. Lowered it a bit since hitting paincrit takes much longer to wear off than a halloss stun.
 	var/organ_damage_spillover_multiplier = 0.5
 
-	var/bones_can_break = 0
-	var/limbs_can_break = 0
+	var/bones_can_break = 1
+	var/limbs_can_break = 1
 
 	var/revival_pod_plants = 1
 	var/revival_cloning = 1
@@ -139,13 +135,13 @@ var/list/gamemode_cache = list()
 	var/use_loyalty_implants = 0
 
 	var/welder_vision = 1
-	var/generate_asteroid = 0
+	var/generate_map = 0
 	var/no_click_cooldown = 0
 
 	//Used for modifying movement speed for mobs.
 	//Unversal modifiers
-	var/run_speed = 0
-	var/walk_speed = 0
+	var/run_speed = 2
+	var/walk_speed = 1
 
 	//Mob specific modifiers. NOTE: These will affect different mob types in different ways
 	var/human_delay = 0
@@ -154,6 +150,7 @@ var/list/gamemode_cache = list()
 	var/alien_delay = 0
 	var/slime_delay = 0
 	var/animal_delay = 0
+	var/maximum_mushrooms = 15 //After this amount alive, mushrooms will not boom boom
 
 
 	var/admin_legacy_system = 0	//Defines whether the server uses the legacy admin system with admins.txt or the SQL system. Config option in config.txt
@@ -178,15 +175,9 @@ var/list/gamemode_cache = list()
 	var/irc_bot_export = 0 // whether the IRC bot in use is a Bot32 (or similar) instance; Bot32 uses world.Export() instead of nudge.py/libnudge
 	var/main_irc = ""
 	var/admin_irc = ""
+	var/announce_shuttle_dock_to_irc = FALSE
 	var/python_path = "" //Path to the python executable.  Defaults to "python" on windows and "/usr/bin/env python2" on unix
 	var/use_lib_nudge = 0 //Use the C library nudge instead of the python nudge.
-	var/use_overmap = 0
-
-	var/list/station_levels = list(1)				// Defines which Z-levels the station exists on.
-	var/list/admin_levels= list(2)					// Defines which Z-levels which are for admin functionality, for example including such areas as Central Command and the Syndicate Shuttle
-	var/list/contact_levels = list(1, 5)			// Defines which Z-levels which, for example, a Code Red announcement may affect
-	var/list/player_levels = list(1, 3, 4, 5, 6)	// Defines all Z-levels a character can typically reach
-	var/list/sealed_levels = list() 				// Defines levels that do not allow random transit at the edges.
 
 	// Event settings
 	var/expected_round_length = 3 * 60 * 60 * 10 // 3 hours
@@ -201,6 +192,7 @@ var/list/gamemode_cache = list()
 	var/list/event_delay_upper = list(EVENT_LEVEL_MUNDANE = 9000,	EVENT_LEVEL_MODERATE = 27000,	EVENT_LEVEL_MAJOR = 42000)
 
 	var/aliens_allowed = 0
+	var/alien_eggs_allowed = 0
 	var/ninjas_allowed = 0
 	var/abandon_allowed = 1
 	var/ooc_allowed = 1
@@ -220,6 +212,14 @@ var/list/gamemode_cache = list()
 
 	var/ghosts_can_possess_animals = 0
 	var/delist_when_no_admins = FALSE
+
+	var/allow_map_switching = 0 // Whether map switching is allowed
+	var/auto_map_vote = 0 // Automatically call a map vote at end of round and switch to the selected map
+	var/wait_for_sigusr1_reboot = 0 // Don't allow reboot unless it was caused by SIGUSR1
+
+	var/radiation_decay_rate = 1 //How much radiation is reduced by each tick
+	var/radiation_resistance_multiplier = 6.5
+	var/radiation_lower_limit = 0.35 //If the radiation level for a turf would be below this, ignore it.
 
 /datum/configuration/New()
 	var/list/L = typesof(/datum/game_mode) - /datum/game_mode
@@ -266,7 +266,7 @@ var/list/gamemode_cache = list()
 		if(type == "config")
 			switch (name)
 				if ("resource_urls")
-					config.resource_urls = text2list(value, " ")
+					config.resource_urls = splittext(value, " ")
 
 				if ("admin_legacy_system")
 					config.admin_legacy_system = 1
@@ -341,7 +341,7 @@ var/list/gamemode_cache = list()
 					config.log_runtime = 1
 
 				if ("generate_asteroid")
-					config.generate_asteroid = 1
+					config.generate_map = 1
 
 				if ("no_click_cooldown")
 					config.no_click_cooldown = 1
@@ -396,6 +396,7 @@ var/list/gamemode_cache = list()
 
 				if ("respawn_delay")
 					config.respawn_delay = text2num(value)
+					config.respawn_delay = config.respawn_delay > 0 ? config.respawn_delay : 0
 
 				if ("servername")
 					config.server_name = value
@@ -467,14 +468,32 @@ var/list/gamemode_cache = list()
 				if ("aliens_allowed")
 					config.aliens_allowed = 1
 
+				if("alien_eggs_allowed")
+					config.alien_eggs_allowed = 1
+
 				if ("ninjas_allowed")
 					config.ninjas_allowed = 1
 
 				if ("objectives_disabled")
-					config.objectives_disabled = 1
-
+					if(!value)
+						log_misc("Could not find value for objectives_disabled in configuration.")
+						config.objectives_disabled = CONFIG_OBJECTIVE_NONE
+					else
+						switch(value)
+							if("none")
+								config.objectives_disabled = CONFIG_OBJECTIVE_NONE
+							if("verb")
+								config.objectives_disabled = CONFIG_OBJECTIVE_VERB
+							if("all")
+								config.objectives_disabled = CONFIG_OBJECTIVE_ALL
+							else
+								log_misc("Incorrect objective disabled definition: [value]")
+								config.objectives_disabled = CONFIG_OBJECTIVE_NONE
 				if("protect_roles_from_antagonist")
 					config.protect_roles_from_antagonist = 1
+
+				if("use_cortical_stacks")
+					config.use_cortical_stacks = 1
 
 				if ("probability")
 					var/prob_pos = findtext(value, " ")
@@ -496,12 +515,6 @@ var/list/gamemode_cache = list()
 
 				if("kick_inactive")
 					config.kick_inactive = text2num(value)
-
-				if("show_mods")
-					config.show_mods = 1
-
-				if("show_mentors")
-					config.show_mentors = 1
 
 				if("mods_can_tempban")
 					config.mods_can_tempban = 1
@@ -571,9 +584,6 @@ var/list/gamemode_cache = list()
 				if("tor_ban")
 					ToRban = 1
 
-				if("automute_on")
-					automute_on = 1
-
 				if("usealienwhitelist")
 					usealienwhitelist = 1
 				if("usealienwhitelist_sql") // above need to be enabled as well
@@ -612,6 +622,9 @@ var/list/gamemode_cache = list()
 				if("admin_irc")
 					config.admin_irc = value
 
+				if("announce_shuttle_dock_to_irc")
+					config.announce_shuttle_dock_to_irc = TRUE
+
 				if("python_path")
 					if(value)
 						config.python_path = value
@@ -636,21 +649,6 @@ var/list/gamemode_cache = list()
 
 				if("max_maint_drones")
 					config.max_maint_drones = text2num(value)
-
-				if("use_overmap")
-					config.use_overmap = 1
-
-				if("station_levels")
-					config.station_levels = text2numlist(value, ";")
-
-				if("admin_levels")
-					config.admin_levels = text2numlist(value, ";")
-
-				if("contact_levels")
-					config.contact_levels = text2numlist(value, ";")
-
-				if("player_levels")
-					config.player_levels = text2numlist(value, ";")
 
 				if("expected_round_length")
 					config.expected_round_length = MinutesToTicks(text2num(value))
@@ -690,7 +688,7 @@ var/list/gamemode_cache = list()
 					config.starlight = value >= 0 ? value : 0
 
 				if("ert_species")
-					config.ert_species = text2list(value, ";")
+					config.ert_species = splittext(value, ";")
 					if(!config.ert_species.len)
 						config.ert_species += "Human"
 
@@ -701,15 +699,21 @@ var/list/gamemode_cache = list()
 					config.aggressive_changelog = 1
 
 				if("default_language_prefixes")
-					var/list/values = text2list(value, " ")
+					var/list/values = splittext(value, " ")
 					if(values.len > 0)
 						language_prefixes = values
 
-				if ("lobby_screens")
-					config.lobby_screens = text2list(value, ";")
-
 				if("delist_when_no_admins")
 					config.delist_when_no_admins = TRUE
+
+				if("map_switching")
+					config.allow_map_switching = 1
+
+				if("auto_map_vote")
+					config.auto_map_vote = 1
+
+				if("wait_for_sigusr1")
+					config.wait_for_sigusr1_reboot = 1
 
 				else
 					log_misc("Unknown setting in configuration: '[name]'")
@@ -766,6 +770,8 @@ var/list/gamemode_cache = list()
 					config.slime_delay = value
 				if("animal_delay")
 					config.animal_delay = value
+				if("maximum_mushrooms")
+					config.maximum_mushrooms = value
 
 
 				if("use_loyalty_implants")
@@ -875,7 +881,7 @@ var/list/gamemode_cache = list()
 	var/list/runnable_modes = list()
 	for(var/game_mode in gamemode_cache)
 		var/datum/game_mode/M = gamemode_cache[game_mode]
-		if(M && M.can_start() && !isnull(config.probabilities[M.config_tag]) && config.probabilities[M.config_tag] > 0)
+		if(M && !M.startRequirements() && !isnull(config.probabilities[M.config_tag]) && config.probabilities[M.config_tag] > 0)
 			runnable_modes |= M
 	return runnable_modes
 

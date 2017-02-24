@@ -15,6 +15,10 @@
 	idle_power_usage = 0
 	active_power_usage = 0
 
+/obj/machinery/power/initialize()
+	..()
+	connect_to_network()
+
 /obj/machinery/power/Destroy()
 	disconnect_from_network()
 	disconnect_terminal()
@@ -24,6 +28,12 @@
 ///////////////////////////////
 // General procedures
 //////////////////////////////
+
+
+/obj/machinery/power/powered()
+	if(use_power)
+		return ..()
+	return 1 //doesn't require an external power source
 
 // common helper procs for all power machines
 /obj/machinery/power/drain_power(var/drain_check, var/surge, var/amount = 0)
@@ -60,9 +70,9 @@
 /obj/machinery/power/proc/disconnect_terminal() // machines without a terminal will just return, no harm no fowl.
 	return
 
-// returns true if the area has power on given channel (or doesn't require power).
-// defaults to power_channel
-/obj/machinery/proc/powered(var/chan = -1) // defaults to power_channel
+// returns true if the area has power on given channel (or doesn't require power), defaults to power_channel.
+// May also optionally specify an area, otherwise defaults to src.loc.loc
+/obj/machinery/proc/powered(var/chan = -1, var/area/check_area = null)
 
 	if(!src.loc)
 		return 0
@@ -72,12 +82,13 @@
 	//if(!use_power)
 	//	return 1
 
-	var/area/A = src.loc.loc		// make sure it's in an area
-	if(!A || !isarea(A))
+	if(!check_area)
+		check_area = src.loc.loc		// make sure it's in an area
+	if(!check_area || !isarea(check_area))
 		return 0					// if not, then not powered
 	if(chan == -1)
 		chan = power_channel
-	return A.powered(chan)			// return power status of the area
+	return check_area.powered(chan)			// return power status of the area
 
 // increment the power usage stats for an area
 /obj/machinery/proc/use_power(var/amount, var/chan = -1) // defaults to power_channel
@@ -88,15 +99,19 @@
 		chan = power_channel
 	A.use_power(amount, chan)
 
-/obj/machinery/proc/power_change()		// called whenever the power settings of the containing area change
-										// by default, check equipment channel & set flag
-										// can override if needed
+// called whenever the power settings of the containing area change
+// by default, check equipment channel & set flag can override if needed
+/obj/machinery/proc/power_change()
+	var/oldstat = stat
+
 	if(powered(power_channel))
 		stat &= ~NOPOWER
 	else
-
 		stat |= NOPOWER
-	return
+
+	. = (stat != oldstat)
+	if(.)
+		update_icon()
 
 // connect the machine to a powernet if a node cable is present on the turf
 /obj/machinery/power/proc/connect_to_network()
@@ -200,16 +215,8 @@
 // if unmarked==1, only return those with no powernet
 /proc/power_list(var/turf/T, var/source, var/d, var/unmarked=0, var/cable_only = 0)
 	. = list()
-	var/fdir = (!d)? 0 : turn(d, 180)			// the opposite direction to d (or 0 if d==0)
-///// Z-Level Stuff
-	var/Zdir
-	if(d==11)
-		Zdir = 11
-	else if (d==12)
-		Zdir = 12
-	else
-		Zdir = 999
-///// Z-Level Stuff
+
+	var/reverse = d ? reverse_dir[d] : 0
 	for(var/AM in T)
 		if(AM == source)	continue			//we don't want to return source
 
@@ -225,11 +232,7 @@
 			var/obj/structure/cable/C = AM
 
 			if(!unmarked || !C.powernet)
-///// Z-Level Stuff
-				if(C.d1 == fdir || C.d2 == fdir || C.d1 == Zdir || C.d2 == Zdir)
-///// Z-Level Stuff
-					. += C
-				else if(C.d1 == d || C.d2 == d)
+				if(C.d1 == d || C.d2 == d || C.d1 == reverse || C.d2 == reverse )
 					. += C
 	return .
 
@@ -346,7 +349,7 @@
 		PN.trigger_warning(5)
 	if(istype(M,/mob/living/carbon/human))
 		var/mob/living/carbon/human/H = M
-		if(H.species.siemens_coefficient == 0)
+		if(H.species.siemens_coefficient <= 0)
 			return
 		if(H.gloves)
 			var/obj/item/clothing/gloves/G = H.gloves

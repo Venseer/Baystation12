@@ -11,10 +11,6 @@
 		return
 	next_click = world.time + 1
 
-	if(client.buildmode) // comes after object.Click to allow buildmode gui objects to be clicked
-		build_click(src, client.buildmode, params, A)
-		return
-
 	var/list/modifiers = params2list(params)
 	if(modifiers["shift"] && modifiers["ctrl"])
 		CtrlShiftClickOn(A)
@@ -45,7 +41,7 @@
 		if(is_component_functioning("camera"))
 			aiCamera.captureimage(A, usr)
 		else
-			src << "<span class='userdanger'>Your camera isn't functional.</span>"
+			to_chat(src, "<span class='userdanger'>Your camera isn't functional.</span>")
 		return
 
 	/*
@@ -76,9 +72,9 @@
 	if(A == loc || (A in loc) || (A in contents))
 		// No adjacency checks
 
-		var/resolved = A.attackby(W,src)
+		var/resolved = W.resolve_attackby(A, src, params)
 		if(!resolved && A && W)
-			W.afterattack(A,src,1,params)
+			W.afterattack(A, src, 1, params) // 1 indicates adjacency
 		return
 
 	if(!isturf(loc))
@@ -88,9 +84,9 @@
 	if(isturf(A) || isturf(A.loc))
 		if(A.Adjacent(src)) // see adjacent.dm
 
-			var/resolved = A.attackby(W, src)
+			var/resolved = W.resolve_attackby(A, src, params)
 			if(!resolved && A && W)
-				W.afterattack(A, src, 1, params)
+				W.afterattack(A, src, 1, params) // 1 indicates adjacency
 			return
 		else
 			W.afterattack(A, src, 0, params)

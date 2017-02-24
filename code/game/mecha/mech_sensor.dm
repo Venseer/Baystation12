@@ -7,7 +7,7 @@
 	density = 1
 	throwpass = 1
 	use_power = 1
-	layer = 3.3
+	layer = ABOVE_WINDOW_LAYER
 	power_channel = EQUIP
 	var/on = 0
 	var/id_tag = null
@@ -44,11 +44,11 @@
 	if(istype(O, /obj/mecha))
 		var/obj/mecha/R = O
 		if(R && R.occupant)
-			R.occupant << block_message
+			to_chat(R.occupant, block_message)
 	else if(istype(O, /obj/vehicle/train/cargo/engine))
 		var/obj/vehicle/train/cargo/engine/E = O
 		if(E && E.load && E.is_train_head())
-			E.load << block_message
+			to_chat(E.load, block_message)
 
 	feedback_timer = 1
 	spawn(50) //Without this timer the feedback becomes horribly spamy
@@ -56,12 +56,6 @@
 
 /obj/machinery/mech_sensor/proc/enabled()
 	return on && !(stat & NOPOWER)
-
-/obj/machinery/mech_sensor/power_change()
-	var/old_stat = stat
-	..()
-	if(old_stat != stat)
-		update_icon()
 
 /obj/machinery/mech_sensor/update_icon(var/safety = 0)
 	if (enabled())

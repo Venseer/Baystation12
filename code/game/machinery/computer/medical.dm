@@ -26,20 +26,20 @@
 	if(!usr || usr.stat || usr.lying)	return
 
 	if(scan)
-		usr << "You remove \the [scan] from \the [src]."
-		scan.loc = get_turf(src)
+		to_chat(usr, "You remove \the [scan] from \the [src].")
+		scan.dropInto(loc)
 		if(!usr.get_active_hand() && istype(usr,/mob/living/carbon/human))
 			usr.put_in_hands(scan)
 		scan = null
 	else
-		usr << "There is nothing to remove from the console."
+		to_chat(usr, "There is nothing to remove from the console.")
 	return
 
 /obj/machinery/computer/med_data/attackby(var/obj/item/O, var/mob/user)
 	if(istype(O, /obj/item/weapon/card/id) && !scan && user.unEquip(O))
-		O.loc = src
+		O.forceMove(src)
 		scan = O
-		user << "You insert \the [O]."
+		to_chat(user, "You insert \the [O].")
 	else
 		..()
 
@@ -52,11 +52,11 @@
 	ui_interact(user)
 
 /obj/machinery/computer/med_data/ui_interact(mob/user)
-	var/dat
+	var/dat = list()
 	if (src.temp)
-		dat = text("<TT>[src.temp]</TT><BR><BR><A href='?src=\ref[src];temp=1'>Clear Screen</A>")
+		dat += text("<TT>[src.temp]</TT><BR><BR><A href='?src=\ref[src];temp=1'>Clear Screen</A>")
 	else
-		dat = text("Confirm Identity: <A href='?src=\ref[];scan=1'>[]</A><HR>", src, (src.scan ? text("[]", src.scan.name) : "----------"))
+		dat += text("Confirm Identity: <A href='?src=\ref[];scan=1'>[]</A><HR>", src, (src.scan ? text("[]", src.scan.name) : "----------"))
 		if (src.authenticated)
 			switch(src.screen)
 				if(1.0)
@@ -88,7 +88,7 @@
 					if ((istype(src.active1, /datum/data/record) && data_core.general.Find(src.active1)))
 						dat += "<table><tr><td>Name: [active1.fields["name"]] \
 								ID: [active1.fields["id"]]<BR>\n	\
-								Sex: <A href='?src=\ref[src];field=sex'>[active1.fields["sex"]]</A><BR>\n	\
+								Sex: <A href='?src=\ref[src];field=sex'>[active1.fields["sex"]]</A><BR>\n  \
 								Age: <A href='?src=\ref[src];field=age'>[active1.fields["age"]]</A><BR>\n	\
 								Fingerprint: <A href='?src=\ref[src];field=fingerprint'>[active1.fields["fingerprint"]]</A><BR>\n	\
 								Physical Status: <A href='?src=\ref[src];field=p_stat'>[active1.fields["p_stat"]]</A><BR>\n	\
@@ -147,6 +147,7 @@
 				else
 		else
 			dat += text("<A href='?src=\ref[];login=1'>{Log In}</A>", src)
+	dat = jointext(dat,null)
 	user << browse(text("<HEAD><TITLE>Medical Records</TITLE></HEAD><TT>[]</TT>", dat), "window=med_rec")
 	onclose(user, "med_rec")
 	return
@@ -171,7 +172,7 @@
 			if (src.scan)
 
 				if(ishuman(usr))
-					scan.loc = usr.loc
+					scan.dropInto(usr.loc)
 
 					if(!usr.get_active_hand())
 						usr.put_in_hands(scan)
@@ -179,14 +180,14 @@
 					scan = null
 
 				else
-					src.scan.loc = src.loc
+					src.scan.dropInto(loc)
 					src.scan = null
 
 			else
 				var/obj/item/I = usr.get_active_hand()
 				if (istype(I, /obj/item/weapon/card/id))
 					usr.drop_item()
-					I.loc = src
+					I.forceMove(src)
 					src.scan = I
 
 		else if (href_list["logout"])
@@ -261,10 +262,7 @@
 							src.active1.fields["fingerprint"] = t1
 					if("sex")
 						if (istype(src.active1, /datum/data/record))
-							if (src.active1.fields["sex"] == "Male")
-								src.active1.fields["sex"] = "Female"
-							else
-								src.active1.fields["sex"] = "Male"
+							src.active1.fields["sex"] = next_in_list(src.active1.fields["sex"], all_genders_text_list)
 					if("age")
 						if (istype(src.active1, /datum/data/record))
 							var/t1 = input("Please input age:", "Med. records", src.active1.fields["age"], null)  as num
@@ -321,7 +319,7 @@
 							src.active2.fields["cdi_d"] = t1
 					if("notes")
 						if (istype(src.active2, /datum/data/record))
-							var/t1 = sanitize(input("Please summarize notes:", "Med. records", html_decode(src.active2.fields["notes"]), null)  as message, extra = 0)
+							var/t1 = sanitize(input("Please summarize notes:", "Med. records", html_decode(src.active2.fields["notes"]), null)  as message, extra = 0, max_length = MAX_PAPER_MESSAGE_LEN)
 							if ((!( t1 ) || !( src.authenticated ) || usr.stat || usr.restrained() || (!in_range(src, usr) && (!istype(usr, /mob/living/silicon))) || src.active2 != a2))
 								return
 							src.active2.fields["notes"] = t1
@@ -438,6 +436,7 @@
 					R.name = text("Medical Record #[]", R.fields["id"])
 					R.fields["b_type"] = "Unknown"
 					R.fields["b_dna"] = "Unknown"
+					R.fields["id_gender"] = "Unknown"
 					R.fields["mi_dis"] = "None"
 					R.fields["mi_dis_d"] = "No minor disabilities have been declared."
 					R.fields["ma_dis"] = "None"
@@ -461,7 +460,7 @@
 				var/counter = 1
 				while(src.active2.fields[text("com_[]", counter)])
 					counter++
-				src.active2.fields[text("com_[counter]")] = text("Made by [authenticated] ([rank]) on [time2text(world.realtime, "DDD MMM DD")] [worldtime2text()], [game_year]<BR>[t1]")
+				src.active2.fields[text("com_[counter]")] = text("Made by [authenticated] ([rank]) on [time2text(world.realtime, "DDD MMM DD")] [stationtime2text()], [game_year]<BR>[t1]")
 
 			if (href_list["del_c"])
 				if ((istype(src.active2, /datum/data/record) && src.active2.fields[text("com_[]", href_list["del_c"])]))

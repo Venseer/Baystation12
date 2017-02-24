@@ -20,27 +20,25 @@
 	sprite_sheets = list(
 		"Resomi" = 'icons/mob/species/resomi/back.dmi'
 		)
-	w_class = 4
+	w_class = ITEM_SIZE_HUGE
 	slot_flags = SLOT_BACK
-	max_w_class = 4
-	max_storage_space = 28
+	max_w_class = ITEM_SIZE_LARGE
+	max_storage_space = DEFAULT_BACKPACK_STORAGE
+
+/obj/item/weapon/storage/backpack/equipped()
+	if(!has_extension(src, /datum/extension/appearance))
+		set_extension(src, /datum/extension/appearance, /datum/extension/appearance/cardborg)
+	..()
 
 /obj/item/weapon/storage/backpack/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if (src.use_sound)
 		playsound(src.loc, src.use_sound, 50, 1, -5)
-	..()
+	return ..()
 
 /obj/item/weapon/storage/backpack/equipped(var/mob/user, var/slot)
 	if (slot == slot_back && src.use_sound)
 		playsound(src.loc, src.use_sound, 50, 1, -5)
 	..(user, slot)
-
-/*
-/obj/item/weapon/storage/backpack/dropped(mob/user as mob)
-	if (loc == user && src.use_sound)
-		playsound(src.loc, src.use_sound, 50, 1, -5)
-	..(user)
-*/
 
 /*
  * Backpack Types
@@ -51,9 +49,8 @@
 	desc = "A backpack that opens into a localized pocket of Blue Space."
 	origin_tech = list(TECH_BLUESPACE = 4)
 	icon_state = "holdingpack"
-	max_w_class = 4
+	max_w_class = ITEM_SIZE_NORMAL
 	max_storage_space = 56
-	storage_cost = 29
 
 	New()
 		..()
@@ -61,10 +58,10 @@
 
 	attackby(obj/item/weapon/W as obj, mob/user as mob)
 		if(istype(W, /obj/item/weapon/storage/backpack/holding))
-			user << "<span class='warning'>The Bluespace interfaces of the two devices conflict and malfunction.</span>"
+			to_chat(user, "<span class='warning'>The Bluespace interfaces of the two devices conflict and malfunction.</span>")
 			qdel(W)
-			return
-		..()
+			return 1
+		return ..()
 
 	//Please don't clutter the parent storage item with stupid hacks.
 	can_be_inserted(obj/item/W as obj, stop_messages = 0)
@@ -74,11 +71,11 @@
 
 /obj/item/weapon/storage/backpack/santabag
 	name = "\improper Santa's gift bag"
-	desc = "Space Santa uses this to deliver toys to all the nice children in space in Christmas! Wow, it's pretty big!"
+	desc = "Space Santa uses this to deliver toys to all the nice children in space for Christmas! Wow, it's pretty big!"
 	icon_state = "giftbag0"
 	item_state = "giftbag"
-	w_class = 4.0
-	max_w_class = 3
+	w_class = ITEM_SIZE_HUGE
+	max_w_class = ITEM_SIZE_NORMAL
 	max_storage_space = 400 // can store a ton of shit!
 	item_state_slots = null
 
@@ -141,6 +138,61 @@
 	name = "chemistry backpack"
 	desc = "It's an orange backpack which was designed to hold beakers, pill bottles and bottles."
 	icon_state = "chempack"
+
+/*
+ * Duffle Types
+ */
+
+/obj/item/weapon/storage/backpack/dufflebag
+	name = "dufflebag"
+	desc = "A large dufflebag for holding extra things."
+	icon_state = "duffle"
+	item_state_slots = null
+	w_class = ITEM_SIZE_HUGE
+	max_storage_space = DEFAULT_BACKPACK_STORAGE + 10
+
+/obj/item/weapon/storage/backpack/dufflebag/New()
+	..()
+	slowdown_per_slot[slot_back] = 3
+
+/obj/item/weapon/storage/backpack/dufflebag/syndie
+	name = "black dufflebag"
+	desc = "A large dufflebag for holding extra tactical supplies."
+	icon_state = "duffle_syndie"
+
+/obj/item/weapon/storage/backpack/dufflebag/syndie/New()
+	..()
+	slowdown_per_slot[slot_back] = 1
+
+/obj/item/weapon/storage/backpack/dufflebag/syndie/med
+	name = "medical dufflebag"
+	desc = "A large dufflebag for holding extra tactical medical supplies."
+	icon_state = "duffle_syndiemed"
+
+/obj/item/weapon/storage/backpack/dufflebag/syndie/ammo
+	name = "ammunition dufflebag"
+	desc = "A large dufflebag for holding extra weapons ammunition and supplies."
+	icon_state = "duffle_syndieammo"
+
+/obj/item/weapon/storage/backpack/dufflebag/captain
+	name = "captain's dufflebag"
+	desc = "A large dufflebag for holding extra captainly goods."
+	icon_state = "duffle_captain"
+
+/obj/item/weapon/storage/backpack/dufflebag/med
+	name = "medical dufflebag"
+	desc = "A large dufflebag for holding extra medical supplies."
+	icon_state = "duffle_med"
+
+/obj/item/weapon/storage/backpack/dufflebag/sec
+	name = "security dufflebag"
+	desc = "A large dufflebag for holding extra security supplies and ammunition."
+	icon_state = "duffle_sec"
+
+/obj/item/weapon/storage/backpack/dufflebag/eng
+	name = "industrial dufflebag"
+	desc = "A large dufflebag for holding extra tools and supplies."
+	icon_state = "duffle_eng"
 
 /*
  * Satchel Types
@@ -254,3 +306,52 @@
 	name = "emergency response team medical backpack"
 	desc = "A spacious backpack with lots of pockets, worn by medical members of an Emergency Response Team."
 	icon_state = "ert_medical"
+
+/*
+ * Messenger Bags
+ */
+
+/obj/item/weapon/storage/backpack/messenger
+	name = "messenger bag"
+	desc = "A sturdy backpack worn over one shoulder."
+	icon_state = "courierbag"
+
+/obj/item/weapon/storage/backpack/messenger/chem
+	name = "chemistry messenger bag"
+	desc = "A serile backpack worn over one shoulder.  This one is in Chemsitry colors."
+	icon_state = "courierbagchem"
+
+/obj/item/weapon/storage/backpack/messenger/med
+	name = "medical messenger bag"
+	desc = "A sterile backpack worn over one shoulder used in medical departments."
+	icon_state = "courierbagmed"
+
+/obj/item/weapon/storage/backpack/messenger/viro
+	name = "virology messenger bag"
+	desc = "A sterile backpack worn over one shoulder.  This one is in Virology colors."
+	icon_state = "courierbagviro"
+
+/obj/item/weapon/storage/backpack/messenger/tox
+	name = "research messenger bag"
+	desc = "A backpack worn over one shoulder.  Useful for holding science materials."
+	icon_state = "courierbagtox"
+
+/obj/item/weapon/storage/backpack/messenger/com
+	name = "captain's messenger bag"
+	desc = "A special backpack worn over one shoulder.  This one is made specifically for officers."
+	icon_state = "courierbagcom"
+
+/obj/item/weapon/storage/backpack/messenger/engi
+	name = "engineering messenger bag"
+	desc = "A strong backpack worn over one shoulder. This one is designed for Industrial work."
+	icon_state = "courierbagengi"
+
+/obj/item/weapon/storage/backpack/messenger/hyd
+	name = "hydroponics messenger bag"
+	desc = "A backpack worn over one shoulder.  This one is designed for plant-related work."
+	icon_state = "courierbaghyd"
+
+/obj/item/weapon/storage/backpack/messenger/sec
+	name = "security messenger bag"
+	desc = "A tactical backpack worn over one shoulder. This one is in Security colors."
+	icon_state = "courierbagsec"

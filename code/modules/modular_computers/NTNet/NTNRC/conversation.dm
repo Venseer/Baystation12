@@ -16,21 +16,18 @@ var/global/ntnrc_uid = 0
 	..()
 
 /datum/ntnet_conversation/proc/add_message(var/message, var/username)
-	message = "[worldtime2text()] [username]: [message]"
+	message = "[stationtime2text()] [username]: [message]"
 	messages.Add(message)
 	trim_message_list()
 
 /datum/ntnet_conversation/proc/add_status_message(var/message)
-	messages.Add("[worldtime2text()] -!- [message]")
+	messages.Add("[stationtime2text()] -!- [message]")
 	trim_message_list()
 
 /datum/ntnet_conversation/proc/trim_message_list()
 	if(messages.len <= 50)
 		return
-	for(var/message in messages)
-		messages -= message
-		if(messages <= 50)
-			return
+	messages.Cut(1, (messages.len-49))
 
 /datum/ntnet_conversation/proc/add_client(var/datum/computer_file/program/chatclient/C)
 	if(!istype(C))

@@ -1,6 +1,6 @@
 #define SOLAR_MAX_DIST 40
-#define SOLARGENRATE 1500
 
+var/solar_gen_rate = 1500
 var/list/solars_list = list()
 
 /obj/machinery/power/solar
@@ -64,7 +64,7 @@ var/list/solars_list = list()
 	if(istype(W, /obj/item/weapon/crowbar))
 		playsound(src.loc, 'sound/machines/click.ogg', 50, 1)
 		user.visible_message("<span class='notice'>[user] begins to take the glass off the solar panel.</span>")
-		if(do_after(user, 50))
+		if(do_after(user, 50,src))
 			var/obj/item/solar_assembly/S = locate() in src
 			if(S)
 				S.loc = src.loc
@@ -84,12 +84,7 @@ var/list/solars_list = list()
 	if (src.health <= 0)
 		if(!(stat & BROKEN))
 			broken()
-		else
-			new /obj/item/weapon/material/shard(src.loc)
-			new /obj/item/weapon/material/shard(src.loc)
-			qdel(src)
-			return
-	return
+
 
 
 /obj/machinery/power/solar/update_icon()
@@ -130,7 +125,7 @@ var/list/solars_list = list()
 		if(powernet == control.powernet)//check if the panel is still connected to the computer
 			if(obscured) //get no light from the sun, so don't generate power
 				return
-			var/sgen = SOLARGENRATE * sunfrac
+			var/sgen = solar_gen_rate * sunfrac
 			add_avail(sgen)
 			control.gen += sgen
 		else //if we're no longer on the same powernet, remove from control computer
@@ -138,9 +133,13 @@ var/list/solars_list = list()
 
 /obj/machinery/power/solar/proc/broken()
 	stat |= BROKEN
+	health = 0
+	new /obj/item/weapon/material/shard(src.loc)
+	new /obj/item/weapon/material/shard(src.loc)
+	var/obj/item/solar_assembly/S = locate() in src
+	S.glass_type = null
 	unset_control()
 	update_icon()
-	return
 
 
 /obj/machinery/power/solar/ex_act(severity)
@@ -203,11 +202,11 @@ var/list/solars_list = list()
 
 /obj/item/solar_assembly
 	name = "solar panel assembly"
-	desc = "A solar panel assembly kit, allows constructions of a solar panel, or with a tracking circuit board, a solar tracker"
+	desc = "A solar panel assembly kit, allows constructions of a solar panel, or with a tracking circuit board, a solar tracker."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "sp_base"
 	item_state = "electropack"
-	w_class = 4 // Pretty big!
+	w_class = ITEM_SIZE_HUGE // Pretty big!
 	anchored = 0
 	var/tracker = 0
 	var/glass_type = null
@@ -229,6 +228,9 @@ var/list/solars_list = list()
 	if(!anchored && isturf(loc))
 		if(istype(W, /obj/item/weapon/wrench))
 			anchored = 1
+			pixel_x = 0
+			pixel_y = 0
+			pixel_z = 0
 			user.visible_message("<span class='notice'>[user] wrenches the solar assembly into place.</span>")
 			playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
 			return 1
@@ -250,7 +252,7 @@ var/list/solars_list = list()
 				else
 					new /obj/machinery/power/solar(get_turf(src), src)
 			else
-				user << "<span class='warning'>You need two sheets of glass to put them into a solar panel.</span>"
+				to_chat(user, "<span class='warning'>You need two sheets of glass to put them into a solar panel.</span>")
 				return
 			return 1
 
@@ -289,7 +291,7 @@ var/list/solars_list = list()
 	var/lastgen = 0
 	var/track = 0			// 0= off  1=timed  2=auto (tracker)
 	var/trackrate = 600		// 300-900 seconds
-	var/nexttime = 0		// time for a panel to rotate of 1° in manual tracking
+	var/nexttime = 0		// time for a panel to rotate of 1Â° in manual tracking
 	var/obj/machinery/power/tracker/connected_tracker = null
 	var/list/connected_panels = list()
 
@@ -403,9 +405,9 @@ var/list/solars_list = list()
 /obj/machinery/power/solar_control/attackby(I as obj, user as mob)
 	if(istype(I, /obj/item/weapon/screwdriver))
 		playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
-		if(do_after(user, 20))
+		if(do_after(user, 20,src))
 			if (src.stat & BROKEN)
-				user << "\blue The broken glass falls out."
+				to_chat(user, "<span class='notice'>The broken glass falls out.</span>")
 				var/obj/structure/computerframe/A = new /obj/structure/computerframe( src.loc )
 				new /obj/item/weapon/material/shard( src.loc )
 				var/obj/item/weapon/circuitboard/solar_control/M = new /obj/item/weapon/circuitboard/solar_control( A )
@@ -417,7 +419,7 @@ var/list/solars_list = list()
 				A.anchored = 1
 				qdel(src)
 			else
-				user << "\blue You disconnect the monitor."
+				to_chat(user, "<span class='notice'>You disconnect the monitor.</span>")
 				var/obj/structure/computerframe/A = new /obj/structure/computerframe( src.loc )
 				var/obj/item/weapon/circuitboard/solar_control/M = new /obj/item/weapon/circuitboard/solar_control( A )
 				for (var/obj/C in src)
@@ -443,9 +445,9 @@ var/list/solars_list = list()
 			connected_tracker.unset_control()
 
 	if(track==1 && trackrate) //manual tracking and set a rotation speed
-		if(nexttime <= world.time) //every time we need to increase/decrease the angle by 1°...
+		if(nexttime <= world.time) //every time we need to increase/decrease the angle by 1Â°...
 			targetdir = (targetdir + trackrate/abs(trackrate) + 360) % 360 	//... do it
-			nexttime += 36000/abs(trackrate) //reset the counter for the next 1°
+			nexttime += 36000/abs(trackrate) //reset the counter for the next 1Â°
 
 	updateDialog()
 
@@ -502,11 +504,6 @@ var/list/solars_list = list()
 	update_icon()
 
 
-/obj/machinery/power/solar_control/power_change()
-	..()
-	update_icon()
-
-
 /obj/machinery/power/solar_control/proc/broken()
 	stat |= BROKEN
 	update_icon()
@@ -530,14 +527,11 @@ var/list/solars_list = list()
 /obj/machinery/power/solar_control/autostart
 	track = 2 // Auto tracking mode
 
-/obj/machinery/power/solar_control/autostart/New()
-	..()
-	spawn(150) // Wait 15 seconds to ensure everything was set up properly (such as, powernets, solar panels, etc.
-		src.search_for_connected()
-		if(connected_tracker && track == 2)
-			connected_tracker.set_angle(sun.angle)
-		src.set_panels(cdir)
-
+/obj/machinery/power/solar_control/autostart/initialize()
+	search_for_connected()
+	if(connected_tracker && track == 2)
+		connected_tracker.set_angle(sun.angle)
+		set_panels(cdir)
 //
 // MISC
 //

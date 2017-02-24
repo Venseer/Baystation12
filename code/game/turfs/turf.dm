@@ -1,6 +1,10 @@
 /turf
 	icon = 'icons/turf/floors.dmi'
 	level = 1
+
+	plane = TURF_PLANE
+	layer = BASE_TURF_LAYER
+
 	var/holy = 0
 
 	// Initial air contents (in moles)
@@ -38,21 +42,22 @@
 	else
 		luminosity = 1
 
+/turf/proc/initialize()
+	return
+
 /turf/proc/update_icon()
 	return
 
 /turf/Destroy()
 	turfs -= src
+	remove_cleanables()
 	..()
 
 /turf/ex_act(severity)
 	return 0
 
-/turf/proc/is_space()
-	return 0
-
-/turf/proc/is_intact()
-	return 0
+/turf/proc/is_solid_structure()
+	return 1
 
 /turf/attack_hand(mob/user)
 	if(!(user.canmove) || user.restrained() || !(user.pulling))
@@ -61,6 +66,8 @@
 		return 0
 	if(user.pulling.loc != user.loc && get_dist(user, user.pulling) > 1)
 		return 0
+
+	user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
 	if(ismob(user.pulling))
 		var/mob/M = user.pulling
 		var/atom/movable/t = M.pulling
@@ -71,14 +78,18 @@
 		step(user.pulling, get_dir(user.pulling.loc, src))
 	return 1
 
+turf/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if(istype(W, /obj/item/weapon/storage))
+		var/obj/item/weapon/storage/S = W
+		if(S.use_to_pickup && S.collection_mode)
+			S.gather_all(src, user)
+	return ..()
+
 /turf/Enter(atom/movable/mover as mob|obj, atom/forget as mob|obj|turf|area)
-	if(movement_disabled && usr.ckey != movement_disabled_exception)
-		usr << "<span class='warning'>Movement is admin-disabled.</span>" //This is to identify lag problems
-		return
 
 	..()
 
-	if (!mover || !isturf(mover.loc))
+	if (!mover || !isturf(mover.loc) || isobserver(mover))
 		return 1
 
 	//First, check objects to block exit that are not on the border
@@ -118,9 +129,6 @@
 var/const/enterloopsanity = 100
 /turf/Entered(atom/atom as mob|obj)
 
-	if(movement_disabled)
-		usr << "<span class='warning'>Movement is admin-disabled.</span>" //This is to identify lag problems
-		return
 	..()
 
 	if(!istype(atom, /atom/movable))
@@ -130,14 +138,20 @@ var/const/enterloopsanity = 100
 
 	if(ismob(A))
 		var/mob/M = A
-		if(!M.lastarea)
-			M.lastarea = get_area(M.loc)
-		if(M.lastarea.has_gravity == 0)
+		var/mob/living/L = A
+		if(istype(L))
+			if(!(L in radiation_repository.irradiated_mobs))
+				if(src in radiation_repository.irradiated_turfs)
+					radiation_repository.irradiated_mobs.Add(L)
+		if(!M.check_solid_ground())
 			inertial_drift(M)
-		else if(is_space())
+			//we'll end up checking solid ground again but we still need to check the other things.
+			//Ususally most people aren't in space anyways so hopefully this is acceptable.
+			M.update_floating()
+		else
 			M.inertia_dir = 0
-			M.make_floating(0)
-	..()
+			M.make_floating(0) //we know we're not on solid ground so skip the checks to save a bit of processing
+
 	var/objects = 0
 	if(A && (A.flags & PROXMOVE))
 		for(var/atom/movable/thing in range(1))
@@ -156,19 +170,17 @@ var/const/enterloopsanity = 100
 /turf/proc/is_plating()
 	return 0
 
-/turf/proc/inertial_drift(atom/movable/A as mob|obj)
+/turf/proc/inertial_drift(atom/movable/A)
 	if(!(A.last_move))	return
 	if((istype(A, /mob/) && src.x > 2 && src.x < (world.maxx - 1) && src.y > 2 && src.y < (world.maxy-1)))
 		var/mob/M = A
-		if(M.Process_Spacemove(1))
+		if(M.Allow_Spacemove(1)) //if this mob can control their own movement in space then they shouldn't be drifting
 			M.inertia_dir  = 0
 			return
 		spawn(5)
-			if((M && !(M.anchored) && !(M.pulledby) && (M.loc == src)))
-				if(M.inertia_dir)
-					step(M, M.inertia_dir)
-					return
-				M.inertia_dir = M.last_move
+			if(M && !(M.anchored) && !(M.pulledby) && (M.loc == src))
+				if(!M.inertia_dir)
+					M.inertia_dir = M.last_move
 				step(M, M.inertia_dir)
 	return
 
@@ -219,18 +231,23 @@ var/const/enterloopsanity = 100
 	return 0
 
 //expects an atom containing the reagents used to clean the turf
-/turf/proc/clean(atom/source, mob/user)
+/turf/proc/clean(atom/source, mob/user = null)
 	if(source.reagents.has_reagent("water", 1) || source.reagents.has_reagent("cleaner", 1))
 		clean_blood()
-		if(istype(src, /turf/simulated))
-			var/turf/simulated/T = src
-			T.dirt = 0
-		for(var/obj/effect/O in src)
-			if(istype(O,/obj/effect/rune) || istype(O,/obj/effect/decal/cleanable) || istype(O,/obj/effect/overlay))
-				qdel(O)
+		remove_cleanables()
 	else
-		user << "<span class='warning'>\The [source] is too dry to wash that.</span>"
+		to_chat(user, "<span class='warning'>\The [source] is too dry to wash that.</span>")
 	source.reagents.trans_to_turf(src, 1, 10)	//10 is the multiplier for the reaction effect. probably needed to wet the floor properly.
+
+/turf/proc/remove_cleanables()
+	for(var/obj/effect/O in src)
+		if(istype(O,/obj/effect/rune) || istype(O,/obj/effect/decal/cleanable) || istype(O,/obj/effect/overlay))
+			qdel(O)
 
 /turf/proc/update_blood_overlays()
 	return
+
+/turf/proc/remove_decals()
+	if(decals && decals.len)
+		decals.Cut()
+		decals = null

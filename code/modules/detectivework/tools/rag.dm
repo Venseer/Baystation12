@@ -16,11 +16,11 @@
 /obj/item/weapon/reagent_containers/glass/rag
 	name = "rag"
 	desc = "For cleaning up messes, you suppose."
-	w_class = 1
+	w_class = ITEM_SIZE_TINY
 	icon = 'icons/obj/toy.dmi'
 	icon_state = "rag"
 	amount_per_transfer_from_this = 5
-	possible_transfer_amounts = list(5)
+	possible_transfer_amounts = "5"
 	volume = 10
 	can_be_placed_into = null
 	flags = OPENCONTAINER | NOBLUDGEON
@@ -53,7 +53,7 @@
 			if(on_fire)
 				visible_message("<span class='warning'>\The [user] lights [src] with [W].</span>")
 			else
-				user << "<span class='warning'>You manage to singe [src], but fail to light it.</span>"
+				to_chat(user, "<span class='warning'>You manage to singe [src], but fail to light it.</span>")
 
 	. = ..()
 	update_name()
@@ -84,7 +84,7 @@
 		var/target_text = trans_dest? "\the [trans_dest]" : "\the [user.loc]"
 		user.visible_message("<span class='danger'>\The [user] begins to wring out [src] over [target_text].</span>", "<span class='notice'>You begin to wring out [src] over [target_text].</span>")
 
-		if(do_after(user, reagents.total_volume*5)) //50 for a fully soaked rag
+		if(do_after(user, reagents.total_volume*5, progress = 0)) //50 for a fully soaked rag
 			if(trans_dest)
 				reagents.trans_to(trans_dest, reagents.total_volume)
 			else
@@ -94,12 +94,12 @@
 
 /obj/item/weapon/reagent_containers/glass/rag/proc/wipe_down(atom/A, mob/user)
 	if(!reagents.total_volume)
-		user << "<span class='warning'>The [initial(name)] is dry!</span>"
+		to_chat(user, "<span class='warning'>The [initial(name)] is dry!</span>")
 	else
 		user.visible_message("\The [user] starts to wipe down [A] with [src]!")
 		reagents.splash(A, 1) //get a small amount of liquid on the thing we're wiping.
 		update_name()
-		if(do_after(user,30))
+		if(do_after(user,30, progress = 0))
 			user.visible_message("\The [user] finishes wiping off the [A]!")
 			A.clean_blood()
 
@@ -111,7 +111,7 @@
 			user.do_attack_animation(src)
 			M.IgniteMob()
 		else if(reagents.total_volume)
-			if(user.zone_sel.selecting == "mouth")
+			if(user.zone_sel.selecting == BP_MOUTH)
 				user.do_attack_animation(src)
 				user.visible_message(
 					"<span class='danger'>\The [user] smothers [target] with [src]!</span>",
@@ -134,7 +134,7 @@
 
 	if(istype(A, /obj/structure/reagent_dispensers))
 		if(!reagents.get_free_space())
-			user << "<span class='warning'>\The [src] is already soaked.</span>"
+			to_chat(user, "<span class='warning'>\The [src] is already soaked.</span>")
 			return
 
 		if(A.reagents && A.reagents.trans_to_obj(src, reagents.maximum_volume))
@@ -143,7 +143,7 @@
 		return
 
 	if(!on_fire && istype(A) && (src in user))
-		if(A.is_open_container())
+		if(A.is_open_container() && !(A in user))
 			remove_contents(user, A)
 		else if(!ismob(A)) //mobs are handled in attack() - this prevents us from wiping down people while smothering them.
 			wipe_down(A, user)

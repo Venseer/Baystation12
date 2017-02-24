@@ -1,16 +1,20 @@
 /obj/item/projectile/ion
 	name = "ion bolt"
 	icon_state = "ion"
+	fire_sound = 'sound/weapons/Laser.ogg'
 	damage = 0
 	damage_type = BURN
 	nodamage = 1
 	check_armour = "energy"
-
+	var/pulse_range = 1
 
 	on_hit(var/atom/target, var/blocked = 0)
-		empulse(target, 1, 1)
+		empulse(target, pulse_range, pulse_range)
 		return 1
 
+/obj/item/projectile/ion/small
+	name = "ion pulse"
+	pulse_range = 0
 
 /obj/item/projectile/bullet/gyro
 	name ="explosive bolt"
@@ -27,6 +31,7 @@
 /obj/item/projectile/temp
 	name = "freeze beam"
 	icon_state = "ice_2"
+	fire_sound = 'sound/weapons/pulse3.ogg'
 	damage = 0
 	damage_type = BURN
 	nodamage = 1
@@ -73,6 +78,7 @@
 /obj/item/projectile/energy/floramut
 	name = "alpha somatoray"
 	icon_state = "energy"
+	fire_sound = 'sound/effects/stealthoff.ogg'
 	damage = 0
 	damage_type = TOX
 	nodamage = 1
@@ -82,15 +88,13 @@
 		var/mob/living/M = target
 		if(ishuman(target))
 			var/mob/living/carbon/human/H = M
-			if((H.species.flags & IS_PLANT) && (M.nutrition < 500))
+			if((H.species.flags & IS_PLANT) && (H.nutrition < 500))
 				if(prob(15))
-					M.apply_effect((rand(30,80)),IRRADIATE)
-					M.Weaken(5)
+					H.apply_effect((rand(30,80)),IRRADIATE,blocked = H.getarmor(null, "rad"))
+					H.Weaken(5)
 					for (var/mob/V in viewers(src))
-						V.show_message("\red [M] writhes in pain as \his vacuoles boil.", 3, "\red You hear the crunching of leaves.", 2)
+						V.show_message("<span class='warning'>[M] writhes in pain as \his vacuoles boil.</span>", 3, "<span class='warning'>You hear the crunching of leaves.</span>", 2)
 				if(prob(35))
-				//	for (var/mob/V in viewers(src)) //Public messages commented out to prevent possible metaish genetics experimentation and stuff. - Cheridan
-				//		V.show_message("\red [M] is mutated by the radiation beam.", 3, "\red You hear the snapping of twigs.", 2)
 					if(prob(80))
 						randmutb(M)
 						domutcheck(M,null)
@@ -99,19 +103,26 @@
 						domutcheck(M,null)
 				else
 					M.adjustFireLoss(rand(5,15))
-					M.show_message("\red The radiation beam singes you!")
-				//	for (var/mob/V in viewers(src))
-				//		V.show_message("\red [M] is singed by the radiation beam.", 3, "\red You hear the crackle of burning leaves.", 2)
+					M.show_message("<span class='danger'>The radiation beam singes you!</span>")
 		else if(istype(target, /mob/living/carbon/))
-		//	for (var/mob/V in viewers(src))
-		//		V.show_message("The radiation beam dissipates harmlessly through [M]", 3)
-			M.show_message("\blue The radiation beam dissipates harmlessly through your body.")
+			M.show_message("<span class='notice'>The radiation beam dissipates harmlessly through your body.</span>")
 		else
 			return 1
+			
+/obj/item/projectile/energy/floramut/gene
+	name = "gamma somatoray"
+	icon_state = "energy2"
+	fire_sound = 'sound/effects/stealthoff.ogg'
+	damage = 0
+	damage_type = TOX
+	nodamage = 1
+	check_armour = "energy"
+	var/decl/plantgene/gene = null
 
 /obj/item/projectile/energy/florayield
 	name = "beta somatoray"
 	icon_state = "energy2"
+	fire_sound = 'sound/effects/stealthoff.ogg'
 	damage = 0
 	damage_type = TOX
 	nodamage = 1
@@ -121,10 +132,10 @@
 		var/mob/M = target
 		if(ishuman(target)) //These rays make plantmen fat.
 			var/mob/living/carbon/human/H = M
-			if((H.species.flags & IS_PLANT) && (M.nutrition < 500))
-				M.nutrition += 30
+			if((H.species.flags & IS_PLANT) && (H.nutrition < 500))
+				H.nutrition += 30
 		else if (istype(target, /mob/living/carbon/))
-			M.show_message("\blue The radiation beam dissipates harmlessly through your body.")
+			M.show_message("<span class='notice'>The radiation beam dissipates harmlessly through your body.</span>")
 		else
 			return 1
 
@@ -135,14 +146,13 @@
 	on_hit(var/atom/target, var/blocked = 0)
 		if(ishuman(target))
 			var/mob/living/carbon/human/M = target
-			M.adjustBrainLoss(20)
-			M.hallucination += 20
+			M.confused += rand(5,8)
 /obj/item/projectile/chameleon
 	name = "bullet"
 	icon_state = "bullet"
 	damage = 1 // stop trying to murderbone with a fake gun dumbass!!!
 	embed = 0 // nope
 	nodamage = 1
-	damage_type = HALLOSS
+	damage_type = PAIN
 	muzzle_type = /obj/effect/projectile/bullet/muzzle
 

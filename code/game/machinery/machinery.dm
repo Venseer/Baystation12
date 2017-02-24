@@ -96,7 +96,7 @@ Class Procs:
 /obj/machinery
 	name = "machinery"
 	icon = 'icons/obj/stationobjs.dmi'
-	w_class = 10
+	w_class = ITEM_SIZE_NO_CONTAINER
 
 	var/stat = 0
 	var/emagged = 0
@@ -146,7 +146,7 @@ Class Procs:
 	if(use_power && stat == 0)
 		use_power(7500/severity)
 
-		var/obj/effect/overlay/pulse2 = PoolOrNew(/obj/effect/overlay, src.loc)
+		var/obj/effect/overlay/pulse2 = new /obj/effect/overlay(loc)
 		pulse2.icon = 'icons/effects/effects.dmi'
 		pulse2.icon_state = "empdisable"
 		pulse2.name = "emp sparks"
@@ -229,7 +229,7 @@ Class Procs:
 		return 1
 	if ( ! (istype(usr, /mob/living/carbon/human) || \
 			istype(usr, /mob/living/silicon)))
-		usr << "<span class='warning'>You don't have the dexterity to do this!</span>"
+		to_chat(usr, "<span class='warning'>You don't have the dexterity to do this!</span>")
 		return 1
 /*
 	//distance checks are made by atom/proc/DblClick
@@ -238,11 +238,11 @@ Class Procs:
 */
 	if (ishuman(user))
 		var/mob/living/carbon/human/H = user
-		if(H.getBrainLoss() >= 60)
-			visible_message("<span class='warning'>[H] stares cluelessly at [src] and drools.</span>")
+		if(H.getBrainLoss() >= 55)
+			visible_message("<span class='warning'>[H] stares cluelessly at \the [src].</span>")
 			return 1
 		else if(prob(H.getBrainLoss()))
-			user << "<span class='warning'>You momentarily forget how to use [src].</span>"
+			to_chat(user, "<span class='warning'>You momentarily forget how to use \the [src].</span>")
 			return 1
 
 	src.add_fingerprint(user)
@@ -275,7 +275,7 @@ Class Procs:
 	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 	s.set_up(5, 1, src)
 	s.start()
-	if (electrocute_mob(user, get_area(src), src, 0.7))
+	if(electrocute_mob(user, get_area(src), src, 0.7))
 		var/area/temp_area = get_area(src)
 		if(temp_area)
 			var/obj/machinery/power/apc/temp_apc = temp_area.get_apc()
@@ -298,7 +298,7 @@ Class Procs:
 		return 0
 	playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
 	panel_open = !panel_open
-	user << "<span class='notice'>You [panel_open ? "open" : "close"] the maintenance hatch of [src].</span>"
+	to_chat(user, "<span class='notice'>You [panel_open ? "open" : "close"] the maintenance hatch of \the [src].</span>")
 	update_icon()
 	return 1
 
@@ -311,8 +311,7 @@ Class Procs:
 		var/obj/item/weapon/circuitboard/CB = locate(/obj/item/weapon/circuitboard) in component_parts
 		var/P
 		for(var/obj/item/weapon/stock_parts/A in component_parts)
-			for(var/D in CB.req_components)
-				var/T = text2path(D)
+			for(var/T in CB.req_components)
 				if(ispath(A.type, T))
 					P = T
 					break
@@ -324,23 +323,33 @@ Class Procs:
 						component_parts -= A
 						component_parts += B
 						B.loc = null
-						user << "<span class='notice'>[A.name] replaced with [B.name].</span>"
+						to_chat(user, "<span class='notice'>[A.name] replaced with [B.name].</span>")
 						break
 			update_icon()
 			RefreshParts()
 	else
-		user << "<span class='notice'>Following parts detected in the machine:</span>"
+		to_chat(user, "<span class='notice'>Following parts detected in the machine:</span>")
 		for(var/var/obj/item/C in component_parts)
-			user << "<span class='notice'>    [C.name]</span>"
+			to_chat(user, "<span class='notice'>    [C.name]</span>")
 	return 1
 
 /obj/machinery/proc/dismantle()
 	playsound(loc, 'sound/items/Crowbar.ogg', 50, 1)
-	var/obj/machinery/constructable_frame/machine_frame/M = new /obj/machinery/constructable_frame/machine_frame(loc)
+	var/obj/machinery/constructable_frame/machine_frame/M = new /obj/machinery/constructable_frame/machine_frame(get_turf(src))
 	M.set_dir(src.dir)
 	M.state = 2
 	M.icon_state = "box_1"
 	for(var/obj/I in component_parts)
-		I.loc = loc
+		I.forceMove(get_turf(src))
+
 	qdel(src)
 	return 1
+
+/obj/machinery/InsertedContents()
+	return (contents - component_parts)
+
+/datum/proc/apply_visual(mob/M)
+	return
+
+/datum/proc/remove_visual(mob/M)
+	return

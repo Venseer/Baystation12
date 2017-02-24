@@ -46,14 +46,19 @@
 
 #define GEAR_EVA 15
 
-
+//Note that you have to specify each subspecies individually. Shouldn't be a big deal.
 /var/list/economic_species_modifier = list(
-												/datum/species/human	= 10,
-												/datum/species/skrell	= 12,
-												/datum/species/tajaran	= 7,
-												/datum/species/unathi	= 7,
-												/datum/species/diona	= 5,
-												/datum/species/vox		= 1
+												/datum/species/human             = 10,
+												/datum/species/human/gravworlder = 10,
+												/datum/species/human/spacer      = 10,
+												/datum/species/human/vatgrown    = 10, //now lore-friendly,
+												/datum/species/skrell            = 12,
+												/datum/species/tajaran           = 7,
+												/datum/species/unathi            = 7,
+												/datum/species/machine           = 7,
+												/datum/species/diona             = 5,
+												/datum/species/resomi            = 5,
+												/datum/species/vox/pariah        = 1
 											)
 
 //---- The following corporations are friendly with NanoTrasen and loosely enable trade and travel:
@@ -118,13 +123,9 @@ var/global/economy_init = 0
 		station_account.money = 75000
 
 		//create an entry in the account transaction log for when it was created
-		var/datum/transaction/T = new()
-		T.target_name = station_account.owner_name
-		T.purpose = "Account creation"
-		T.amount = 75000
+		var/datum/transaction/T = new(station_account.owner_name,"Account creation",75000,"Biesel GalaxyNet Terminal #277")
 		T.date = "2nd April, 2555"
 		T.time = "11:24"
-		T.source_terminal = "Biesel GalaxyNet Terminal #277"
 
 		//add the account
 		station_account.transaction_log.Add(T)
@@ -140,13 +141,9 @@ var/global/economy_init = 0
 	department_account.money = 5000
 
 	//create an entry in the account transaction log for when it was created
-	var/datum/transaction/T = new()
-	T.target_name = department_account.owner_name
-	T.purpose = "Account creation"
-	T.amount = department_account.money
+	var/datum/transaction/T = new(department_account.owner_name, "Account creation", department_account.money, "Biesel GalaxyNet Terminal #277")
 	T.date = "2nd April, 2555"
 	T.time = "11:24"
-	T.source_terminal = "Biesel GalaxyNet Terminal #277"
 
 	//add the account
 	department_account.transaction_log.Add(T)

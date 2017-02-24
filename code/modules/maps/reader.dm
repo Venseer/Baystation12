@@ -297,9 +297,9 @@ var/global/dmm_suite/preloader/_preloader = null
 //simulates the DM multiple turfs on one tile underlaying
 /dmm_suite/proc/add_underlying_turf(var/turf/placed,var/turf/underturf, var/list/turfs_underlays)
 	if(underturf.density)
-		placed.density = 1
+		placed.set_density(1)
 	if(underturf.opacity)
-		placed.opacity = 1
+		placed.set_opacity(1)
 	placed.underlays += turfs_underlays
 
 //atom creation method that preloads variables at creation
@@ -321,7 +321,7 @@ var/global/dmm_suite/preloader/_preloader = null
 /dmm_suite/preloader/New(var/list/the_attributes, var/path)
 	.=..()
 	if(!the_attributes.len)
-		Del()
+		del(src)
 		return
 	attributes = the_attributes
 	target_path = path
@@ -329,4 +329,4 @@ var/global/dmm_suite/preloader/_preloader = null
 /dmm_suite/preloader/proc/load(atom/what)
 	for(var/attribute in attributes)
 		what.vars[attribute] = attributes[attribute]
-	Del()
+	del(src)

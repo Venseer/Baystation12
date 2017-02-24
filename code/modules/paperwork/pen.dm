@@ -17,7 +17,7 @@
 	item_state = "pen"
 	slot_flags = SLOT_BELT | SLOT_EARS
 	throwforce = 0
-	w_class = 1.0
+	w_class = ITEM_SIZE_TINY
 	throw_speed = 7
 	throw_range = 15
 	matter = list(DEFAULT_WALL_MATERIAL = 10)
@@ -50,7 +50,7 @@
 	else
 		icon_state = "pen_[colour]"
 
-	user << "<span class='notice'>Changed color to '[colour].'</span>"
+	to_chat(user, "<span class='notice'>Changed color to '[colour].'</span>")
 
 /obj/item/weapon/pen/invisible
 	desc = "It's an invisble pen marker."
@@ -61,11 +61,9 @@
 /obj/item/weapon/pen/attack(mob/M as mob, mob/user as mob)
 	if(!ismob(M))
 		return
-	user << "<span class='warning'>You stab [M] with the pen.</span>"
-//	M << "\red You feel a tiny prick!" //That's a whole lot of meta!
-	M.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been stabbed with [name]  by [user.name] ([user.ckey])</font>")
-	user.attack_log += text("\[[time_stamp()]\] <font color='red'>Used the [name] to stab [M.name] ([M.ckey])</font>")
-	msg_admin_attack("[user.name] ([user.ckey]) Used the [name] to stab [M.name] ([M.ckey]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+	to_chat(user, "<span class='warning'>You stab [M] with the pen.</span>")
+	admin_attack_log(user, M, "Stabbed using \a [src]", "Was stabbed with \a [src]", "used \a [src] to stab")
+
 	return
 
 /*
@@ -81,14 +79,14 @@
 	..()
 	create_reagents(30)
 
-/obj/item/weapon/pen/reagent/attack(mob/living/M as mob, mob/user as mob)
+/obj/item/weapon/pen/reagent/attack(mob/living/M, mob/user, var/target_zone)
 
 	if(!istype(M))
 		return
 
 	. = ..()
 
-	if(M.can_inject(user,1))
+	if(M.can_inject(user, target_zone))
 		if(reagents.total_volume)
 			if(M.reagents)
 				var/contained_reagents = reagents.get_reagents()
@@ -99,7 +97,7 @@
  * Sleepy Pens
  */
 /obj/item/weapon/pen/reagent/sleepy
-	desc = "It's a black ink pen with a sharp point and a carefully engraved \"Waffle Co.\""
+	desc = "It's a black ink pen with a sharp point and a carefully engraved \"Waffle Co.\"."
 	origin_tech = list(TECH_MATERIAL = 2, TECH_ILLEGAL = 5)
 
 /obj/item/weapon/pen/reagent/sleepy/New()
@@ -111,7 +109,7 @@
  * Parapens
  */
 /obj/item/weapon/pen/reagent/paralysis
-	origin_tech = "materials=2;syndicate=5"
+	origin_tech = list(TECH_MATERIAL = 2, TECH_ILLEGAL = 5)
 
 /obj/item/weapon/pen/reagent/paralysis/New()
 	..()
@@ -171,7 +169,7 @@
 				colour = COLOR_WHITE
 			else
 				colour = COLOR_BLACK
-		usr << "<span class='info'>You select the [lowertext(selected_type)] ink container.</span>"
+		to_chat(usr, "<span class='info'>You select the [lowertext(selected_type)] ink container.</span>")
 
 
 /*
@@ -183,7 +181,7 @@
 	desc = "A colourful crayon. Please refrain from eating it or putting it in your nose."
 	icon = 'icons/obj/crayons.dmi'
 	icon_state = "crayonred"
-	w_class = 1.0
+	w_class = ITEM_SIZE_TINY
 	attack_verb = list("attacked", "coloured")
 	colour = "#FF0000" //RGB
 	var/shadeColour = "#220000" //RGB

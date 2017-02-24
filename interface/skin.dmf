@@ -263,6 +263,34 @@ macro "borghotkeymode"
 		name = "F12"
 		command = "F12"
 		is-disabled = false
+	elem 
+		name = "NUMPAD8"
+		command = "body-toggle-head"
+		is-disabled = false
+	elem 
+		name = "NUMPAD5"
+		command = "body-chest"
+		is-disabled = false
+	elem 
+		name = "NUMPAD4"
+		command = "body-r-arm"
+		is-disabled = false
+	elem 
+		name = "NUMPAD6"
+		command = "body-l-arm"
+		is-disabled = false
+	elem 
+		name = "NUMPAD2"
+		command = "body-groin"
+		is-disabled = false
+	elem 
+		name = "NUMPAD1"
+		command = "body-r-leg"
+		is-disabled = false
+	elem 
+		name = "NUMPAD3"
+		command = "body-l-leg"
+		is-disabled = false
 
 macro "macro"
 	elem 
@@ -412,6 +440,34 @@ macro "macro"
 	elem 
 		name = "CTRL+Z"
 		command = "Activate-Held-Object"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD1"
+		command = "body-r-leg"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD2"
+		command = "body-groin"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD3"
+		command = "body-l-leg"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD4"
+		command = "body-r-arm"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD5"
+		command = "body-chest"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD6"
+		command = "body-l-arm"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD8"
+		command = "body-toggle-head"
 		is-disabled = false
 	elem 
 		name = "F1"
@@ -696,6 +752,34 @@ macro "hotkeymode"
 		command = "Activate-Held-Object"
 		is-disabled = false
 	elem 
+		name = "NUMPAD1"
+		command = "body-r-leg"
+		is-disabled = false
+	elem 
+		name = "NUMPAD2"
+		command = "body-groin"
+		is-disabled = false
+	elem 
+		name = "NUMPAD3"
+		command = "body-l-leg"
+		is-disabled = false
+	elem 
+		name = "NUMPAD4"
+		command = "body-r-arm"
+		is-disabled = false
+	elem 
+		name = "NUMPAD5"
+		command = "body-chest"
+		is-disabled = false
+	elem 
+		name = "NUMPAD6"
+		command = "body-l-arm"
+		is-disabled = false
+	elem 
+		name = "NUMPAD8"
+		command = "body-toggle-head"
+		is-disabled = false
+	elem 
 		name = "F1"
 		command = "adminhelp"
 		is-disabled = false
@@ -742,6 +826,14 @@ macro "hotkeymode"
 	elem 
 		name = "F12"
 		command = "F12"
+		is-disabled = false
+	elem 
+		name = ","
+		command = "move-upwards"
+		is-disabled = false
+	elem 
+		name = "."
+		command = "move-down"
 		is-disabled = false
 
 macro "borgmacro"
@@ -886,6 +978,34 @@ macro "borgmacro"
 		command = "Activate-Held-Object"
 		is-disabled = false
 	elem 
+		name = "CTRL+NUMPAD1"
+		command = "body-r-leg"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD2"
+		command = "body-groin"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD3"
+		command = "body-l-leg"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD4"
+		command = "body-r-arm"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD5"
+		command = "body-chest"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD6"
+		command = "body-l-arm"
+		is-disabled = false
+	elem 
+		name = "CTRL+NUMPAD8"
+		command = "body-toggle-head"
+		is-disabled = false
+	elem 
 		name = "F1"
 		command = "adminhelp"
 		is-disabled = false
@@ -973,6 +1093,15 @@ menu "menu"
 		is-disabled = false
 		saved-params = "is-checked"
 	elem 
+		name = "&Reconnect"
+		command = ".reconnect"
+		category = "&File"
+		is-checked = false
+		can-check = false
+		group = ""
+		is-disabled = false
+		saved-params = "is-checked"
+	elem 
 		name = "&Quit"
 		command = ".quit"
 		category = "&File"
@@ -995,6 +1124,24 @@ menu "menu"
 		command = ".winset \"mapwindow.map.icon-size=0\""
 		category = "&Icons"
 		is-checked = true
+		can-check = true
+		group = "size"
+		is-disabled = false
+		saved-params = "is-checked"
+	elem "icon128"
+		name = "&128x128"
+		command = ".winset \"mapwindow.map.icon-size=128\""
+		category = "&Icons"
+		is-checked = false
+		can-check = true
+		group = "size"
+		is-disabled = false
+		saved-params = "is-checked"
+	elem "icon96"
+		name = "&96x96"
+		command = ".winset \"mapwindow.map.icon-size=96\""
+		category = "&Icons"
+		is-checked = false
 		can-check = true
 		group = "size"
 		is-disabled = false
@@ -1685,7 +1832,6 @@ window "mainwindow"
 		right-click = false
 		saved-params = "pos;size;is-minimized;is-maximized"
 		on-size = ""
-		title = "Space Station 13"
 		titlebar = true
 		statusbar = true
 		can-close = true
@@ -1704,6 +1850,32 @@ window "mainwindow"
 		macro = "macro"
 		menu = "menu"
 		on-close = ""
+	elem "asset_cache_browser"
+		type = BROWSER
+		pos = 424,208
+		size = 1x1
+		anchor1 = none
+		anchor2 = none
+		font-family = ""
+		font-size = 0
+		font-style = ""
+		text-color = #000000
+		background-color = none
+		is-visible = false
+		is-disabled = false
+		is-transparent = false
+		is-default = false
+		border = none
+		drop-zone = false
+		right-click = false
+		saved-params = ""
+		on-size = ""
+		show-history = false
+		show-url = false
+		auto-format = true
+		use-title = false
+		on-show = ""
+		on-hide = ""
 	elem "hotkey_toggle"
 		type = BUTTON
 		pos = 560,420

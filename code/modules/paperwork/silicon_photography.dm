@@ -25,10 +25,10 @@
 	var/mob/living/silicon/robot/C = usr
 	if(C.connected_ai)
 		C.connected_ai.aiCamera.injectaialbum(p.copy(1), " (synced from [C.name])")
-		C.connected_ai << "<span class='unconscious'>Image uploaded by [C.name]</span>"
-		usr << "<span class='unconscious'>Image synced to remote database</span>"	//feedback to the Cyborg player that the picture was taken
+		to_chat(C.connected_ai, "<span class='unconscious'>Image uploaded by [C.name]</span>")
+		to_chat(usr, "<span class='unconscious'>Image synced to remote database</span>")//feedback to the Cyborg player that the picture was taken
 	else
-		usr << "<span class='unconscious'>Image recorded</span>"
+		to_chat(usr, "<span class='unconscious'>Image recorded</span>")
 	// Always save locally
 	injectaialbum(p)
 
@@ -39,7 +39,7 @@
 	var/list/nametemp = list()
 	var/find
 	if(cam.aipictures.len == 0)
-		usr << "<span class='userdanger'>No images saved</span>"
+		to_chat(usr, "<span class='userdanger'>No images saved</span>")
 		return
 	for(var/obj/item/weapon/photo/t in cam.aipictures)
 		nametemp += t.name
@@ -58,8 +58,7 @@
 		return
 
 	selection.show(usr)
-	usr << selection.desc
-
+	to_chat(usr, selection.desc)
 /obj/item/device/camera/siliconcam/proc/deletepicture(obj/item/device/camera/siliconcam/cam)
 	var/selection = selectpicture(cam)
 
@@ -67,8 +66,7 @@
 		return
 
 	aipictures -= selection
-	usr << "<span class='unconscious'>Local image deleted</span>"
-
+	to_chat(usr, "<span class='unconscious'>Local image deleted</span>")
 //Capture Proc for AI / Robot
 /mob/living/silicon/ai/can_capture_turf(turf/T)
 	var/mob/living/silicon/ai = src
@@ -82,21 +80,18 @@
 
 /obj/item/device/camera/siliconcam/proc/camera_mode_off()
 	src.in_camera_mode = 0
-	usr << "<B>Camera Mode deactivated</B>"
-
+	to_chat(usr, "<B>Camera Mode deactivated</B>")
 /obj/item/device/camera/siliconcam/proc/camera_mode_on()
 	src.in_camera_mode = 1
-	usr << "<B>Camera Mode activated</B>"
-
+	to_chat(usr, "<B>Camera Mode activated</B>")
 /obj/item/device/camera/siliconcam/ai_camera/printpicture(mob/user, obj/item/weapon/photo/p)
 	injectaialbum(p)
-	usr << "<span class='unconscious'>Image recorded</span>"
-
+	to_chat(usr, "<span class='unconscious'>Image recorded</span>")
 /obj/item/device/camera/siliconcam/robot_camera/printpicture(mob/user, obj/item/weapon/photo/p)
 	injectmasteralbum(p)
 
 /obj/item/device/camera/siliconcam/ai_camera/verb/take_image()
-	set category = "AI Commands"
+	set category = "Silicon Commands"
 	set name = "Take Image"
 	set desc = "Takes an image"
 	set src in usr
@@ -104,7 +99,7 @@
 	toggle_camera_mode()
 
 /obj/item/device/camera/siliconcam/ai_camera/verb/view_images()
-	set category = "AI Commands"
+	set category = "Silicon Commands"
 	set name = "View Images"
 	set desc = "View images"
 	set src in usr
@@ -112,7 +107,7 @@
 	viewpictures()
 
 /obj/item/device/camera/siliconcam/ai_camera/verb/delete_images()
-	set category = "AI Commands"
+	set category = "Silicon Commands"
 	set name = "Delete Image"
 	set desc = "Delete image"
 	set src in usr
@@ -120,7 +115,7 @@
 	deletepicture()
 
 /obj/item/device/camera/siliconcam/robot_camera/verb/take_image()
-	set category ="Robot Commands"
+	set category ="Silicon Commands"
 	set name = "Take Image"
 	set desc = "Takes an image"
 	set src in usr
@@ -128,7 +123,7 @@
 	toggle_camera_mode()
 
 /obj/item/device/camera/siliconcam/robot_camera/verb/view_images()
-	set category ="Robot Commands"
+	set category ="Silicon Commands"
 	set name = "View Images"
 	set desc = "View images"
 	set src in usr
@@ -136,7 +131,7 @@
 	viewpictures()
 
 /obj/item/device/camera/siliconcam/robot_camera/verb/delete_images()
-	set category = "Robot Commands"
+	set category = "Silicon Commands"
 	set name = "Delete Image"
 	set desc = "Delete a local image"
 	set src in usr

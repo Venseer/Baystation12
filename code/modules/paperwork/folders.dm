@@ -3,7 +3,7 @@
 	desc = "A folder."
 	icon = 'icons/obj/bureaucracy.dmi'
 	icon_state = "folder"
-	w_class = 2
+	w_class = ITEM_SIZE_SMALL
 
 /obj/item/weapon/folder/blue
 	desc = "A blue folder."
@@ -31,7 +31,7 @@
 	if(istype(W, /obj/item/weapon/paper) || istype(W, /obj/item/weapon/photo) || istype(W, /obj/item/weapon/paper_bundle))
 		user.drop_item()
 		W.loc = src
-		user << "<span class='notice'>You put the [W] into \the [src].</span>"
+		to_chat(user, "<span class='notice'>You put the [W] into \the [src].</span>")
 		update_icon()
 	else if(istype(W, /obj/item/weapon/pen))
 		var/n_name = sanitizeSafe(input(usr, "What would you like to label the folder?", "Folder Labelling", null)  as text, MAX_NAME_LEN)
@@ -69,7 +69,7 @@
 		else if(href_list["read"])
 			var/obj/item/weapon/paper/P = locate(href_list["read"])
 			if(P && (P.loc == src) && istype(P))
-				if(!(istype(usr, /mob/living/carbon/human) || istype(usr, /mob/dead/observer) || istype(usr, /mob/living/silicon)))
+				if(!(istype(usr, /mob/living/carbon/human) || isghost(usr) || istype(usr, /mob/living/silicon)))
 					usr << browse("<HTML><HEAD><TITLE>[P.name]</TITLE></HEAD><BODY>[stars(P.info)][P.stamps]</BODY></HTML>", "window=[P.name]")
 					onclose(usr, "[P.name]")
 				else

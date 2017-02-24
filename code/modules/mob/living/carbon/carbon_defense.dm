@@ -3,10 +3,10 @@
 /mob/living/carbon/resolve_item_attack(obj/item/I, mob/living/user, var/effective_force, var/hit_zone)
 	if(check_attack_throat(I, user))
 		return null
-	..()
+	return ..()
 
 /mob/living/carbon/standard_weapon_hit_effects(obj/item/I, mob/living/user, var/effective_force, var/blocked, var/hit_zone)
-	if(!effective_force || blocked >= 2) 
+	if(!effective_force || blocked >= 100)
 		return 0
 
 	//Hulk modifier
@@ -14,19 +14,18 @@
 		effective_force *= 2
 
 	//Apply weapon damage
-	var/weapon_sharp = is_sharp(I)
-	var/weapon_edge = has_edge(I)
-	if(prob(getarmor(hit_zone, "melee"))) //melee armour provides a chance to turn sharp/edge weapon attacks into blunt ones
-		weapon_sharp = 0
-		weapon_edge = 0
+	var/damage_flags = I.damage_flags()
+	if(prob(blocked)) //armour provides a chance to turn sharp/edge weapon attacks into blunt ones
+		damage_flags &= ~(DAM_SHARP|DAM_EDGE)
 
-	apply_damage(effective_force, I.damtype, hit_zone, blocked, sharp=weapon_sharp, edge=weapon_edge, used_weapon=I)
+	var/datum/wound/created_wound = apply_damage(effective_force, I.damtype, hit_zone, blocked, damage_flags, used_weapon=I)
 
 	//Melee weapon embedded object code.
-	if (I && I.damtype == BRUTE && !I.anchored && !is_robot_module(I))
-		var/damage = effective_force
+	if(istype(created_wound) && I && I.damtype == BRUTE && !I.anchored && !is_robot_module(I))
+		var/weapon_sharp = (damage_flags & DAM_SHARP)
+		var/damage = effective_force //just the effective damage used for sorting out embedding, no further damage is applied here
 		if (blocked)
-			damage /= blocked+1
+			damage *= blocked_mult(blocked)
 
 		//blunt objects should really not be embedding in things unless a huge amount of force is involved
 		var/embed_chance = weapon_sharp? damage/I.w_class : damage/(I.w_class*3)
@@ -34,7 +33,7 @@
 
 		//Sharp objects will always embed if they do enough damage.
 		if((weapon_sharp && damage > (10*I.w_class)) || (damage > embed_threshold && prob(embed_chance)))
-			src.embed(I, hit_zone)
+			src.embed(I, hit_zone, supplied_wound = created_wound)
 
 	return 1
 
@@ -50,13 +49,16 @@
 // Knifing
 /mob/living/carbon/proc/attack_throat(obj/item/W, obj/item/weapon/grab/G, mob/user)
 
-	if(!W.edge || !W.force || W.damtype != BRUTE) 
+	if(check_zone(user.zone_sel.selecting) != BP_HEAD)
+		return 0 // Not targetting correct slot.
+
+	if(!W.edge || !W.force || W.damtype != BRUTE)
 		return 0 //unsuitable weapon
 
 	user.visible_message("<span class='danger'>\The [user] begins to slit [src]'s throat with \the [W]!</span>")
 
 	user.next_move = world.time + 20 //also should prevent user from triggering this repeatedly
-	if(!do_after(user, 20))
+	if(!do_after(user, 20, progress=0))
 		return 0
 	if(!(G && G.assailant == user && G.affecting == src)) //check that we still have a grab
 		return 0
@@ -69,9 +71,10 @@
 		damage_mod = 1.0 - (helmet.armor["melee"]/100)
 
 	var/total_damage = 0
+	var/damage_flags = W.damage_flags()
 	for(var/i in 1 to 3)
 		var/damage = min(W.force*1.5, 20)*damage_mod
-		apply_damage(damage, W.damtype, "head", 0, sharp=W.sharp, edge=W.edge)
+		apply_damage(damage, W.damtype, BP_HEAD, 0, damage_flags, used_weapon=W)
 		total_damage += damage
 
 	var/oxyloss = total_damage
@@ -92,7 +95,5 @@
 	G.last_action = world.time
 	flick(G.hud.icon_state, G.hud)
 
-	user.attack_log += "\[[time_stamp()]\]<font color='red'> Knifed [name] ([ckey]) with [W.name] (INTENT: [uppertext(user.a_intent)]) (DAMTYE: [uppertext(W.damtype)])</font>"
-	src.attack_log += "\[[time_stamp()]\]<font color='orange'> Got knifed by [user.name] ([user.ckey]) with [W.name] (INTENT: [uppertext(user.a_intent)]) (DAMTYE: [uppertext(W.damtype)])</font>"
-	msg_admin_attack("[key_name(user)] knifed [key_name(src)] with [W.name] (INTENT: [uppertext(user.a_intent)]) (DAMTYE: [uppertext(W.damtype)])" )
+	admin_attack_log(user, src, "Knifed their victim", "Was knifed", "knifed")
 	return 1

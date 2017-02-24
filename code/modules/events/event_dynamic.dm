@@ -49,7 +49,6 @@ var/list/event_last_fired = list()
 	possibleEvents[/datum/event/trivial_news] = 400
 	possibleEvents[/datum/event/mundane_news] = 300
 
-	possibleEvents[/datum/event/pda_spam] = max(min(25, player_list.len) * 4, 200)
 	possibleEvents[/datum/event/money_lotto] = max(min(5, player_list.len), 50)
 	if(account_hack_attempted)
 		possibleEvents[/datum/event/money_hacker] = max(min(25, player_list.len) * 4, 200)
@@ -76,7 +75,6 @@ var/list/event_last_fired = list()
 	if(active_with_role["Medical"] > 0)
 		possibleEvents[/datum/event/radiation_storm] = active_with_role["Medical"] * 10
 		possibleEvents[/datum/event/spontaneous_appendicitis] = active_with_role["Medical"] * 10
-		possibleEvents[/datum/event/viral_infection] = active_with_role["Medical"] * 10
 
 	possibleEvents[/datum/event/prison_break] = active_with_role["Security"] * 50
 	if(active_with_role["Security"] > 0)
@@ -137,7 +135,7 @@ var/list/event_last_fired = list()
 			command_alert("Meteors have been detected on collision course with the station.", "Meteor Alert")
 			for(var/mob/M in player_list)
 				if(!istype(M,/mob/new_player))
-					M << sound('sound/AI/meteors.ogg')
+					sound_to(M, sound('sound/AI/meteors.ogg'))
 			spawn(100)
 				meteor_wave(10)
 				spawn_meteors()

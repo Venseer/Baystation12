@@ -12,7 +12,7 @@
 	if(active)
 		active = 0
 		spawn(30)
-			new /obj/item/weapon/storage/box/syndie_kit/chameleon(src.loc)
+			new /obj/item/weapon/storage/backpack/chameleon/sydie_kit(src.loc)
 			src.visible_message("\The [src] beeps, dispensing a small box onto the floor.", "You hear a beeping sound followed by a thumping noise of some kind.")
 			active = 1
 
@@ -35,3 +35,11 @@
 			H.dna.real_name = getName
 			if(H.mind)
 				H.mind.name = H.name
+
+/obj/machinery/acting/changer/mirror
+	name = "Mirror of Many Faces"
+	desc = "For when you need to be someone else right now."
+	icon = 'icons/obj/watercloset.dmi'
+	icon_state = "mirror_broke"
+	anchored = 1
+	density = 0

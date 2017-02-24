@@ -24,6 +24,12 @@
 		src.base_state = src.icon_state
 	return
 
+/obj/machinery/door/window/update_icon()
+	if(density)
+		icon_state = base_state
+	else
+		icon_state = "[base_state]open"
+
 /obj/machinery/door/window/proc/shatter(var/display_message = 1)
 	new /obj/item/weapon/material/shard(src.loc)
 	var/obj/item/stack/cable_coil/CC = new /obj/item/stack/cable_coil(src.loc)
@@ -45,14 +51,17 @@
 	if(operating == -1)
 		ae.icon_state = "door_electronics_smoked"
 		operating = 0
-	src.density = 0
+	set_density(0)
 	playsound(src, "shatter", 70, 1)
 	if(display_message)
 		visible_message("[src] shatters!")
 	qdel(src)
 
+/obj/machinery/door/window/deconstruct(mob/user, var/moved = FALSE)
+	shatter()
+
 /obj/machinery/door/window/Destroy()
-	density = 0
+	set_density(0)
 	update_nearby_tiles()
 	..()
 
@@ -104,22 +113,22 @@
 		return 1
 
 /obj/machinery/door/window/open()
-	if (src.operating == 1) //doors can still open when emag-disabled
+	if (operating == 1) //doors can still open when emag-disabled
 		return 0
 	if (!ticker)
 		return 0
-	if(!src.operating) //in case of emag
+	if (!src.operating) //in case of emag
 		src.operating = 1
-	flick(text("[]opening", src.base_state), src)
+
+	flick("[src.base_state]opening", src)
 	playsound(src.loc, 'sound/machines/windowdoor.ogg', 100, 1)
-	src.icon_state = text("[]open", src.base_state)
 	sleep(10)
 
 	explosion_resistance = 0
-	src.density = 0
-//	src.sd_SetOpacity(0)	//TODO: why is this here? Opaque windoors? ~Carn
+	set_density(0)
+	update_icon()
 	update_nearby_tiles()
-
+	
 	if(operating == 1) //emag again
 		src.operating = 0
 	return 1
@@ -127,19 +136,15 @@
 /obj/machinery/door/window/close()
 	if (src.operating)
 		return 0
-	src.operating = 1
+	operating = 1
 	flick(text("[]closing", src.base_state), src)
 	playsound(src.loc, 'sound/machines/windowdoor.ogg', 100, 1)
-	src.icon_state = src.base_state
-
-	src.density = 1
+	set_density(1)
+	update_icon()
 	explosion_resistance = initial(explosion_resistance)
-//	if(src.visible)
-//		SetOpacity(1)	//TODO: why is this here? Opaque windoors? ~Carn
 	update_nearby_tiles()
 
 	sleep(10)
-
 	src.operating = 0
 	return 1
 
@@ -171,6 +176,12 @@
 		open()
 		return 1
 
+/obj/machinery/door/emp_act(severity)
+	if(prob(20/severity))
+		spawn(0)
+			open()
+	..()
+
 /obj/machinery/door/window/attackby(obj/item/weapon/I as obj, mob/user as mob)
 
 	//If it's in the process of opening/closing, ignore the click
@@ -192,8 +203,8 @@
 	if (src.operating == -1 && istype(I, /obj/item/weapon/crowbar))
 		playsound(src.loc, 'sound/items/Crowbar.ogg', 100, 1)
 		user.visible_message("[user] removes the electronics from the windoor.", "You start to remove electronics from the windoor.")
-		if (do_after(user,40))
-			user << "<span class='notice'>You removed the windoor electronics!</span>"
+		if (do_after(user,40,src))
+			to_chat(user, "<span class='notice'>You removed the windoor electronics!</span>")
 
 			var/obj/structure/windoor_assembly/wa = new/obj/structure/windoor_assembly(src.loc)
 			if (istype(src, /obj/machinery/door/window/brigdoor))

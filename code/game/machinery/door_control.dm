@@ -21,7 +21,7 @@
 	if(wires & 2)
 		return src.attack_hand(user)
 	else
-		user << "Error, no route to host."
+		to_chat(user, "Error, no route to host.")
 
 /obj/machinery/button/remote/attackby(obj/item/weapon/W, mob/user as mob)
 	return src.attack_hand(user)
@@ -42,7 +42,7 @@
 		return
 
 	if(!allowed(user) && (wires & 1))
-		user << "<span class='warning'>Access Denied</span>"
+		to_chat(user, "<span class='warning'>Access Denied</span>")
 		flick("doorctrl-denied",src)
 		return
 
@@ -55,10 +55,6 @@
 
 /obj/machinery/button/remote/proc/trigger()
 	return
-
-/obj/machinery/button/remote/power_change()
-	..()
-	update_icon()
 
 /obj/machinery/button/remote/update_icon()
 	if(stat & NOPOWER)

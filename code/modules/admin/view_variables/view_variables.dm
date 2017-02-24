@@ -6,7 +6,7 @@
 // Variables not to expand the lists of. Vars is pointless to expand, and overlays/underlays cannot be expanded.
 /var/list/view_variables_dont_expand = list("overlays", "underlays", "vars")
 // Variables that runtime if you try to test associativity of the lists they contain by indexing
-/var/list/view_variables_no_assoc = list("verbs", "contents")
+/var/list/view_variables_no_assoc = list("verbs", "contents","screen","images")
 
 // Acceptable 'in world', as VV would be incredibly hampered otherwise
 /client/proc/debug_variables(datum/D in world)
@@ -26,7 +26,7 @@
 			sprite = icon(A.icon, A.icon_state)
 			usr << browse_rsc(sprite, "view_vars_sprite.png")
 
-	usr << browse_rsc('code/js/view_variables.js', "view_variables.js")
+	send_rsc(usr,'code/js/view_variables.js', "view_variables.js")
 
 	var/html = {"
 		<html>
@@ -48,7 +48,7 @@
 						</tr></table>
 						<div align='center'>
 							<b><font size='1'>[replacetext("[D.type]", "/", "/<wbr>")]</font></b>
-							[holder.marked_datum == D ? "<br/><font size='1' color='red'><b>Marked Object</b></font>" : ""]
+							[holder.marked_datum() == D ? "<br/><font size='1' color='red'><b>Marked Object</b></font>" : ""]
 						</div>
 					</td>
 					<td width='50%'>
@@ -105,15 +105,16 @@
 
 
 /proc/make_view_variables_var_list(datum/D)
-	. = ""
+	. = list()
 	var/list/variables = list()
-	for(var/x in D.vars)
+	for(var/x in D.get_variables())
 		if(x in view_variables_hide_vars)
 			continue
 		variables += x
 	variables = sortList(variables)
 	for(var/x in variables)
-		. += make_view_variables_var_entry(D, x, D.vars[x])
+		. += make_view_variables_var_entry(D, x, D.get_variable_value(x))
+	return jointext(., null)
 
 /proc/make_view_variables_value(value, varname = "*")
 	var/vtext = ""
@@ -150,17 +151,13 @@
 	else
 		vtext = "[value]"
 
-	return "<span class=value>[vtext]</span>[list2text(extra)]"
+	return "<span class=value>[vtext]</span>[jointext(extra, null)]"
 
 /proc/make_view_variables_var_entry(datum/D, varname, value, level=0)
 	var/ecm = null
 
 	if(D)
-		ecm = {"
-			(<a href='?_src_=vars;datumedit=\ref[D];varnameedit=[varname]'>E</a>)
-			(<a href='?_src_=vars;datumchange=\ref[D];varnamechange=[varname]'>C</a>)
-			(<a href='?_src_=vars;datummass=\ref[D];varnamemass=[varname]'>M</a>)
-			"}
+		ecm = D.make_view_variables_variable_entry(varname, value)
 
 	var/valuestr = make_view_variables_value(value, varname)
 

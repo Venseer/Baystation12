@@ -5,50 +5,29 @@
 #define TRANSITIONEDGE 7 // Distance from edge to move to another z-level.
 
 // Invisibility constants.
-#define INVISIBILITY_LIGHTING             20
-#define INVISIBILITY_LEVEL_ONE            35
-#define INVISIBILITY_LEVEL_TWO            45
-#define INVISIBILITY_OBSERVER             60
-#define INVISIBILITY_EYE		          61
+#define INVISIBILITY_LIGHTING    20
+#define INVISIBILITY_LEVEL_ONE   35
+#define INVISIBILITY_LEVEL_TWO   45
+#define INVISIBILITY_OBSERVER    60
+#define INVISIBILITY_EYE         61
+#define INVISIBILITY_SYSTEM      99
 
-#define SEE_INVISIBLE_LIVING              25
+#define SEE_INVISIBLE_LIVING     25
 #define SEE_INVISIBLE_NOLIGHTING 15
-#define SEE_INVISIBLE_LEVEL_ONE           35
-#define SEE_INVISIBLE_LEVEL_TWO           45
-#define SEE_INVISIBLE_CULT		          60
-#define SEE_INVISIBLE_OBSERVER            61
+#define SEE_INVISIBLE_LEVEL_ONE  INVISIBILITY_LEVEL_ONE
+#define SEE_INVISIBLE_LEVEL_TWO  INVISIBILITY_LEVEL_TWO
+#define SEE_INVISIBLE_CULT       INVISIBILITY_OBSERVER
+#define SEE_INVISIBLE_OBSERVER   INVISIBILITY_EYE
+#define SEE_INVISIBLE_SYSTEM     INVISIBILITY_SYSTEM
+
+#define SEE_IN_DARK_DEFAULT 2
 
 #define SEE_INVISIBLE_MINIMUM 5
 #define INVISIBILITY_MAXIMUM 100
 
 // Some arbitrary defines to be used by self-pruning global lists. (see master_controller)
 #define PROCESS_KILL 26 // Used to trigger removal from a processing list.
-
-// Age limits on a character.
-#define AGE_MIN 17
-#define AGE_MAX 85
-
-#define MAX_GEAR_COST 5 // Used in chargen for accessory loadout limit.
-
-// Preference toggles.
-#define SOUND_ADMINHELP 0x1
-#define SOUND_MIDI      0x2
-#define SOUND_AMBIENCE  0x4
-#define SOUND_LOBBY     0x8
-#define CHAT_OOC        0x10
-#define CHAT_DEAD       0x20
-#define CHAT_GHOSTEARS  0x40
-#define CHAT_GHOSTSIGHT 0x80
-#define CHAT_PRAYER     0x100
-#define CHAT_RADIO      0x200
-#define CHAT_ATTACKLOGS 0x400
-#define CHAT_DEBUGLOGS  0x800
-#define CHAT_LOOC       0x1000
-#define CHAT_GHOSTRADIO 0x2000
-#define SHOW_TYPING     0x4000
-#define CHAT_NOICONS    0x8000
-
-#define TOGGLES_DEFAULT (SOUND_ADMINHELP|SOUND_MIDI|SOUND_AMBIENCE|SOUND_LOBBY|CHAT_OOC|CHAT_DEAD|CHAT_GHOSTEARS|CHAT_GHOSTSIGHT|CHAT_PRAYER|CHAT_RADIO|CHAT_ATTACKLOGS|CHAT_LOOC)
+#define MAX_GEAR_COST 10 // Used in chargen for accessory loadout limit.
 
 // For secHUDs and medHUDs and variants. The number is the location of the image on the list hud_list of humans.
 #define      HEALTH_HUD 1 // A simple line rounding the mob's number health.
@@ -61,49 +40,6 @@
 #define SPECIALROLE_HUD 8 // AntagHUD image.
 #define  STATUS_HUD_OOC 9 // STATUS_HUD without virus DB check for someone being ill.
 #define 	  LIFE_HUD 10 // STATUS_HUD that only reports dead or alive
-
-//some colors
-#define COLOR_WHITE            "#ffffff"
-#define COLOR_SILVER           "#c0c0c0"
-#define COLOR_GRAY             "#808080"
-#define COLOR_BLACK            "#000000"
-#define COLOR_RED              "#ff0000"
-#define COLOR_RED_LIGHT        "#ff3333"
-#define COLOR_MAROON           "#800000"
-#define COLOR_YELLOW           "#ffff00"
-#define COLOR_OLIVE            "#808000"
-#define COLOR_LIME             "#00ff00"
-#define COLOR_GREEN            "#008000"
-#define COLOR_CYAN             "#00ffff"
-#define COLOR_TEAL             "#008080"
-#define COLOR_BLUE             "#0000ff"
-#define COLOR_BLUE_LIGHT       "#33ccff"
-#define COLOR_NAVY             "#000080"
-#define COLOR_PINK             "#ff00ff"
-#define COLOR_PURPLE           "#800080"
-#define COLOR_ORANGE           "#ff9900"
-#define COLOR_LUMINOL          "#66ffff"
-#define COLOR_BEIGE            "#ceb689"
-#define COLOR_BLUE_GRAY        "#6a97b0"
-#define COLOR_BROWN            "#b19664"
-#define COLOR_DARK_BROWN       "#917448"
-#define COLOR_DARK_ORANGE      "#b95a00"
-#define COLOR_GREEN_GRAY       "#8daf6a"
-#define COLOR_RED_GRAY         "#aa5f61"
-#define COLOR_PALE_BLUE_GRAY   "#8bbbd5"
-#define COLOR_PALE_GREEN_GRAY  "#aed18b"
-#define COLOR_PALE_RED_GRAY    "#cc9090"
-#define COLOR_PALE_PURPLE_GRAY "#bda2ba"
-#define COLOR_PURPLE_GRAY      "#a2819e"
-#define COLOR_SUN              "#ec8b2f"
-
-//	Shuttles.
-
-// These define the time taken for the shuttle to get to the space station, and the time before it leaves again.
-#define SHUTTLE_PREPTIME                300 // 5 minutes = 300 seconds - after this time, the shuttle departs centcom and cannot be recalled.
-#define SHUTTLE_LEAVETIME               180 // 3 minutes = 180 seconds - the duration for which the shuttle will wait at the station after arriving.
-#define SHUTTLE_TRANSIT_DURATION        300 // 5 minutes = 300 seconds - how long it takes for the shuttle to get to the station.
-#define SHUTTLE_TRANSIT_DURATION_RETURN 120 // 2 minutes = 120 seconds - for some reason it takes less time to come back, go figure.
 
 // Shuttle moving status.
 #define SHUTTLE_IDLE      0
@@ -123,6 +59,7 @@
 #define MAX_BOOK_MESSAGE_LEN  9216
 #define MAX_LNAME_LEN         64
 #define MAX_NAME_LEN          26
+#define MAX_DESC_LEN          128
 
 // Event defines.
 #define EVENT_LEVEL_MUNDANE  1
@@ -135,15 +72,8 @@
 #define DEFAULT_JOB_TYPE /datum/job/assistant
 
 //Area flags, possibly more to come
-#define RAD_SHIELDED 1 //shielded from radiation, clearly
-
-// Custom layer definitions, supplementing the default TURF_LAYER, MOB_LAYER, etc.
-#define DOOR_OPEN_LAYER 2.7		//Under all objects if opened. 2.7 due to tables being at 2.6
-#define DOOR_CLOSED_LAYER 3.1	//Above most items if closed
-#define LIGHTING_LAYER 11
-#define HUD_LAYER 20			//Above lighting, but below obfuscation. For in-game HUD effects (whereas SCREEN_LAYER is for abstract/OOC things like inventory slots)
-#define OBFUSCATION_LAYER 21	//Where images covering the view for eyes are put
-#define SCREEN_LAYER 22			//Mob HUD/effects layer
+#define AREA_RAD_SHIELDED 1 // shielded from radiation, clearly
+#define AREA_EXTERNAL     2 // External as in exposed to space, not outside in a nice, green, forest
 
 // Convoluted setup so defines can be supplied by Bay12 main server compile script.
 // Should still work fine for people jamming the icons into their repo.
@@ -169,6 +99,8 @@
 #define SHARD_SPLINTER "splinters"
 #define SHARD_NONE ""
 
+#define OBJ_ANCHORABLE 0x1
+
 #define MATERIAL_UNMELTABLE 0x1
 #define MATERIAL_BRITTLE    0x2
 #define MATERIAL_PADDING    0x4
@@ -186,20 +118,30 @@
 #define NTNET_SYSTEMCONTROL 4		// Control of various systems, RCon, air alarm control, etc.
 
 // NTNet transfer speeds, used when downloading/uploading a file/program.
-#define NTNETSPEED_LOWSIGNAL 0.025	// GQ/s transfer speed when the device is wirelessly connected and on Low signal
-#define NTNETSPEED_HIGHSIGNAL 0.1	// GQ/s transfer speed when the device is wirelessly connected and on High signal
-#define NTNETSPEED_ETHERNET 0.5		// GQ/s transfer speed when the device is using wired connection
+#define NTNETSPEED_LOWSIGNAL 0.25	// GQ/s transfer speed when the device is wirelessly connected and on Low signal
+#define NTNETSPEED_HIGHSIGNAL 0.5	// GQ/s transfer speed when the device is wirelessly connected and on High signal
+#define NTNETSPEED_ETHERNET 1		// GQ/s transfer speed when the device is using wired connection
+#define NTNETSPEED_DOS_AMPLIFICATION 5	// Multiplier for Denial of Service program. Resulting load on NTNet relay is this multiplied by NTNETSPEED of the device
 
 // Program bitflags
-#define PROGRAM_ALL 7
+#define PROGRAM_ALL 15
 #define PROGRAM_CONSOLE 1
 #define PROGRAM_LAPTOP 2
 #define PROGRAM_TABLET 4
+#define PROGRAM_TELESCREEN 8
+
+#define PROGRAM_STATE_KILLED 0
+#define PROGRAM_STATE_BACKGROUND 1
+#define PROGRAM_STATE_ACTIVE 2
 
 // Caps for NTNet logging. Less than 10 would make logging useless anyway, more than 500 may make the log browser too laggy. Defaults to 100 unless user changes it.
 #define MAX_NTNET_LOGS 500
 #define MIN_NTNET_LOGS 10
 
+//Affects the chance that armour will block an attack. Should be between 0 and 1.
+//If set to 0, then armor will always prevent the same amount of damage, always, with no randomness whatsoever.
+//Of course, this will affect code that checks for blocked < 100, as blocked will be less likely to actually be 100.
+#define ARMOR_BLOCK_CHANCE_MULT 1.0
 
 // Special return values from bullet_act(). Positive return values are already used to indicate the blocked level of the projectile.
 #define PROJECTILE_CONTINUE   -1 //if the projectile should continue flying after calling bullet_act()
@@ -209,3 +151,48 @@
 #define CAPTURE_MODE_REGULAR 0 //Regular polaroid camera mode
 #define CAPTURE_MODE_ALL 1 //Admin camera mode
 #define CAPTURE_MODE_PARTIAL 3 //Simular to regular mode, but does not do dummy check
+
+//objectives
+#define CONFIG_OBJECTIVE_NONE 2
+#define CONFIG_OBJECTIVE_VERB 1
+#define CONFIG_OBJECTIVE_ALL  0
+
+// How many times an AI tries to connect to APC before switching to low power mode.
+#define AI_POWER_RESTORE_MAX_ATTEMPTS 3
+
+// AI power restoration routine steps.
+#define AI_RESTOREPOWER_FAILED -1
+#define AI_RESTOREPOWER_IDLE 0
+#define AI_RESTOREPOWER_STARTING 1
+#define AI_RESTOREPOWER_DIAGNOSTICS 2
+#define AI_RESTOREPOWER_CONNECTING 3
+#define AI_RESTOREPOWER_CONNECTED 4
+#define AI_RESTOREPOWER_COMPLETED 5
+
+
+// Values represented as Oxyloss. Can be tweaked, but make sure to use integers only.
+#define AI_POWERUSAGE_LOWPOWER 1
+#define AI_POWERUSAGE_RESTORATION 2
+#define AI_POWERUSAGE_NORMAL 5
+#define AI_POWERUSAGE_RECHARGING 7
+
+// Above values get multiplied by this when converting AI oxyloss -> watts.
+// For now, one oxyloss point equals 10kJ of energy, so normal AI uses 5 oxyloss per tick (50kW or 70kW if charging)
+#define AI_POWERUSAGE_OXYLOSS_TO_WATTS_MULTIPLIER 10000
+
+//Grid for Item Placement
+#define CELLS 8								//Amount of cells per row/column in grid
+#define CELLSIZE (world.icon_size/CELLS)	//Size of a cell in pixels
+
+#define WORLD_ICON_SIZE 32
+#define PIXEL_MULTIPLIER WORLD_ICON_SIZE/32
+
+//MultiZ directions for ZAS checks.
+#define NORTHUP (NORTH|UP)
+#define EASTUP (EAST|UP)
+#define SOUTHUP (SOUTH|UP)
+#define WESTUP (WEST|UP)
+#define NORTHDOWN (NORTH|DOWN)
+#define EASTDOWN (EAST|DOWN)
+#define SOUTHDOWN (SOUTH|DOWN)
+#define WESTDOWN (WEST|DOWN)

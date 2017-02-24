@@ -15,8 +15,18 @@
 	//List of active tile overlays for this gas_mixture.  Updated by check_tile_graphic()
 	var/list/graphic = list()
 
-/datum/gas_mixture/New(vol = CELL_VOLUME)
-	volume = vol
+/datum/gas_mixture/New(_volume = CELL_VOLUME, _temperature = 0, _group_multiplier = 1)
+	volume = _volume
+	temperature = _temperature
+	group_multiplier = _group_multiplier
+
+/datum/gas_mixture/proc/get_gas(gasid)
+	if(!gas.len)
+		return 0 //if the list is empty BYOND treats it as a non-associative list, which runtimes
+	return gas[gasid] * group_multiplier
+
+/datum/gas_mixture/proc/get_total_moles()
+	return total_moles * group_multiplier
 
 //Takes a gas string and the amount of moles to adjust by.  Calls update_values() if update isn't 0.
 /datum/gas_mixture/proc/adjust_gas(gasid, moles, update = 1)
@@ -123,6 +133,7 @@
 
 //Adds or removes thermal energy. Returns the actual thermal energy change, as in the case of removing energy we can't go below TCMB.
 /datum/gas_mixture/proc/add_thermal_energy(var/thermal_energy)
+
 	if (total_moles == 0)
 		return 0
 
@@ -267,6 +278,12 @@
 
 	return removed
 
+//Returns the amount of gas that has the given flag, in moles
+/datum/gas_mixture/proc/get_by_flag(flag)
+	. = 0
+	for(var/g in gas)
+		if(gas_data.flags[g] & flag)
+			. += gas[g]
 
 //Copies gas and temperature from another gas_mixture.
 /datum/gas_mixture/proc/copy_from(const/datum/gas_mixture/sample)
@@ -289,6 +306,9 @@
 		(gas[g] > (1 + MINIMUM_AIR_RATIO_TO_SUSPEND) * sample.gas[g])))
 			return 0
 		marked[g] = 1
+
+	if(abs(return_pressure() - sample.return_pressure()) > MINIMUM_PRESSURE_DIFFERENCE_TO_SUSPEND)
+		return 0
 
 	for(var/g in sample.gas)
 		if(!marked[g])
@@ -424,7 +444,6 @@
 /datum/gas_mixture/proc/share_space(datum/gas_mixture/unsim_air)
 	return share_ratio(unsim_air, unsim_air.group_multiplier, max(1, max(group_multiplier + 3, 1) + unsim_air.group_multiplier), one_way = 1)
 
-
 //Equalizes a list of gas mixtures.  Used for pipe networks.
 /proc/equalize_gases(datum/gas_mixture/list/gases)
 	//Calculate totals from individual components
@@ -464,3 +483,12 @@
 			gasmix.multiply(gasmix.volume)
 
 	return 1
+
+/datum/gas_mixture/proc/get_mass()
+	for(var/g in gas)
+		. += gas[g] * gas_data.molar_mass[g] * group_multiplier
+
+/datum/gas_mixture/proc/specific_mass()
+	var/M = get_total_moles()
+	if(M)
+		return get_mass()/M

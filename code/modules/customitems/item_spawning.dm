@@ -25,12 +25,22 @@
 	var/item_desc
 	var/name
 	var/item_path = /obj/item
+	var/item_path_as_string
 	var/req_access = 0
 	var/list/req_titles = list()
 	var/kit_name
 	var/kit_desc
 	var/kit_icon
 	var/additional_data
+	
+/datum/custom_item/proc/is_valid(var/checker)
+	if(!item_path)
+		to_chat(checker, "<span class='warning'>The given item path, [item_path_as_string], is invalid and does not exist.</span>")
+		return FALSE
+	if(item_icon && !(item_icon in icon_states(CUSTOM_ITEM_OBJ)))
+		to_chat(checker, "<span class='warning'>The given item icon, [item_icon], is invalid and does not exist.</span>")
+		return FALSE
+	return TRUE
 
 /datum/custom_item/proc/spawn_item(var/newloc)
 	var/obj/item/citem = new item_path(newloc)
@@ -75,7 +85,7 @@
 		K.new_icon_file = CUSTOM_ITEM_OBJ
 		if(istype(item, /obj/item/device/kit/paint))
 			var/obj/item/device/kit/paint/kit = item
-			kit.allowed_types = text2list(additional_data, ", ")
+			kit.allowed_types = splittext(additional_data, ", ")
 		else if(istype(item, /obj/item/device/kit/suit))
 			var/obj/item/device/kit/suit/kit = item
 			kit.new_light_overlay = additional_data
@@ -130,7 +140,7 @@
 /hook/startup/proc/load_custom_items()
 
 	var/datum/custom_item/current_data
-	for(var/line in text2list(file2text("config/custom_items.txt"), "\n"))
+	for(var/line in splittext(file2text("config/custom_items.txt"), "\n"))
 
 		line = trim(line)
 		if(line == "" || !line || findtext(line, "#", 1, 2))
@@ -162,6 +172,7 @@
 				current_data.character_name = lowertext(field_data)
 			if("item_path")
 				current_data.item_path = text2path(field_data)
+				current_data.item_path_as_string = field_data
 			if("item_name")
 				current_data.name = field_data
 			if("item_icon")
@@ -173,7 +184,7 @@
 			if("req_access")
 				current_data.req_access = text2num(field_data)
 			if("req_titles")
-				current_data.req_titles = text2list(field_data,", ")
+				current_data.req_titles = splittext(field_data,", ")
 			if("kit_name")
 				current_data.kit_name = field_data
 			if("kit_desc")
@@ -195,6 +206,10 @@
 		// Check for requisite ckey and character name.
 		if((lowertext(citem.assoc_key) != lowertext(M.ckey)) || (lowertext(citem.character_name) != lowertext(M.real_name)))
 			continue
+			
+		// Once we've decided that the custom item belongs to this player, validate it
+		if(!citem.is_valid(M))
+			return
 
 		// Check for required access.
 		var/obj/item/weapon/card/id/current_id = M.wear_id
@@ -230,7 +245,7 @@
 /proc/place_custom_item(mob/living/carbon/human/M, var/datum/custom_item/citem)
 
 	if(!citem) return
-	var/obj/item/newitem = citem.spawn_item()
+	var/obj/item/newitem = citem.spawn_item(M.loc)
 
 	if(M.equip_to_appropriate_slot(newitem))
 		return newitem
@@ -238,5 +253,4 @@
 	if(M.equip_to_storage(newitem))
 		return newitem
 
-	newitem.loc = get_turf(M.loc)
 	return newitem

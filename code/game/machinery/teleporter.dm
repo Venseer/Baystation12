@@ -11,7 +11,7 @@
 						 //Setting this to 1 will set src.locked to null after a player enters the portal and will not allow hand-teles to open portals to that location.
 
 /obj/machinery/computer/teleporter/New()
-	src.id = "[rand(1000, 9999)]"
+	src.id = "[random_id(/obj/machinery/computer/teleporter, 1000, 9999)]"
 	..()
 	underlays.Cut()
 	underlays += image('icons/obj/stationobjs.dmi', icon_state = "telecomp-wires")
@@ -51,8 +51,8 @@
 
 
 		if(istype(L, /obj/effect/landmark/) && istype(L.loc, /turf))
-			usr << "You insert the coordinates into the machine."
-			usr << "A message flashes across the screen reminding the traveller that the nuclear authentication disk is to remain on the station at all times."
+			to_chat(usr, "You insert the coordinates into the machine.")
+			to_chat(usr, "A message flashes across the screen reminding the traveller that the nuclear authentication disk is to remain on the station at all times.")
 			user.drop_item()
 			qdel(I)
 
@@ -85,7 +85,7 @@
 	if(..()) return
 
 	/* Ghosts can't use this one because it's a direct selection */
-	if(istype(user, /mob/dead/observer)) return
+	if(isobserver(user)) return
 
 	var/list/L = list()
 	var/list/areaindex = list()
@@ -94,7 +94,7 @@
 		var/turf/T = get_turf(R)
 		if (!T)
 			continue
-		if(!(T.z in config.player_levels))
+		if(!(T.z in using_map.player_levels))
 			continue
 		var/tmpname = T.loc.name
 		if(areaindex[tmpname])
@@ -194,7 +194,9 @@
 		return
 	if (istype(M, /atom/movable))
 		if(prob(5) && !accurate) //oh dear a problem, put em in deep space
-			do_teleport(M, locate(rand((2*TRANSITIONEDGE), world.maxx - (2*TRANSITIONEDGE)), rand((2*TRANSITIONEDGE), world.maxy - (2*TRANSITIONEDGE)), 3), 2)
+			var/turf/T = get_turf(M)
+			var/destination_z = T ? using_map.get_transit_zlevel(T.z) : pick(using_map.player_levels)
+			do_teleport(M, locate(rand((2*TRANSITIONEDGE), world.maxx - (2*TRANSITIONEDGE)), rand((2*TRANSITIONEDGE), world.maxy - (2*TRANSITIONEDGE)), destination_z), 2)
 		else
 			do_teleport(M, com.locked) //dead-on precision
 
@@ -222,7 +224,7 @@
 	if (istype(M, /mob/living))
 		var/mob/living/MM = M
 		if(MM.check_contents_for(/obj/item/weapon/disk/nuclear))
-			MM << "<span class='warning'>Something you are carrying seems to be unable to pass through the portal. Better drop it if you want to go through.</span>"
+			to_chat(MM, "<span class='warning'>Something you are carrying seems to be unable to pass through the portal. Better drop it if you want to go through.</span>")
 			return
 	var/disky = 0
 	for (var/atom/O in M.contents) //I'm pretty sure this accounts for the maximum amount of container in container stacking. --NeoFite
@@ -249,7 +251,7 @@
 	if (istype(M, /mob/living))
 		var/mob/living/MM = M
 		if(MM.check_contents_for(/obj/item/weapon/storage/backpack/holding))
-			MM << "<span class='warning'>The Bluespace interface on your Bag of Holding interferes with the teleport!</span>"
+			to_chat(MM, "<span class='warning'>The Bluespace interface on your Bag of Holding interferes with the teleport!</span>")
 			precision = rand(1,100)
 	if (istype(M, /obj/item/weapon/storage/backpack/holding))
 		precision = rand(1,100)
@@ -288,7 +290,7 @@
 	if(tmploc==null)
 		return
 
-	M.loc = tmploc
+	M.forceMove(tmploc)
 	sleep(2)
 
 	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
@@ -377,8 +379,7 @@
 	src.add_fingerprint(usr)
 	return
 
-/obj/machinery/teleport/station/power_change()
-	..()
+/obj/machinery/teleport/station/update_icon()
 	if(stat & NOPOWER)
 		icon_state = "controller-p"
 
@@ -386,15 +387,3 @@
 			com.icon_state = "tele0"
 	else
 		icon_state = "controller"
-
-
-/obj/effect/laser/Bump()
-	src.range--
-	return
-
-/obj/effect/laser/Move()
-	src.range--
-	return
-
-/atom/proc/laserhit(L as obj)
-	return 1

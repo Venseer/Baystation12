@@ -3,7 +3,7 @@
 	// Update name.
 	if(seed)
 		if(mechanical)
-			name = "[base_name] (#[seed.uid])"
+			name = "[base_name] ([seed.seed_name])"
 		else
 			name = "[seed.seed_name]"
 	else
@@ -30,7 +30,8 @@
 			if(!seed.growth_stages)
 				seed.update_growth_stages()
 			if(!seed.growth_stages)
-				world << "<span class='danger'>Seed type [seed.get_trait(TRAIT_PLANT_ICON)] cannot find a growth stage value.</span>"
+				log_error("<span class='danger'>Seed type [seed.get_trait(TRAIT_PLANT_ICON)] cannot find a growth stage value.</span>")
+
 				return
 			var/overlay_stage = 1
 			if(age >= seed.get_trait(TRAIT_MATURATION))

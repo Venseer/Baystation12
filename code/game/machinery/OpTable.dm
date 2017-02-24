@@ -37,14 +37,14 @@
 				return
 		if(3.0)
 			if (prob(25))
-				src.density = 0
+				src.set_density(0)
 		else
 	return
 
 /obj/machinery/optable/attack_hand(mob/user as mob)
 	if (HULK in usr.mutations)
 		visible_message("<span class='danger'>\The [usr] destroys \the [src]!</span>")
-		src.density = 0
+		src.set_density(0)
 		qdel(src)
 	return
 
@@ -71,7 +71,7 @@
 		var/mob/living/carbon/human/M = locate(/mob/living/carbon/human, src.loc)
 		if(M.lying)
 			src.victim = M
-			icon_state = M.pulse ? "table2-active" : "table2-idle"
+			icon_state = M.pulse() ? "table2-active" : "table2-idle"
 			return 1
 	src.victim = null
 	icon_state = "table2-idle"
@@ -89,14 +89,14 @@
 		C.client.perspective = EYE_PERSPECTIVE
 		C.client.eye = src
 	C.resting = 1
-	C.loc = src.loc
+	C.dropInto(loc)
 	for(var/obj/O in src)
-		O.loc = src.loc
+		O.dropInto(loc)
 	src.add_fingerprint(user)
 	if(ishuman(C))
 		var/mob/living/carbon/human/H = C
 		src.victim = H
-		icon_state = H.pulse ? "table2-active" : "table2-idle"
+		icon_state = H.pulse() ? "table2-active" : "table2-idle"
 	else
 		icon_state = "table2-idle"
 
@@ -131,9 +131,9 @@
 /obj/machinery/optable/proc/check_table(mob/living/carbon/patient as mob)
 	check_victim()
 	if(src.victim && get_turf(victim) == get_turf(src) && victim.lying)
-		usr << "<span class='warning'>\The [src] is already occupied!</span>"
+		to_chat(usr, "<span class='warning'>\The [src] is already occupied!</span>")
 		return 0
 	if(patient.buckled)
-		usr << "<span class='notice'>Unbuckle \the [patient] first!</span>"
+		to_chat(usr, "<span class='notice'>Unbuckle \the [patient] first!</span>")
 		return 0
 	return 1

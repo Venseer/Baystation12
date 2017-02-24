@@ -1,12 +1,9 @@
 /obj/item/clothing/suit/storage
-	var/obj/item/weapon/storage/internal/pockets
+	var/obj/item/weapon/storage/internal/pockets/pockets
 
 /obj/item/clothing/suit/storage/New()
 	..()
-	pockets = new/obj/item/weapon/storage/internal(src)
-	pockets.storage_slots = 2	//two slots
-	pockets.max_w_class = 2		//fit only pocket sized items
-	pockets.max_storage_space = 4
+	pockets = new/obj/item/weapon/storage/internal/pockets(src, slots = 2, slot_size = 2) //two slots, fit only pocket sized items
 
 /obj/item/clothing/suit/storage/Destroy()
 	qdel(pockets)
@@ -42,20 +39,23 @@
 
 		if(icon_state == icon_open) //Will check whether icon state is currently set to the "open" or "closed" state and switch it around with a message to the user
 			icon_state = icon_closed
-			usr << "You button up the coat."
+			to_chat(usr, "You button up the coat.")
 		else if(icon_state == icon_closed)
 			icon_state = icon_open
-			usr << "You unbutton the coat."
+			to_chat(usr, "You unbutton the coat.")
 		else //in case some goofy admin switches icon states around without switching the icon_open or icon_closed
-			usr << "You attempt to button-up the velcro on your [src], before promptly realising how silly you are."
+			to_chat(usr, "You attempt to button-up the velcro on your [src], before promptly realising how silly you are.")
 			return
 		update_clothing_icon()	//so our overlays update
 
 
 /obj/item/clothing/suit/storage/vest/merc/New()
 	..()
-	pockets = new/obj/item/weapon/storage/internal(src)
-	pockets.storage_slots = 4
-	pockets.max_w_class = 2
-	pockets.max_storage_space = 8
+	pockets = new/obj/item/weapon/storage/internal/pockets(src, slots = 4, slot_size = 2)
+
+
+/obj/item/clothing/suit/storage/vest/tactical/New()
+	..()
+	pockets = new/obj/item/weapon/storage/internal/pockets(src, slots = 4, slot_size = 2)
+
 

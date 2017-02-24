@@ -96,6 +96,7 @@
 			else
 				air2.temperature = air2.temperature + heat/air2_heat_capacity
 				air1.temperature = air1.temperature - energy_transfer/air1_heat_capacity
+		playsound(src.loc, 'sound/effects/beam.ogg', 25, 0, 10)
 
 	//Transfer the air
 	if (air1)
@@ -209,11 +210,6 @@
 		ui.open()
 		// auto update every Master Controller tick
 		ui.set_auto_update(1)
-
-/obj/machinery/power/generator/power_change()
-	..()
-	updateicon()
-
 
 /obj/machinery/power/generator/verb/rotate_clock()
 	set category = "Object"

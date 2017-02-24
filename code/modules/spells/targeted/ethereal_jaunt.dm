@@ -1,7 +1,7 @@
 /spell/targeted/ethereal_jaunt
 	name = "Ethereal Jaunt"
 	desc = "This spell creates your ethereal form, temporarily making you invisible and able to pass through walls."
-
+	feedback = "EJ"
 	school = "transmutation"
 	charge_max = 300
 	spell_flags = Z2NOCAST | NEEDSCLOTHES | INCLUDEUSER
@@ -9,6 +9,7 @@
 	invocation_type = SpI_NONE
 	range = -1
 	max_targets = 1
+	level_max = list(Sp_TOTAL = 4, Sp_SPEED = 4, Sp_POWER = 3)
 	cooldown_min = 100 //50 deciseconds reduction per rank
 	duration = 50 //in deciseconds
 
@@ -17,13 +18,14 @@
 /spell/targeted/ethereal_jaunt/cast(list/targets) //magnets, so mostly hardcoded
 	for(var/mob/living/target in targets)
 		target.transforming = 1 //protects the mob from being transformed (replaced) midjaunt and getting stuck in bluespace
-		if(target.buckled) target.buckled = null
+		if(target.buckled)
+			target.buckled.unbuckle_mob()
 		spawn(0)
 			var/mobloc = get_turf(target.loc)
 			var/obj/effect/dummy/spell_jaunt/holder = new /obj/effect/dummy/spell_jaunt( mobloc )
 			var/atom/movable/overlay/animation = new /atom/movable/overlay( mobloc )
 			animation.name = "water"
-			animation.density = 0
+			animation.set_density(0)
 			animation.anchored = 1
 			animation.icon = 'icons/mob/mob.dmi'
 			animation.layer = 5
@@ -54,6 +56,14 @@
 			target.client.eye = target
 			qdel(animation)
 			qdel(holder)
+
+
+/spell/targeted/ethereal_jaunt/empower_spell()
+	if(!..())
+		return 0
+	duration += 20
+
+	return "[src] now lasts longer."
 
 /spell/targeted/ethereal_jaunt/proc/jaunt_disappear(var/atom/movable/overlay/animation, var/mob/living/target)
 	animation.icon_state = "liquify"
@@ -96,7 +106,7 @@
 		if(!T.contains_dense_objects())
 			last_valid_turf = T
 	else
-		user << "<span class='warning'>Some strange aura is blocking the way!</span>"
+		to_chat(user, "<span class='warning'>Some strange aura is blocking the way!</span>")
 	src.canmove = 0
 	spawn(2) src.canmove = 1
 

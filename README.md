@@ -1,6 +1,6 @@
 # baystation12
 
-[Website](http://baystation12.net/) - [Code](http://github.com/Baystation12/Baystation12/) - [IRC](http://baystation12.net/forums/viewtopic.php?f=12&t=5088)
+[Website](http://baystation12.net/) - [Code](http://github.com/Baystation12/Baystation12/) - [IRC](irc://irc.sorcery.net/#codershuttle)
 
 ---
 
@@ -18,7 +18,7 @@ See [here](https://www.gnu.org/licenses/why-affero-gpl.html) for more informatio
 ### GETTING THE CODE
 The simplest way to obtain the code is using the github .zip feature.
 
-Click [here](https://github.com/Baystation12/Baystation12/archive/master.zip) to get the latest code as a .zip file, then unzip it to wherever you want.
+Click [here](https://github.com/Baystation12/Baystation12/archive/dev.zip) to get the latest code as a .zip file, then unzip it to wherever you want.
 
 The more complicated and easier to update method is using git.  You'll need to download git or some client from [here](http://git-scm.com/).  When that's installed, right click in any folder and click on "Git Bash".  When that opens, type in:
 
@@ -28,12 +28,7 @@ The more complicated and easier to update method is using git.  You'll need to d
 
 This will take a while to download, but it provides an easier method for updating.
 
-Once the repository is in place, run this command:
-```bash
-cd Baystation12
-git update-index --assume-unchanged baystation12.int
-```
-Now git will ignore changes to the file baystation12.int.
+---
 
 ### INSTALLATION
 
@@ -84,7 +79,9 @@ For a basic setup, simply copy every file from config/example to config.
 
 ### SQL Setup
 
-The SQL backend for the library and stats tracking requires a MySQL server.  Your server details go in /config/dbconfig.txt, and the SQL schema is in /SQL/tgstation_schema.sql.  More detailed setup instructions arecoming soon, for now ask in our IRC channel.
+The SQL backend for the library/stats and bans requires a MySQL server.  Your server details go in config/dbconfig.txt.
+
+For initial setup and migrations refer to sql/README.md
 
 ---
 

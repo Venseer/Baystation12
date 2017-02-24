@@ -6,7 +6,7 @@
 	density = 1
 	anchored = 1
 	flags = CONDUCT
-	layer = 2.9
+	layer = BELOW_OBJ_LAYER
 	explosion_resistance = 1
 	var/health = 10
 	var/destroyed = 0
@@ -64,7 +64,7 @@
 	//Flimsy grilles aren't so great at stopping projectiles. However they can absorb some of the impact
 	var/damage = Proj.get_structure_damage()
 	var/passthrough = 0
-	
+
 	if(!damage) return
 
 	//20% chance that the grille provides a bit more cover than usual. Support structure for example might take up 20% of the grille's area.
@@ -96,7 +96,7 @@
 	if(iswirecutter(W))
 		if(!shock(user, 100))
 			playsound(loc, 'sound/items/Wirecutter.ogg', 100, 1)
-			PoolOrNew(/obj/item/stack/rods, list(get_turf(src), destroyed ? 1 : 2))
+			new /obj/item/stack/rods(get_turf(src), destroyed ? 1 : 2)
 			qdel(src)
 	else if((isscrewdriver(W)) && (istype(loc, /turf/simulated) || anchored))
 		if(!shock(user, 90))
@@ -128,23 +128,23 @@
 					else
 						dir_to_set = 4
 			else
-				user << "<span class='notice'>You can't reach.</span>"
+				to_chat(user, "<span class='notice'>You can't reach.</span>")
 				return //Only works for cardinal direcitons, diagonals aren't supposed to work like this.
 		for(var/obj/structure/window/WINDOW in loc)
 			if(WINDOW.dir == dir_to_set)
-				user << "<span class='notice'>There is already a window facing this way there.</span>"
+				to_chat(user, "<span class='notice'>There is already a window facing this way there.</span>")
 				return
-		user << "<span class='notice'>You start placing the window.</span>"
-		if(do_after(user,20))
+		to_chat(user, "<span class='notice'>You start placing the window.</span>")
+		if(do_after(user,20,src))
 			for(var/obj/structure/window/WINDOW in loc)
 				if(WINDOW.dir == dir_to_set)//checking this for a 2nd time to check if a window was made while we were waiting.
-					user << "<span class='notice'>There is already a window facing this way there.</span>"
+					to_chat(user, "<span class='notice'>There is already a window facing this way there.</span>")
 					return
 
 			var/wtype = ST.material.created_window
 			if (ST.use(1))
 				var/obj/structure/window/WD = new wtype(loc, dir_to_set, 1)
-				user << "<span class='notice'>You place the [WD] on [src].</span>"
+				to_chat(user, "<span class='notice'>You place the [WD] on [src].</span>")
 				WD.update_icon()
 		return
 //window placing end
@@ -166,14 +166,14 @@
 /obj/structure/grille/proc/healthcheck()
 	if(health <= 0)
 		if(!destroyed)
-			density = 0
+			set_density(0)
 			destroyed = 1
 			update_icon()
-			PoolOrNew(/obj/item/stack/rods, get_turf(src))
+			new /obj/item/stack/rods(get_turf(src))
 
 		else
 			if(health <= -6)
-				PoolOrNew(/obj/item/stack/rods, get_turf(src))
+				new /obj/item/stack/rods(get_turf(src))
 				qdel(src)
 				return
 	return
@@ -213,7 +213,7 @@
 
 /obj/structure/grille/attack_generic(var/mob/user, var/damage, var/attack_verb)
 	visible_message("<span class='danger'>[user] [attack_verb] the [src]!</span>")
-	user.do_attack_animation(src)
+	attack_animation(user)
 	health -= damage
 	spawn(1) healthcheck()
 	return 1
@@ -230,7 +230,7 @@
 
 /obj/structure/grille/cult
 	name = "cult grille"
-	desc = "A matrice built out of an unknown material, with some sort of force field blocking air around it"
+	desc = "A matrice built out of an unknown material, with some sort of force field blocking air around it."
 	icon_state = "grillecult"
 	health = 40 //Make it strong enough to avoid people breaking in too easily
 

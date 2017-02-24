@@ -47,19 +47,6 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 
 	req_access = list(access_research)	//Data and setting manipulation requires scientist access.
 
-/obj/machinery/computer/rdconsole/proc/CallTechName(var/ID) //A simple helper proc to find the name of a tech with a given ID.
-	var/datum/tech/check_tech
-	var/return_name = null
-	for(var/T in typesof(/datum/tech) - /datum/tech)
-		check_tech = null
-		check_tech = new T()
-		if(check_tech.id == ID)
-			return_name = check_tech.name
-			qdel(check_tech)
-			check_tech = null
-			break
-	return return_name
-
 /obj/machinery/computer/rdconsole/proc/CallMaterialName(var/ID)
 	var/return_name = ID
 	switch(return_name)
@@ -128,12 +115,13 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 
 /obj/machinery/computer/rdconsole/initialize()
 	SyncRDevices()
+	..()
 
 /obj/machinery/computer/rdconsole/attackby(var/obj/item/weapon/D as obj, var/mob/user as mob)
 	//Loading a disk into it.
 	if(istype(D, /obj/item/weapon/disk))
 		if(t_disk || d_disk)
-			user << "A disk is already loaded into the machine."
+			to_chat(user, "A disk is already loaded into the machine.")
 			return
 
 		if(istype(D, /obj/item/weapon/disk/tech_disk))
@@ -141,11 +129,11 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 		else if (istype(D, /obj/item/weapon/disk/design_disk))
 			d_disk = D
 		else
-			user << "<span class='notice'>Machine cannot accept disks in that format.</span>"
+			to_chat(user, "<span class='notice'>Machine cannot accept disks in that format.</span>")
 			return
 		user.drop_item()
 		D.loc = src
-		user << "<span class='notice'>You add \the [D] to the machine.</span>"
+		to_chat(user, "<span class='notice'>You add \the [D] to the machine.</span>")
 	else
 		//The construction/deconstruction of the console code.
 		..()
@@ -157,7 +145,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 	if(!emagged)
 		playsound(src.loc, 'sound/effects/sparks4.ogg', 75, 1)
 		emagged = 1
-		user << "<span class='notice'>You you disable the security protocols.</span>"
+		to_chat(user, "<span class='notice'>You you disable the security protocols.</span>")
 		return 1
 
 /obj/machinery/computer/rdconsole/Topic(href, href_list)
@@ -172,7 +160,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 		if(temp_screen <= 1.1 || (3 <= temp_screen && 4.9 >= temp_screen) || allowed(usr) || emagged) //Unless you are making something, you need access.
 			screen = temp_screen
 		else
-			usr << "Unauthorized Access."
+			to_chat(usr, "Unauthorized Access.")
 
 	else if(href_list["updt_tech"]) //Update the research holder with information from the technology disk.
 		screen = 0.0
@@ -223,7 +211,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 	else if(href_list["eject_item"]) //Eject the item inside the destructive analyzer.
 		if(linked_destroy)
 			if(linked_destroy.busy)
-				usr << "<span class='notice'>The destructive analyzer is busy at the moment.</span>"
+				to_chat(usr, "<span class='notice'>The destructive analyzer is busy at the moment.</span>")
 
 			else if(linked_destroy.loaded_item)
 				linked_destroy.loaded_item.loc = linked_destroy.loc
@@ -234,7 +222,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 	else if(href_list["deconstruct"]) //Deconstruct the item in the destructive analyzer and update the research holder.
 		if(linked_destroy)
 			if(linked_destroy.busy)
-				usr << "<span class='notice'>The destructive analyzer is busy at the moment.</span>"
+				to_chat(usr, "<span class='notice'>The destructive analyzer is busy at the moment.</span>")
 			else
 				if(alert("Proceeding will destroy loaded item. Continue?", "Destructive analyzer confirmation", "Yes", "No") == "No" || !linked_destroy)
 					return
@@ -246,7 +234,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 					if(linked_destroy)
 						linked_destroy.busy = 0
 						if(!linked_destroy.loaded_item)
-							usr <<"<span class='notice'>The destructive analyzer appears to be empty.</span>"
+							to_chat(usr, "<span class='notice'>The destructive analyzer appears to be empty.</span>")
 							screen = 1.0
 							return
 
@@ -282,12 +270,12 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 		if(allowed(usr))
 			screen = text2num(href_list["lock"])
 		else
-			usr << "Unauthorized Access."
+			to_chat(usr, "Unauthorized Access.")
 
 	else if(href_list["sync"]) //Sync the research holder with all the R&D consoles in the game that aren't sync protected.
 		screen = 0.0
 		if(!sync)
-			usr << "<span class='notice'>You must connect to the network first.</span>"
+			to_chat(usr, "<span class='notice'>You must connect to the network first.</span>")
 		else
 			griefProtection() //Putting this here because I dont trust the sync process
 			spawn(30)
@@ -360,28 +348,10 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 		linked_lathe.removeFromQueue(text2num(href_list["removeP"]))
 
 	else if(href_list["lathe_ejectsheet"] && linked_lathe) //Causes the protolathe to eject a sheet of material
-		var/num_sheets = min(text2num(href_list["amount"]), round(linked_lathe.materials[href_list["lathe_ejectsheet"]] / SHEET_MATERIAL_AMOUNT))
-
-		if(num_sheets < 1)
-			return
-
-		var/mattype = linked_lathe.getMaterialType(href_list["lathe_ejectsheet"])
-
-		var/obj/item/stack/material/M = new mattype(linked_lathe.loc)
-		M.amount = num_sheets
-		linked_lathe.materials[href_list["lathe_ejectsheet"]] -= num_sheets * SHEET_MATERIAL_AMOUNT
+		linked_lathe.eject(href_list["lathe_ejectsheet"], text2num(href_list["amount"]))
 
 	else if(href_list["imprinter_ejectsheet"] && linked_imprinter) //Causes the protolathe to eject a sheet of material
-		var/num_sheets = min(text2num(href_list["amount"]), round(linked_imprinter.materials[href_list["imprinter_ejectsheet"]] / SHEET_MATERIAL_AMOUNT))
-
-		if(num_sheets < 1)
-			return
-
-		var/mattype = linked_imprinter.getMaterialType(href_list["imprinter_ejectsheet"])
-
-		var/obj/item/stack/material/M = new mattype(linked_imprinter.loc)
-		M.amount = num_sheets
-		linked_imprinter.materials[href_list["imprinter_ejectsheet"]] -= num_sheets * SHEET_MATERIAL_AMOUNT
+		linked_imprinter.eject(href_list["imprinter_ejectsheet"], text2num(href_list["amount"]))
 
 	else if(href_list["find_device"]) //The R&D console looks for devices nearby to link up with.
 		screen = 0.0
@@ -420,7 +390,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 			PR.name = "list of researched technologies"
 			PR.info = "<center><b>[station_name()] Science Laboratories</b>"
 			PR.info += "<h2>[ (text2num(href_list["print"]) == 2) ? "Detailed" : ] Research Progress Report</h2>"
-			PR.info += "<i>report prepared at [worldtime2text()] station time</i></center><br>"
+			PR.info += "<i>report prepared at [stationtime2text()] station time</i></center><br>"
 			if(text2num(href_list["print"]) == 2)
 				PR.info += GetResearchListInfo()
 			else

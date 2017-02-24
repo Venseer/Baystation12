@@ -8,21 +8,22 @@
 
 /obj/structure/cult/talisman
 	name = "Altar"
-	desc = "A bloodstained altar dedicated to Nar-Sie"
+	desc = "A bloodstained altar dedicated to Nar-Sie."
 	icon_state = "talismanaltar"
 
 
 /obj/structure/cult/forge
 	name = "Daemon forge"
-	desc = "A forge used in crafting the unholy weapons used by the armies of Nar-Sie"
+	desc = "A forge used in crafting the unholy weapons used by the armies of Nar-Sie."
 	icon_state = "forge"
 
 /obj/structure/cult/pylon
 	name = "Pylon"
-	desc = "A floating crystal that hums with an unearthly energy"
+	desc = "A floating crystal that hums with an unearthly energy."
 	icon_state = "pylon"
 	var/isbroken = 0
-	light_range = 5
+	light_power = 2
+	light_range = 13
 	light_color = "#3e0000"
 	var/obj/item/wepon = null
 
@@ -40,39 +41,39 @@
 	if(!isbroken)
 		if(prob(1+ damage * 5))
 			user.visible_message(
-				"<span class='danger'>[user] smashed the pylon!</span>", 
+				"<span class='danger'>[user] smashed the pylon!</span>",
 				"<span class='warning'>You hit the pylon, and its crystal breaks apart!</span>",
 				"You hear a tinkle of crystal shards"
 				)
 			user.do_attack_animation(src)
 			playsound(get_turf(src), 'sound/effects/Glassbr3.ogg', 75, 1)
 			isbroken = 1
-			density = 0
+			set_density(0)
 			icon_state = "pylon-broken"
 			set_light(0)
 		else
-			user << "You hit the pylon!"
+			to_chat(user, "You hit the pylon!")
 			playsound(get_turf(src), 'sound/effects/Glasshit.ogg', 75, 1)
 	else
 		if(prob(damage * 2))
-			user << "You pulverize what was left of the pylon!"
+			to_chat(user, "You pulverize what was left of the pylon!")
 			qdel(src)
 		else
-			user << "You hit the pylon!"
+			to_chat(user, "You hit the pylon!")
 		playsound(get_turf(src), 'sound/effects/Glasshit.ogg', 75, 1)
 
 
 /obj/structure/cult/pylon/proc/repair(mob/user as mob)
 	if(isbroken)
-		user << "You repair the pylon."
+		to_chat(user, "You repair the pylon.")
 		isbroken = 0
-		density = 1
+		set_density(1)
 		icon_state = "pylon"
 		set_light(5)
 
 /obj/structure/cult/tome
 	name = "Desk"
-	desc = "A desk covered in arcane manuscripts and tomes in unknown languages. Looking at the text makes your skin crawl"
+	desc = "A desk covered in arcane manuscripts and tomes in unknown languages. Looking at the text makes your skin crawl."
 	icon_state = "tomealtar"
 
 //sprites for this no longer exist	-Pete
@@ -80,14 +81,14 @@
 /*
 /obj/structure/cult/pillar
 	name = "Pillar"
-	desc = "This should not exist"
+	desc = "This should not exist."
 	icon_state = "pillar"
 	icon = 'magic_pillar.dmi'
 */
 
 /obj/effect/gateway
 	name = "gateway"
-	desc = "You're pretty sure that abyss is staring back"
+	desc = "You're pretty sure that abyss is staring back."
 	icon = 'icons/obj/cult.dmi'
 	icon_state = "hole"
 	density = 1
@@ -162,9 +163,7 @@
 				if(istype(W, /obj/item/weapon/implant))
 					qdel(W)
 					continue
-				W.layer = initial(W.layer)
-				W.loc = M.loc
-				W.dropped(M)
+				M.drop_from_inventory(W)
 
 		var/mob/living/new_mob = new /mob/living/simple_animal/corgi(A.loc)
 		new_mob.a_intent = I_HURT
@@ -173,4 +172,5 @@
 		else
 			new_mob.key = M.key
 
-		new_mob << "<B>Your form morphs into that of a corgi.</B>"	//Because we don't have cluwnes
+		to_chat(new_mob, "<B>Your form morphs into that of a corgi.</B>")//Because we don't have cluwnes
+

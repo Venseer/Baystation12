@@ -8,7 +8,7 @@
 	var/s_time = 10.0
 	throw_speed = 1
 	throw_range = 5
-	w_class = 1.0
+	w_class = ITEM_SIZE_TINY
 	slot_flags = SLOT_EARS
 	var/uses = 1
 	var/nofail
@@ -66,7 +66,7 @@
 /obj/item/weapon/dnainjector/proc/inject(mob/M as mob, mob/user as mob)
 	if(istype(M,/mob/living))
 		var/mob/living/L = M
-		L.apply_effect(rand(5,20), IRRADIATE, check_protection = 0)
+		L.apply_effect(rand(5,20), IRRADIATE, blocked = 0)
 
 	if (!(NOCLONE in M.mutations)) // prevents drained people from having their DNA changed
 		if (buf.types & DNA2_BUF_UI)
@@ -111,7 +111,7 @@
 	spawn(50)
 		inuse = 0
 
-	if(!do_after(user,50))
+	if(!do_after(user,50,M))
 		return
 
 	user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
@@ -121,18 +121,14 @@
 
 	var/mob/living/carbon/human/H = M
 	if(!istype(H))
-		user << "<span class='warning'>Apparently it didn't work...</span>"
+		to_chat(user, "<span class='warning'>Apparently it didn't work...</span>")
 		return
 
 	// Used by admin log.
 	var/injected_with_monkey = ""
 	if((buf.types & DNA2_BUF_SE) && (block ? (GetState() && block == MONKEYBLOCK) : GetState(MONKEYBLOCK)))
 		injected_with_monkey = " <span class='danger'>(MONKEY)</span>"
-
-	M.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been injected with [name] by [user.name] ([user.ckey])</font>")
-	user.attack_log += text("\[[time_stamp()]\] <font color='red'>Used the [name] to inject [M.name] ([M.ckey])</font>")
-	log_attack("[user.name] ([user.ckey]) used the [name] to inject [M.name] ([M.ckey])")
-	message_admins("[key_name_admin(user)] injected [key_name_admin(M)] with \the [src][injected_with_monkey]")
+	admin_attack_log(user, M, "Injected using \the [src]", "Has been injected with \the [src]", "used \the [src][injected_with_monkey] to inject into")
 
 	// Apply the DNA shit.
 	inject(M, user)
@@ -503,7 +499,7 @@
 
 /obj/item/weapon/dnainjector/stuttmut
 	name = "\improper DNA injector (Stutt.)"
-	desc = "Makes you s-s-stuttterrr"
+	desc = "Makes you s-s-stuttterrr."
 	datatype = DNA2_BUF_SE
 	value = 0xFFF
 	//block = 9

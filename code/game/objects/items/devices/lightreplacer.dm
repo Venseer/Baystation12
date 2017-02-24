@@ -63,32 +63,32 @@
 
 /obj/item/device/lightreplacer/examine(mob/user)
 	if(..(user, 2))
-		user << "It has [uses] lights remaining."
+		to_chat(user, "It has [uses] light\s remaining.")
 
 /obj/item/device/lightreplacer/attackby(obj/item/W, mob/user)
 	if(istype(W, /obj/item/stack/material) && W.get_material_name() == "glass")
 		var/obj/item/stack/G = W
 		if(uses >= max_uses)
-			user << "<span class='warning'>[src.name] is full.</span>"
+			to_chat(user, "<span class='warning'>[src.name] is full.</span>")
 			return
 		else if(G.use(1))
 			AddUses(16) //Autolathe converts 1 sheet into 16 lights.
-			user << "<span class='notice'>You insert a piece of glass into \the [src.name]. You have [uses] light\s remaining.</span>"
+			to_chat(user, "<span class='notice'>You insert a piece of glass into \the [src.name]. You have [uses] light\s remaining.</span>")
 			return
 		else
-			user << "<span class='warning'>You need one sheet of glass to replace lights.</span>"
+			to_chat(user, "<span class='warning'>You need one sheet of glass to replace lights.</span>")
 
 	if(istype(W, /obj/item/weapon/light))
 		var/obj/item/weapon/light/L = W
 		if(L.status == 0) // LIGHT OKAY
 			if(uses < max_uses)
 				AddUses(1)
-				user << "You insert \the [L.name] into \the [src.name]. You have [uses] light\s remaining."
+				to_chat(user, "You insert \the [L.name] into \the [src.name]. You have [uses] light\s remaining.")
 				user.drop_item()
 				qdel(L)
 				return
 		else
-			user << "You need a working light."
+			to_chat(user, "You need a working light.")
 			return
 
 /obj/item/device/lightreplacer/attack_self(mob/user)
@@ -97,10 +97,10 @@
 		var/mob/living/silicon/robot/R = user
 		if(R.emagged)
 			src.Emag()
-			usr << "You shortcircuit the [src]."
+			to_chat(usr, "You shortcircuit the [src].")
 			return
 	*/
-	usr << "It has [uses] lights remaining."
+	to_chat(usr, "It has [uses] lights remaining.")
 
 /obj/item/device/lightreplacer/update_icon()
 	icon_state = "lightreplacer[emagged]"
@@ -124,48 +124,19 @@
 
 /obj/item/device/lightreplacer/proc/ReplaceLight(var/obj/machinery/light/target, var/mob/living/U)
 
-	if(target.status != LIGHT_OK)
-		if(CanUse(U))
-			if(!Use(U)) return
-			U << "<span class='notice'>You replace the [target.fitting] with the [src].</span>"
+	if(target.status == LIGHT_OK)
+		to_chat(U, "There is a working [target.get_fitting_name()] already inserted.")
+	else if(!CanUse(U))
+		to_chat(U, failmsg)
+	else if(Use(U))
+		to_chat(U, "<span class='notice'>You replace the [target.get_fitting_name()] with the [src].</span>")
 
-			if(target.status != LIGHT_EMPTY)
+		if(target.status != LIGHT_EMPTY)
+			target.remove_bulb()
 
-				var/obj/item/weapon/light/L1 = new target.light_type(target.loc)
-				L1.status = target.status
-				L1.rigged = target.rigged
-				L1.brightness_range = target.brightness_range
-				L1.brightness_power = target.brightness_power
-				L1.brightness_color = target.brightness_color
-				L1.switchcount = target.switchcount
-				target.switchcount = 0
-				L1.update()
+		var/obj/item/weapon/light/L = new target.light_type()
+		target.insert_bulb(L)
 
-				target.status = LIGHT_EMPTY
-				target.update()
-
-			var/obj/item/weapon/light/L2 = new target.light_type()
-
-			target.status = L2.status
-			target.switchcount = L2.switchcount
-			target.rigged = emagged
-			target.brightness_range = L2.brightness_range
-			target.brightness_power = L2.brightness_power
-			target.brightness_color = L2.brightness_color
-			target.on = target.has_power()
-			target.update()
-			qdel(L2)
-
-			if(target.on && target.rigged)
-				target.explode()
-			return
-
-		else
-			U << failmsg
-			return
-	else
-		U << "There is a working [target.fitting] already inserted."
-		return
 
 /obj/item/device/lightreplacer/emag_act(var/remaining_charges, var/mob/user)
 	emagged = !emagged

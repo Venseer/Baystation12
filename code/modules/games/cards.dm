@@ -2,9 +2,10 @@
 	var/name = "playing card"
 	var/card_icon = "card_back"
 	var/back_icon = "card_back"
+	var/desc = "regular old playing card."
 
 /obj/item/weapon/deck
-	w_class = 2
+	w_class = ITEM_SIZE_SMALL
 	icon = 'icons/obj/playing_cards.dmi'
 	var/list/cards = list()
 
@@ -57,7 +58,7 @@
 		for(var/datum/playingcard/P in H.cards)
 			cards += P
 		qdel(O)
-		user << "You place your cards on the bottom of \the [src]."
+		to_chat(user, "You place your cards on the bottom of \the [src].")
 		return
 	..()
 
@@ -76,7 +77,7 @@
 	var/mob/living/carbon/user = usr
 
 	if(!cards.len)
-		usr << "There are no cards in the deck."
+		to_chat(usr, "There are no cards in the deck.")
 		return
 
 	var/obj/item/weapon/hand/H
@@ -95,7 +96,7 @@
 	cards -= P
 	H.update_icon()
 	user.visible_message("\The [user] draws a card.")
-	user << "It's the [P]."
+	to_chat(user, "It's the [P].")
 
 /obj/item/weapon/deck/verb/deal_card()
 
@@ -107,7 +108,7 @@
 	if(usr.stat || !Adjacent(usr)) return
 
 	if(!cards.len)
-		usr << "There are no cards in the deck."
+		to_chat(usr, "There are no cards in the deck.")
 		return
 
 	var/list/players = list()
@@ -140,7 +141,7 @@
 		for(var/datum/playingcard/P in cards)
 			H.cards += P
 		H.concealed = src.concealed
-		user.drop_from_inventory(src,user.loc)
+		user.drop_from_inventory(src)
 		qdel(src)
 		H.update_icon()
 		return
@@ -163,7 +164,7 @@
 	if(!ishuman(over) || !(over in viewers(3))) return
 
 	if(!cards.len)
-		usr << "There are no cards in the deck."
+		to_chat(usr, "There are no cards in the deck.")
 		return
 
 	deal_at(usr, over)
@@ -174,7 +175,7 @@
 
 	icon_state = "card_pack"
 	icon = 'icons/obj/playing_cards.dmi'
-	w_class = 1
+	w_class = ITEM_SIZE_TINY
 	var/list/cards = list()
 
 
@@ -195,7 +196,7 @@
 	desc = "Some playing cards."
 	icon = 'icons/obj/playing_cards.dmi'
 	icon_state = "empty"
-	w_class = 1
+	w_class = ITEM_SIZE_TINY
 
 	var/concealed = 0
 	var/list/cards = list()
@@ -214,7 +215,6 @@
 	if(!discarding || !to_discard[discarding] || !usr || !src) return
 
 	var/datum/playingcard/card = to_discard[discarding]
-	qdel(to_discard)
 
 	var/obj/item/weapon/hand/H = new(src.loc)
 	H.cards += card
@@ -234,11 +234,11 @@
 	user.visible_message("\The [user] [concealed ? "conceals" : "reveals"] their hand.")
 
 /obj/item/weapon/hand/examine(mob/user)
-	..(user)
+	. = ..(user)
 	if((!concealed || src.loc == user) && cards.len)
-		user << "It contains: "
+		to_chat(user, "It contains: ")
 		for(var/datum/playingcard/P in cards)
-			user << "The [P.name]."
+			to_chat(user, "The [P.name].")
 
 /obj/item/weapon/hand/update_icon(var/direction = 0)
 
@@ -248,9 +248,13 @@
 	else if(cards.len > 1)
 		name = "hand of cards"
 		desc = "Some playing cards."
+	else if(concealed)
+		name = "single playing card"
+		desc = "An unknown playing card, concealed."
 	else
-		name = "a playing card"
-		desc = "A playing card."
+		var/datum/playingcard/P = cards[1]
+		name = "[P.name]"
+		desc = "[P.desc]"
 
 	overlays.Cut()
 
@@ -296,6 +300,7 @@
 		i++
 
 /obj/item/weapon/hand/dropped(mob/user as mob)
+	..()
 	if(locate(/obj/structure/table, loc))
 		src.update_icon(user.dir)
 	else
