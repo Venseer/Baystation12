@@ -112,6 +112,17 @@
 	icon_state = "eyepatch"
 	item_state = "eyepatch"
 	body_parts_covered = 0
+	var/flipped = 0 // Indicates left or right eye; 0 = on the right
+
+/obj/item/clothing/glasses/eyepatch/attack_self(mob/user) //able to flip to each eye
+	src.flipped = !src.flipped
+	if(src.flipped)
+		icon_state = "[icon_state]_r"
+		to_chat(user, "You change the Eyepatch to cover the left eye.")
+	else
+		src.icon_state = initial(icon_state)
+		to_chat(user, "You change the Eyepatch to cover the right eye..")
+	update_clothing_icon()	// mob-overlays updates
 
 /obj/item/clothing/glasses/monocle
 	name = "monocle"
@@ -142,6 +153,7 @@
 	name = "Scanning Goggles"
 	desc = "A very oddly shaped pair of goggles with bits of wire poking out the sides. A soft humming sound emanates from it."
 	icon_state = "uzenwa_sissra_1"
+	light_protection = 7
 
 /obj/item/clothing/glasses/regular/hipster
 	name = "Prescription Glasses"

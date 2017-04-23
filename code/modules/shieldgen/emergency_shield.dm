@@ -14,7 +14,7 @@
 
 /obj/machinery/shield/malfai
 	name = "emergency forcefield"
-	desc = "A weak forcefield which seems to be projected by the station's emergency atmosphere containment field."
+	desc = "A weak forcefield which seems to be projected by the emergency atmosphere containment field."
 	health = max_health/2 // Half health, it's not suposed to resist much.
 
 /obj/machinery/shield/malfai/process()
@@ -33,8 +33,8 @@
 	update_nearby_tiles(need_rebuild=1)
 
 /obj/machinery/shield/Destroy()
-	opacity = 0
-	density = 0
+	set_opacity(0)
+	set_density(0)
 	update_nearby_tiles()
 	..()
 

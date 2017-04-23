@@ -38,7 +38,7 @@ var/bomb_set
 
 /obj/machinery/nuclearbomb/process()
 	if (timing)
-		timeleft = max(timeleft - process_schedule_interval("obj"), 0)
+		timeleft = max(timeleft - (process_schedule_interval("machinery") / 10), 0)
 		if (timeleft <= 0)
 			spawn
 				explode()
@@ -392,7 +392,7 @@ var/bomb_set
 	return ..()
 
 /obj/machinery/nuclearbomb/station
-	name = "station self-destruct terminal"
+	name = "self-destruct terminal"
 	desc = "For when it all gets too much to bear. Do not taunt."
 	icon = 'icons/obj/nuke_station.dmi'
 	anchored = 1

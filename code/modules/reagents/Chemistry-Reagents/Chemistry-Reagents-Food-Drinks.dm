@@ -7,7 +7,7 @@
 	taste_mult = 4
 	reagent_state = SOLID
 	metabolism = REM * 4
-	var/nutriment_factor = 30 // Per unit
+	var/nutriment_factor = 10 // Per unit
 	var/injectable = 0
 	color = "#664330"
 
@@ -126,6 +126,10 @@
 /datum/reagent/nutriment/flour/touch_turf(var/turf/simulated/T)
 	if(!istype(T, /turf/space))
 		new /obj/effect/decal/cleanable/flour(T)
+		if(T.wet > 1)
+			T.wet = min(T.wet, 1)
+		else
+			T.wet = 0
 
 /datum/reagent/nutriment/coco
 	name = "Coco Powder"
@@ -316,7 +320,7 @@
 		if(prob(5) || dose == metabolism) //dose == metabolism is a very hacky way of forcing the message the first time this procs
 			to_chat(M, discomfort_message)
 	else
-		M.apply_effect(agony_amount, AGONY, 0)
+		M.apply_effect(agony_amount, PAIN, 0)
 		if(prob(5))
 			M.custom_emote(2, "[pick("dry heaves!","coughs!","splutters!")]")
 			to_chat(M, "<span class='danger'>You feel like your insides are burning!</span>")
@@ -344,9 +348,9 @@
 	var/no_pain = 0
 	var/obj/item/eye_protection = null
 	var/obj/item/face_protection = null
-	
+
 	var/effective_strength = 5
-	
+
 	if(alien == IS_SKRELL)	//Larger eyes means bigger targets.
 		effective_strength = 8
 
@@ -399,7 +403,7 @@
 	if(dose == metabolism)
 		to_chat(M, "<span class='danger'>You feel like your insides are burning!</span>")
 	else
-		M.apply_effect(4, AGONY, 0)
+		M.apply_effect(4, PAIN, 0)
 		if(prob(5))
 			M.visible_message("<span class='warning'>[M] [pick("dry heaves!","coughs!","splutters!")]</span>", "<span class='danger'>You feel like your insides are burning!</span>")
 	if(istype(M, /mob/living/carbon/slime))
@@ -1644,7 +1648,7 @@
 	strength = 10
 
 	glass_name = "Pan-Galactic Gargle Blaster"
-	glass_desc = "Does... does this mean that Arthur and Ford are on the station? Oh joy."
+	glass_desc = "Does... does this mean that Arthur and Ford are here? Oh joy."
 
 /datum/reagent/ethanol/gintonic
 	name = "Gin and Tonic"
@@ -1766,14 +1770,14 @@
 /datum/reagent/ethanol/manhattan_proj
 	name = "Manhattan Project"
 	id = "manhattan_proj"
-	description = "A scientist's drink of choice, for pondering ways to blow up the station."
+	description = "A scientist's drink of choice, for pondering ways to blow stuff up."
 	taste_description = "death, the destroyer of worlds"
 	color = "#C15D00"
 	strength = 10
 	druggy = 30
 
 	glass_name = "Manhattan Project"
-	glass_desc = "A scienitst drink of choice, for thinking how to blow up the station."
+	glass_desc = "A scientist's drink of choice, for pondering ways to blow stuff up."
 
 /datum/reagent/ethanol/manly_dorf
 	name = "The Manly Dorf"
@@ -1912,6 +1916,17 @@
 
 	glass_name = "Screwdriver"
 	glass_desc = "A simple, yet superb mixture of Vodka and orange juice. Just the thing for the tired engineer."
+
+/datum/reagent/ethanol/ships_surgeon
+	name = "Ship's Surgeon"
+	id = "shipssurgeon"
+	description = "Rum and Dr. Gibb. Served ice cold, like the scalpel."
+	taste_description = "black comedy"
+	color = "#524D0F"
+	strength = 15
+
+	glass_name = "ship's surgeon"
+	glass_desc = "Rum qualified for surgical practice by Dr. Gibb. Smooth and steady."
 
 /datum/reagent/ethanol/silencer
 	name = "Silencer"
@@ -2068,10 +2083,10 @@
 /datum/reagent/ethanol/specialwhiskey // I have no idea what this is and where it comes from
 	name = "Special Blend Whiskey"
 	id = "specialwhiskey"
-	description = "Just when you thought regular station whiskey was good... This silky, amber goodness has to come along and ruin everything."
+	description = "Just when you thought regular whiskey was good... This silky, amber goodness has to come along and ruin everything."
 	taste_description = "liquid fire"
 	color = "#523600"
 	strength = 25
 
 	glass_name = "special blend whiskey"
-	glass_desc = "Just when you thought regular station whiskey was good... This silky, amber goodness has to come along and ruin everything."
+	glass_desc = "Just when you thought regular whiskey was good... This silky, amber goodness has to come along and ruin everything."

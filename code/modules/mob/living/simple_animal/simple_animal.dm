@@ -74,8 +74,8 @@
 		if(health > 0)
 			icon_state = icon_living
 			switch_from_dead_to_living_mob_list()
-			stat = CONSCIOUS
-			density = 1
+			set_stat(CONSCIOUS)
+			set_density(1)
 		return 0
 
 
@@ -269,7 +269,7 @@
 		return 2
 
 	var/damage = O.force
-	if (O.damtype == HALLOSS)
+	if (O.damtype == PAIN)
 		damage = 0
 	if(supernatural && istype(O,/obj/item/weapon/nullrod))
 		damage *= 2
@@ -298,6 +298,7 @@
 /mob/living/simple_animal/death(gibbed, deathmessage = "dies!")
 	icon_state = icon_dead
 	density = 0
+	adjustBruteLoss(maxHealth) //Make sure dey dead.
 	walk_to(src,0)
 	return ..(gibbed,deathmessage)
 
@@ -332,7 +333,7 @@
 	..()
 	updatehealth()
 
-/mob/living/simple_anima/adjustOxyLoss(damage)
+/mob/living/simple_animal/adjustOxyLoss(damage)
 	..()
 	updatehealth()
 
@@ -344,10 +345,6 @@
 	if (istype(target_mob,/obj/mecha))
 		var/obj/mecha/M = target_mob
 		if (M.occupant)
-			return (0)
-	if (istype(target_mob,/obj/machinery/bot))
-		var/obj/machinery/bot/B = target_mob
-		if(B.health > 0)
 			return (0)
 	return 1
 

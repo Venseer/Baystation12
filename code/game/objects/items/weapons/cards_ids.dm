@@ -92,12 +92,12 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id
 	name = "identification card"
-	desc = "A card used to provide ID and determine access across the station."
+	desc = "A card used to provide ID and determine access."
 	icon_state = "id"
 	item_state = "card-id"
 
 	sprite_sheets = list(
-		"Resomi" = 'icons/mob/species/resomi/id.dmi'
+		SPECIES_RESOMI = 'icons/mob/species/resomi/id.dmi'
 		)
 
 	var/access = list()
@@ -118,6 +118,9 @@ var/const/NO_EMAG_ACT = -50
 	var/dorm = 0			// determines if this ID has claimed a dorm already
 
 	var/job_access_type     // Job type to acquire access rights from, if any
+
+	var/datum/mil_branch/military_branch = null //Vars for tracking branches and ranks on multi-crewtype maps
+	var/datum/mil_rank/military_rank = null
 
 /obj/item/weapon/card/id/New()
 	..()
@@ -171,23 +174,37 @@ var/const/NO_EMAG_ACT = -50
 		id_card.fingerprint_hash= md5(dna.uni_identity)
 	id_card.update_name()
 
+	if(ishuman(src))
+		var/mob/living/carbon/human/h = src
+		if(using_map.flags & MAP_HAS_BRANCH)
+			id_card.military_branch = h.char_branch
+
+		if(using_map.flags & MAP_HAS_RANK)
+			id_card.military_rank = h.char_rank
+
 /mob/living/carbon/human/set_id_info(var/obj/item/weapon/card/id/id_card)
 	..()
 	id_card.age = age
 
 /obj/item/weapon/card/id/proc/dat()
-	var/dat = ("<table><tr><td>")
+	var/list/dat = list("<table><tr><td>")
 	dat += text("Name: []</A><BR>", registered_name)
 	dat += text("Sex: []</A><BR>\n", sex)
 	dat += text("Age: []</A><BR>\n", age)
-	dat += text("Rank: []</A><BR>\n", assignment)
+
+	if(using_map.flags & MAP_HAS_BRANCH)
+		dat += text("Branch: []</A><BR>\n", military_branch ? military_branch.name : "\[UNSET\]")
+	if(using_map.flags & MAP_HAS_RANK)
+		dat += text("Rank: []</A><BR>\n", military_rank ? military_rank.name : "\[UNSET\]")
+
+	dat += text("Assignment: []</A><BR>\n", assignment)
 	dat += text("Fingerprint: []</A><BR>\n", fingerprint_hash)
 	dat += text("Blood Type: []<BR>\n", blood_type)
 	dat += text("DNA Hash: []<BR><BR>\n", dna_hash)
 	if(front && side)
 		dat +="<td align = center valign = top>Photo:<br><img src=front.png height=80 width=80 border=4><img src=side.png height=80 width=80 border=4></td>"
 	dat += "</tr></table>"
-	return dat
+	return jointext(dat,null)
 
 /obj/item/weapon/card/id/attack_self(mob/user as mob)
 	user.visible_message("\The [user] shows you: \icon[src] [src.name]. The assignment on the card: [src.assignment]",\
@@ -241,13 +258,14 @@ var/const/NO_EMAG_ACT = -50
 	item_state = "gold_id"
 	registered_name = "Captain"
 	assignment = "Captain"
+
 /obj/item/weapon/card/id/captains_spare/New()
 	access = get_all_station_access()
 	..()
 
 /obj/item/weapon/card/id/synthetic
 	name = "\improper Synthetic ID"
-	desc = "Access module for NanoTrasen Synthetics."
+	desc = "Access module for lawed synthetics."
 	icon_state = "id-robot"
 	item_state = "tdgreen"
 	assignment = "Synthetic"
@@ -292,7 +310,7 @@ var/const/NO_EMAG_ACT = -50
 // Department-flavor IDs
 /obj/item/weapon/card/id/medical
 	name = "identification card"
-	desc = "A card issued to station medical staff."
+	desc = "A card issued to medical staff."
 	icon_state = "med"
 	job_access_type = /datum/job/doctor
 
@@ -316,7 +334,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/security
 	name = "identification card"
-	desc = "A card issued to station security staff."
+	desc = "A card issued to security staff."
 	icon_state = "sec"
 	job_access_type = /datum/job/officer
 
@@ -334,7 +352,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/engineering
 	name = "identification card"
-	desc = "A card issued to station engineering staff."
+	desc = "A card issued to engineering staff."
 	icon_state = "eng"
 	job_access_type = /datum/job/engineer
 
@@ -349,7 +367,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/science
 	name = "identification card"
-	desc = "A card issued to station science staff."
+	desc = "A card issued to science staff."
 	icon_state = "sci"
 	job_access_type = /datum/job/scientist
 
@@ -367,7 +385,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/cargo
 	name = "identification card"
-	desc = "A card issued to station cargo staff."
+	desc = "A card issued to cargo staff."
 	icon_state = "cargo"
 	job_access_type = /datum/job/cargo_tech
 
@@ -382,7 +400,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/civilian
 	name = "identification card"
-	desc = "A card issued to station civilian staff."
+	desc = "A card issued to civilian staff."
 	icon_state = "civ"
 	job_access_type = /datum/job/assistant
 

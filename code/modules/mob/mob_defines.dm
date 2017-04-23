@@ -36,8 +36,7 @@
 	var/obj/screen/gun/run/gun_run_icon = null
 	var/obj/screen/gun/mode/gun_setting_icon = null
 
-	//spells hud icons - this interacts with add_spell and remove_spell
-	var/list/obj/screen/movable/spell_master/spell_masters = null
+	var/obj/screen/movable/ability_master/ability_master = null
 
 	/*A bunch of this stuff really needs to go under their own defines instead of being globally attached to mob.
 	A variable should only be globally attached to turfs/objects/whatever, when it is in fact needed as such.
@@ -62,8 +61,6 @@
 	var/real_name = null
 
 	var/bhunger = 0			//Carbon
-	var/ajourn = 0
-	var/seer = 0 //for cult//Carbon, probably Human
 
 	var/druggy = 0			//Carbon
 	var/confused = 0		//Carbon
@@ -78,13 +75,15 @@
 	var/list/pinned = list()            // List of things pinning this creature to walls (see living_defense.dm)
 	var/list/embedded = list()          // Embedded items, since simple mobs don't have organs.
 	var/list/languages = list()         // For speaking/listening.
+	var/species_language = null			// For species who want reset to use a specified default.
+	var/only_species_language  = 0		// For species who can only speak their default and no other languages. Does not effect understanding.
 	var/list/speak_emote = list("says") // Verbs used when speaking. Defaults to 'say' if speak_emote is null.
 	var/emote_type = 1		// Define emote default type, 1 for seen emotes, 2 for heard emotes
 	var/facing_dir = null   // Used for the ancient art of moonwalking.
 
 	var/name_archive //For admin things like possession
 
-	var/timeofdeath = 0.0
+	var/timeofdeath = 0
 
 	var/bodytemperature = 310.055	//98.7 F
 	var/default_pixel_x = 0
@@ -130,9 +129,6 @@
 //The last mob/living/carbon to push/drag/grab this mob (mostly used by slimes friend recognition)
 	var/mob/living/carbon/LAssailant = null
 
-//Wizard mode, but can be used in other modes thanks to the brand new "Give Spell" badmin button
-	var/spell/list/spell_list = list()
-
 	mouse_drag_pointer = MOUSE_ACTIVE_POINTER
 
 	var/update_icon = 1 //Set to 1 to trigger update_icons() at the next life() call
@@ -157,6 +153,7 @@
 	var/list/shouldnt_see = list()	//list of objects that this mob shouldn't see in the stat panel. this silliness is needed because of AI alt+click and cult blood runes
 
 	var/mob_size = MOB_MEDIUM
+	var/throw_multiplier = 1
 
 	var/paralysis = 0
 	var/stunned = 0

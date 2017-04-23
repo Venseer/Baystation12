@@ -1,8 +1,9 @@
 /datum/antagonist
 
 	// Text shown when becoming this antagonist.
-	var/list/restricted_jobs =     list()   // Jobs that cannot be this antagonist (depending on config)
-	var/list/protected_jobs =      list()   // As above.
+	var/list/restricted_jobs = 		list()   // Jobs that cannot be this antagonist at roundstart (depending on config)
+	var/list/protected_jobs = 		list()   // As above.
+	var/list/blacklisted_jobs =		list()   // Jobs that can NEVER be this antagonist
 
 	// Strings.
 	var/welcome_text = "Cry havoc and let slip the dogs of war!"
@@ -52,7 +53,7 @@
 	var/show_objectives_on_creation = 1     // Whether or not objectives are shown when a player is added to this antag datum
 
 	// Used for setting appearance.
-	var/list/valid_species =       list("Unathi","Tajara","Skrell","Human")
+	var/list/valid_species =       list(SPECIES_UNATHI,SPECIES_TAJARA,SPECIES_SKRELL,SPECIES_HUMAN)
 	var/min_player_age = 14
 
 	// Runtime vars.

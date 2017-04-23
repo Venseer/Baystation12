@@ -9,20 +9,20 @@
 	throw_speed = 1
 	throw_range = 3
 	force = 15
-	var/list/potentials = list("Resomi" = /spell/aoe_turf/conjure/summon/resomi, "Human" = /obj/item/weapon/storage/bag/cash/infinite, "Vox" = /spell/targeted/shapeshift/true_form,
-		"Tajara" = /spell/messa_shroud, "Unathi" = /spell/moghes_blessing, "Diona" = /spell/aoe_turf/conjure/grove/gestalt, "Skrell" = /obj/item/weapon/contract/apprentice/skrell,
-		"Machine" = /spell/camera_connection)
+	var/list/potentials = list(SPECIES_RESOMI = /spell/aoe_turf/conjure/summon/resomi, SPECIES_HUMAN = /obj/item/weapon/storage/bag/cash/infinite, SPECIES_VOX = /spell/targeted/shapeshift/true_form,
+		SPECIES_TAJARA = /spell/messa_shroud, SPECIES_UNATHI = /spell/moghes_blessing, SPECIES_DIONA = /spell/aoe_turf/conjure/grove/gestalt, SPECIES_SKRELL = /obj/item/weapon/contract/apprentice/skrell,
+		SPECIES_IPC = /spell/camera_connection)
 
 /obj/item/weapon/magic_rock/attack_self(mob/user)
 	if(!istype(user,/mob/living/carbon/human))
 		to_chat(user, "\The [src] can do nothing for such a simple being.")
 		return
 	var/mob/living/carbon/human/H = user
-	var/reward = potentials[H.species.get_bodytype()] //we get body type because that lets us ignore subspecies.
+	var/reward = potentials[H.species.get_bodytype(H)] //we get body type because that lets us ignore subspecies.
 	if(!reward)
 		to_chat(user, "\The [src] does not know what to make of you.")
 		return
-	for(var/spell/S in user.spell_list)
+	for(var/spell/S in user.mind.learned_spells)
 		if(istype(S,reward))
 			to_chat(user, "\The [src] can do no more for you.")
 			return

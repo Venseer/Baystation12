@@ -1,10 +1,6 @@
 /atom/movable/proc/get_mob()
 	return
 
-/obj/machinery/bot/mulebot/get_mob()
-	if(load && istype(load,/mob/living))
-		return load
-
 /obj/mecha/get_mob()
 	return occupant
 
@@ -12,6 +8,11 @@
 	return buckled_mob
 
 /mob/get_mob()
+	return src
+
+/mob/living/bot/mulebot/get_mob()
+	if(load && istype(load, /mob/living))
+		return list(src, load)
 	return src
 
 //helper for inverting armor blocked values into a multiplier
@@ -26,7 +27,7 @@
 
 	return mobs
 
-proc/random_hair_style(gender, species = "Human")
+proc/random_hair_style(gender, species = SPECIES_HUMAN)
 	var/h_style = "Bald"
 
 	var/list/valid_hairstyles = list()
@@ -48,7 +49,7 @@ proc/random_hair_style(gender, species = "Human")
 
 	return h_style
 
-proc/random_facial_hair_style(gender, species = "Human")
+proc/random_facial_hair_style(gender, species = SPECIES_HUMAN)
 	var/f_style = "Shaved"
 
 	var/list/valid_facialhairstyles = list()
@@ -71,14 +72,14 @@ proc/random_facial_hair_style(gender, species = "Human")
 
 		return f_style
 
-proc/sanitize_name(name, species = "Human")
+proc/sanitize_name(name, species = SPECIES_HUMAN)
 	var/datum/species/current_species
 	if(species)
 		current_species = all_species[species]
 
 	return current_species ? current_species.sanitize_name(name) : sanitizeName(name)
 
-proc/random_name(gender, species = "Human")
+proc/random_name(gender, species = SPECIES_HUMAN)
 
 	var/datum/species/current_species
 	if(species)
@@ -195,8 +196,11 @@ proc/age2agedescription(age)
 	if(!user)
 		return 0
 	var/atom/target_loc = null
+	var/target_type = null
+
 	if(target)
 		target_loc = target.loc
+		target_type = target.type
 
 	var/atom/original_loc = user.loc
 
@@ -218,7 +222,7 @@ proc/age2agedescription(age)
 			. = 0
 			break
 
-		if(target_loc && (!target || deleted(target) || target_loc != target.loc))
+		if(target_loc && (!target || deleted(target) || target_loc != target.loc || target_type != target.type))
 			. = 0
 			break
 

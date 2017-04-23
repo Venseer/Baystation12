@@ -61,8 +61,12 @@
 	else ..()
 
 /obj/structure/sign/double/map
-	name = "station map"
-	desc = "A framed picture of the station."
+	name = "map"
+	desc = "A framed map."
+
+/obj/structure/sign/double/map/New()
+	..()
+	desc = "A framed map of the [station_name()]."
 
 /obj/structure/sign/double/map/left
 	icon_state = "map-left"
@@ -79,9 +83,13 @@
 	name = "\improper WARNING"
 	icon_state = "securearea"
 
+/obj/structure/sign/warning/detailed
+	name = "\improper WARNING 2"
+	icon_state = "securearea2"
+
 /obj/structure/sign/warning/New()
 	..()
-	desc = "A warning sign which reads '[name]'."
+	desc = "A warning sign which reads '[sanitize(name)]'."
 
 /obj/structure/sign/warning/airlock
 	name = "\improper EXTERNAL AIRLOCK"
@@ -112,6 +120,10 @@
 /obj/structure/sign/warning/engineering_access
 	name = "\improper ENGINEERING ACCESS"
 
+/obj/structure/sign/warning/fall
+	name = "\improper FALL HAZARD"
+	icon_state = "falling"
+
 /obj/structure/sign/warning/fire
 	name = "\improper DANGER: FIRE"
 	icon_state = "fire"
@@ -137,9 +149,11 @@
 
 /obj/structure/sign/warning/mail_delivery
 	name = "\improper MAIL DELIVERY"
+	icon_state = "mail"
 
 /obj/structure/sign/warning/moving_parts
 	name = "\improper MOVING PARTS"
+	icon_state = "movingparts"
 
 /obj/structure/sign/warning/nosmoking_1
 	name = "\improper NO SMOKING"
@@ -162,9 +176,11 @@
 
 /obj/structure/sign/warning/secure_area/armory
 	name = "\improper ARMORY"
+	icon_state = "armory"
 
 /obj/structure/sign/warning/server_room
 	name = "\improper SERVER ROOM"
+	icon_state = "server"
 
 /obj/structure/sign/warning/siphon_valve
 	name = "\improper SIPHON VALVE"
@@ -218,11 +234,6 @@
 	name = "\improper engineering memorial plaque"
 	desc = "This plaque memorializes those engineers and technicians who made the ultimate sacrifice to save their vessel and its crew."
 	icon_state = "atmosplaque"
-
-/obj/structure/sign/dedicationplaque
-	name = "\improper SEV Torch dedication plaque"
-	desc = "S.E.V. Torch - Mako Class - Sol Expeditionary Corps Registry 95519 - Shiva Fleet Yards, Mars - First Vessel To Bear The Name - Launched 2560 - Sol Central Government - 'Never was anything great achieved without danger.'"
-	icon_state = "lightplaque"
 
 /obj/structure/sign/floorplaque
 	name = "\improper commemorative plaque"
@@ -287,6 +298,11 @@
 /obj/structure/sign/xenobio_4
 	name = "\improper XENOBIOLOGY"
 	desc = "A sign labelling an area as a place where xenobiological entites are researched."
+	icon_state = "xenobio4"
+
+/obj/structure/sign/xenoarch
+	name = "\improper XENOARCHAEOLOGY"
+	desc = "A sign labelling an area as a place where xenoarchaeological finds are researched."
 	icon_state = "xenobio4"
 
 /obj/structure/sign/chemistry
@@ -358,3 +374,24 @@
 /obj/structure/sign/directions/examroom
 	name = "\improper Exam Room"
 	icon_state = "examroom"
+
+/obj/structure/sign/deck/bridge
+	name = "\improper Bridge Deck"
+	icon_state = "deck-b"
+
+/obj/structure/sign/deck/first
+	name = "\improper First Deck"
+	icon_state = "deck-1"
+
+/obj/structure/sign/deck/second
+	name = "\improper Second Deck"
+	icon_state = "deck-2"
+
+/obj/structure/sign/deck/third
+	name = "\improper Third Deck"
+	icon_state = "deck-3"
+
+/obj/structure/sign/deck/fourth
+	name = "\improper Fourth Deck"
+	icon_state = "deck-4"
+

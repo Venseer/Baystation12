@@ -37,14 +37,14 @@
 				return
 		if(3.0)
 			if (prob(25))
-				src.density = 0
+				src.set_density(0)
 		else
 	return
 
 /obj/machinery/optable/attack_hand(mob/user as mob)
 	if (HULK in usr.mutations)
 		visible_message("<span class='danger'>\The [usr] destroys \the [src]!</span>")
-		src.density = 0
+		src.set_density(0)
 		qdel(src)
 	return
 
@@ -89,9 +89,9 @@
 		C.client.perspective = EYE_PERSPECTIVE
 		C.client.eye = src
 	C.resting = 1
-	C.loc = src.loc
+	C.dropInto(loc)
 	for(var/obj/O in src)
-		O.loc = src.loc
+		O.dropInto(loc)
 	src.add_fingerprint(user)
 	if(ishuman(C))
 		var/mob/living/carbon/human/H = C
@@ -110,11 +110,7 @@
 	else
 		return ..()
 
-/obj/machinery/optable/verb/climb_on()
-	set name = "Climb On Table"
-	set category = "Object"
-	set src in oview(1)
-
+/obj/machinery/optable/climb_on()
 	if(usr.stat || !ishuman(usr) || usr.restrained() || !check_table(usr))
 		return
 

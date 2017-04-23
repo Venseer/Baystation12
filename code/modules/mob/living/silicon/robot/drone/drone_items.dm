@@ -21,7 +21,8 @@
 		/obj/item/weapon/camera_assembly,
 		/obj/item/weapon/tank,
 		/obj/item/weapon/circuitboard,
-		/obj/item/weapon/smes_coil
+		/obj/item/weapon/smes_coil,
+		/obj/item/weapon/computer_hardware
 		)
 
 	var/obj/item/wrapped = null // Item currently being held.
@@ -57,6 +58,7 @@
 
 	can_hold = list(
 		/obj/item/weapon/reagent_containers/glass,
+		/obj/item/weapon/reagent_containers/pill,
 		/obj/item/weapon/storage/pill_bottle
 		)
 
@@ -78,7 +80,14 @@
 		/obj/item/slime_extract,
 		/obj/item/weapon/reagent_containers/glass,
 		/obj/item/weapon/reagent_containers/food/snacks/monkeycube,
-		/obj/item/mecha_parts
+		/obj/item/mecha_parts,
+		/obj/item/weapon/computer_hardware,
+		/obj/item/device/transfer_valve,
+		/obj/item/device/assembly/signaler,
+		/obj/item/device/assembly/timer,
+		/obj/item/device/assembly/igniter,
+		/obj/item/device/assembly/infra,
+		/obj/item/weapon/tank
 		)
 
 /obj/item/weapon/gripper/service //Used to handle food, drinks, and seeds.
@@ -93,6 +102,16 @@
 		/obj/item/weapon/grown,
 		/obj/item/weapon/glass_extra
 		)
+
+/obj/item/weapon/gripper/organ //Used to handle organs.
+	name = "organ gripper"
+	icon_state = "gripper"
+	desc = "A simple grasping tool for holding and manipulating organic and mechanical organs, both internal and external."
+
+	can_hold = list(
+	/obj/item/organ,
+	/obj/item/robot_parts
+	)
 
 /obj/item/weapon/gripper/no_use //Used when you want to hold and put items in other things, but not able to 'use' the item
 
@@ -109,7 +128,7 @@
 		)
 
 /obj/item/weapon/gripper/examine(mob/user)
-	..()
+	. = ..()
 	if(wrapped)
 		to_chat(user, "It is holding \a [wrapped].")
 
@@ -134,7 +153,7 @@
 		wrapped = null
 		return
 
-	to_chat(src.loc, "<span class='danger'>You drop \the [wrapped].</span>")
+	to_chat(src.loc, "<span class='warning'>You drop \the [wrapped].</span>")
 	wrapped.loc = get_turf(src)
 	wrapped = null
 	//update_icon()
@@ -164,7 +183,8 @@
 		if(!resolved && wrapped && target)
 			wrapped.afterattack(target,user,1,params)
 
-		wrapped.force = force_holder
+		if(wrapped)
+			wrapped.force = force_holder
 
 		//If wrapped was neither deleted nor put into target, put it back into the gripper.
 		if(wrapped && user && (wrapped.loc == user))
@@ -190,7 +210,7 @@
 
 		//We can grab the item, finally.
 		if(grab)
-			to_chat(user, "You collect \the [I].")
+			to_chat(user, "<span class='notice'>You collect \the [I].</span>")
 			I.loc = src
 			wrapped = I
 			return

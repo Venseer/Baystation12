@@ -4,6 +4,9 @@
 	ingested = new/datum/reagents/metabolism(1000, src, CHEM_INGEST)
 	touching = new/datum/reagents/metabolism(1000, src, CHEM_TOUCH)
 	reagents = bloodstr
+
+	if (!default_language && species_language)
+		default_language = all_languages[species_language]
 	..()
 
 /mob/living/carbon/Life()
@@ -58,8 +61,7 @@
 					var/mob/living/carbon/human/H = src
 					var/obj/item/organ/external/organ = H.get_organ(BP_CHEST)
 					if (istype(organ))
-						if(organ.take_damage(d, 0))
-							H.UpdateDamageIcon()
+						organ.take_damage(d, 0)
 					H.updatehealth()
 				else
 					src.take_organ_damage(d)
@@ -101,22 +103,32 @@
 	if (shock_damage<1)
 		return 0
 
-	src.apply_damage(shock_damage, BURN, def_zone, used_weapon="Electrocution")
+	stun_effect_act(agony_amount=shock_damage, def_zone=def_zone)
+	apply_damage(shock_damage, BURN, def_zone, used_weapon="Electrocution")
+
 	playsound(loc, "sparks", 50, 1, -1)
 	if (shock_damage > 15)
 		src.visible_message(
-			"<span class='warning'>[src] was shocked by the [source]!</span>", \
+			"<span class='warning'>[src] was electrocuted[source ? " by the [source]" : ""]!</span>", \
 			"<span class='danger'>You feel a powerful shock course through your body!</span>", \
 			"<span class='warning'>You hear a heavy electrical crack.</span>" \
 		)
-		Stun(10)//This should work for now, more is really silly and makes you lay there forever
-		Weaken(10)
 	else
 		src.visible_message(
-			"<span class='warning'>[src] was mildly shocked by the [source].</span>", \
-			"<span class='warning'>You feel a mild shock course through your body.</span>", \
-			"<span class='warning'>You hear a light zapping.</span>" \
+			"<span class='warning'>[src] was shocked[source ? " by the [source]" : ""].</span>", \
+			"<span class='warning'>You feel a shock course through your body.</span>", \
+			"<span class='warning'>You hear a zapping sound.</span>" \
 		)
+
+	switch(shock_damage)
+		if(16 to 20)
+			Stun(2)
+		if(21 to 25)
+			Weaken(2)
+		if(26 to 25)
+			Weaken(5)
+		if(31 to INFINITY)
+			Weaken(10) //This should work for now, more is really silly and makes you lay there forever
 
 	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 	s.set_up(5, 1, loc)
@@ -153,58 +165,7 @@
 
 /mob/living/carbon/proc/help_shake_act(mob/living/carbon/M)
 	if (src.health >= config.health_threshold_crit)
-		if(src == M && istype(src, /mob/living/carbon/human))
-			var/mob/living/carbon/human/H = src
-			src.visible_message( \
-				text("<span class='notice'>[src] examines [].</span>",src.gender==MALE?"himself":"herself"), \
-				"<span class='notice'>You check yourself for injuries.</span>" \
-				)
-
-			for(var/obj/item/organ/external/org in H.organs)
-				var/list/status = list()
-				var/brutedamage = org.brute_dam
-				var/burndamage = org.burn_dam
-				if(halloss > 0)
-					if(prob(30))
-						brutedamage += halloss
-					if(prob(30))
-						burndamage += halloss
-				switch(brutedamage)
-					if(1 to 20)
-						status += "bruised"
-					if(20 to 40)
-						status += "wounded"
-					if(40 to INFINITY)
-						status += "mangled"
-
-				switch(burndamage)
-					if(1 to 10)
-						status += "numb"
-					if(10 to 40)
-						status += "blistered"
-					if(40 to INFINITY)
-						status += "peeling away"
-
-				if(org.is_stump())
-					status += "MISSING"
-				if(org.status & ORGAN_MUTATED)
-					status += "weirdly shapen"
-				if(org.dislocated == 2)
-					status += "dislocated"
-				if(org.status & ORGAN_BROKEN)
-					status += "hurts when touched"
-				if(org.status & ORGAN_DEAD)
-					status += "is bruised and necrotic"
-				if(!org.is_usable() || org.is_dislocated())
-					status += "dangling uselessly"
-				if(status.len)
-					src.show_message("My [org.name] is <span class='warning'> [english_list(status)].</span>",1)
-				else
-					src.show_message("My [org.name] is <span class='notice'> OK.</span>",1)
-
-			if((SKELETON in H.mutations) && (!H.w_uniform) && (!H.wear_suit))
-				H.play_xylophone()
-		else if (on_fire)
+		if (on_fire)
 			playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
 			if (M.on_fire)
 				M.visible_message("<span class='warning'>[M] tries to pat out [src]'s flames, but to no avail!</span>",
@@ -379,10 +340,6 @@
 		update_inv_handcuffed()
 		if(buckled && buckled.buckle_require_restraints)
 			buckled.unbuckle_mob()
-
-	else if (W == legcuffed)
-		legcuffed = null
-		update_inv_legcuffed()
 	else
 	 ..()
 
@@ -411,7 +368,6 @@
 	stop_pulling()
 	to_chat(src, "<span class='warning'>You slipped on [slipped_on]!</span>")
 	playsound(src.loc, 'sound/misc/slip.ogg', 50, 1, -3)
-	Stun(stun_duration)
 	Weaken(Floor(stun_duration/2))
 	return 1
 
@@ -422,7 +378,7 @@
 		chem_effects[effect] = magnitude
 
 /mob/living/carbon/get_default_language()
-	if(default_language)
+	if(default_language && can_speak(default_language))
 		return default_language
 
 	if(!species)
@@ -472,7 +428,7 @@
 /mob/living/carbon/proc/can_feel_pain(var/check_organ)
 	if(isSynthetic())
 		return 0
-	return !(species.flags & NO_PAIN)
+	return !(species && species.flags & NO_PAIN)
 
 /mob/living/carbon/proc/get_adjusted_metabolism(metabolism)
 	return metabolism

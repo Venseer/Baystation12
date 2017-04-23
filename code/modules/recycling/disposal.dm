@@ -26,6 +26,7 @@
 	var/last_sound = 0
 	active_power_usage = 2200	//the pneumatic pump power. 3 HP ~ 2200W
 	idle_power_usage = 100
+	flags = OBJ_CLIMBABLE
 
 // create a new disposal
 // find the attached trunk (if present) and init gas resvr.
@@ -85,7 +86,7 @@
 					src.transfer_fingerprints_to(C)
 					C.ptype = 6 // 6 = disposal unit
 					C.anchored = 1
-					C.density = 1
+					C.set_density(1)
 					C.update()
 					qdel(src)
 				return
@@ -917,7 +918,7 @@
 		C.subtype = src.subtype
 		src.transfer_fingerprints_to(C)
 		C.set_dir(dir)
-		C.density = 0
+		C.set_density(0)
 		C.anchored = 1
 		C.update()
 
@@ -1584,6 +1585,7 @@
 	var/active = 0
 	var/turf/target	// this will be where the output objects are 'thrown' to.
 	var/mode = 0
+	flags = OBJ_CLIMBABLE
 
 	New()
 		..()
@@ -1645,7 +1647,7 @@
 					C.ptype = 7 // 7 =  outlet
 					C.update()
 					C.anchored = 1
-					C.density = 1
+					C.set_density(1)
 					qdel(src)
 				return
 			else

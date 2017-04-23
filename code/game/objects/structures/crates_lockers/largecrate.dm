@@ -4,6 +4,7 @@
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "densecrate"
 	density = 1
+	flags = OBJ_CLIMBABLE
 
 /obj/structure/largecrate/initialize()
 	..()
@@ -57,6 +58,10 @@
 	..()
 	for(var/i = 1;i<=held_count;i++)
 		new held_type(src)
+
+/obj/structure/largecrate/animal/mulebot
+	name = "Mulebot crate"
+	held_type = /mob/living/bot/mulebot
 
 /obj/structure/largecrate/animal/corgi
 	name = "corgi carrier"

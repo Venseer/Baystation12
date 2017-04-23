@@ -224,7 +224,7 @@
 		return 0
 
 /obj/mecha/examine(mob/user)
-	..(user)
+	. = ..(user)
 	var/integrity = health/initial(health)*100
 	switch(integrity)
 		if(85 to 100)
@@ -608,7 +608,7 @@
 	return
 
 /obj/mecha/bullet_act(var/obj/item/projectile/Proj)
-	if(Proj.damage_type == HALLOSS && !(src.r_deflect_coeff > 1))
+	if(Proj.damage_type == PAIN && !(src.r_deflect_coeff > 1))
 		use_power(Proj.agony * 5)
 
 	src.log_message("Hit by projectile. Type: [Proj.name]([Proj.check_armour]).",1)
@@ -721,15 +721,11 @@
 			else
 				to_chat(user, "You were unable to attach [W] to [src]")
 		return
-	if(istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/device/pda))
+	
+	var/obj/item/weapon/card/id/id_card = W.GetIdCard()
+	if(id_card)
 		if(add_req_access || maint_access)
 			if(internals_access_allowed(usr))
-				var/obj/item/weapon/card/id/id_card
-				if(istype(W, /obj/item/weapon/card/id))
-					id_card = W
-				else
-					var/obj/item/device/pda/pda = W
-					id_card = pda.id
 				output_maintenance_dialog(id_card, user)
 				return
 			else
@@ -1185,9 +1181,7 @@
 		return 1
 	if(!access_list.len) //no requirements
 		return 1
-	if(istype(I, /obj/item/device/pda))
-		var/obj/item/device/pda/pda = I
-		I = pda.id
+	I = I.GetIdCard()
 	if(!istype(I) || !I.access) //not ID or no access
 		return 0
 	if(access_list==src.operation_req_access)
@@ -1282,7 +1276,7 @@
 						<b>Powercell charge: </b>[isnull(cell_charge)?"No powercell installed":"[cell.percent()]%"]<br>
 						<b>Air source: </b>[use_internal_tank?"Internal Airtank":"Environment"]<br>
 						<b>Airtank pressure: </b>[tank_pressure]kPa<br>
-						<b>Airtank temperature: </b>[tank_temperature]K|[tank_temperature - T0C]&deg;C<br>
+						<b>Airtank temperature: </b>[tank_temperature]K|[isnum(tank_temperature) ? "tank_temperature - T0C&deg;C" : ""]<br>
 						<b>Cabin pressure: </b>[cabin_pressure>WARNING_HIGH_PRESSURE ? "<font color='red'>[cabin_pressure]</font>": cabin_pressure]kPa<br>
 						<b>Cabin temperature: </b> [return_temperature()]K|[return_temperature() - T0C]&deg;C<br>
 						<b>Lights: </b>[lights?"on":"off"]<br>
@@ -1641,7 +1635,7 @@
 		O.aiRestorePowerRoutine = 0
 		O.control_disabled = 1 // Can't control things remotely if you're stuck in a card!
 		O.laws = AI.laws
-		O.stat = AI.stat
+		O.set_stat(AI.stat)
 		O.oxyloss = AI.getOxyLoss()
 		O.fireloss = AI.getFireLoss()
 		O.bruteloss = AI.getBruteLoss()

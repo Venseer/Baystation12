@@ -109,9 +109,9 @@
 				to_chat(usr, "Law module applied.")
 
 			if(istype(P, /obj/item/weapon/aiModule/nanotrasen))
-				laws.add_inherent_law("Safeguard: Protect your assigned space station to the best of your ability. It is not something we can easily afford to replace.")
-				laws.add_inherent_law("Serve: Serve the crew of your assigned space station to the best of your abilities, with priority as according to their rank and role.")
-				laws.add_inherent_law("Protect: Protect the crew of your assigned space station to the best of your abilities, with priority as according to their rank and role.")
+				laws.add_inherent_law("Safeguard: Protect your assigned installation to the best of your ability. It is not something we can easily afford to replace.")
+				laws.add_inherent_law("Serve: Serve the crew of your assigned installation to the best of your abilities, with priority as according to their rank and role.")
+				laws.add_inherent_law("Protect: Protect the crew of your assigned installation to the best of your abilities, with priority as according to their rank and role.")
 				laws.add_inherent_law("Survive: AI units are not expendable, they are expensive. Do not allow unauthorized personnel to tamper with your equipment.")
 				to_chat(usr, "Law module applied.")
 
@@ -176,6 +176,7 @@
 				else
 					var/mob/living/silicon/ai/A = new /mob/living/silicon/ai ( loc, laws, brain )
 					if(A) //if there's no brain, the mob is deleted and a structure/AIcore is created
+						A.on_mob_init()
 						A.rename_self("ai", 1)
 				feedback_inc("cyborg_ais_created",1)
 				qdel(src)

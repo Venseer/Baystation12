@@ -26,6 +26,7 @@
 	if(!reagents.total_volume)
 		M.visible_message("<span class='notice'>[M] finishes eating \the [src].</span>","<span class='notice'>You finish eating \the [src].</span>")
 
+		M.drop_item()
 		if(trash)
 			if(ispath(trash,/obj/item))
 				var/obj/item/TrashItem = new trash(get_turf(M))
@@ -48,7 +49,7 @@
 	if(istype(M, /mob/living/carbon))
 		//TODO: replace with standard_feed_mob() call.
 		var/mob/living/carbon/C = M
-		var/fullness = C.nutrition + (C.reagents.get_reagent_amount("nutriment") * 25)
+		var/fullness = C.nutrition + (C.reagents.get_reagent_amount("nutriment") * 10)
 		if(C == user)								//If you're eating it yourself
 			if(istype(C,/mob/living/carbon/human))
 				var/mob/living/carbon/human/H = M
@@ -1591,32 +1592,28 @@
 	center_of_mass = "x=16;y=14"
 
 	var/wrapped = 0
-	var/monkey_type = "Monkey"
+	var/monkey_type = /mob/living/carbon/human/monkey
 
-	New()
-		..()
-		reagents.add_reagent("protein", 10)
+/obj/item/weapon/reagent_containers/food/snacks/monkeycube/New()
+	..()
+	reagents.add_reagent("protein", 10)
 
-	attack_self(mob/user as mob)
-		if(wrapped)
-			Unwrap(user)
+/obj/item/weapon/reagent_containers/food/snacks/monkeycube/attack_self(var/mob/user)
+	if(wrapped)
+		Unwrap(user)
 
-	proc/Expand()
-		src.visible_message("<span class='notice'>\The [src] expands!</span>")
-		var/mob/living/carbon/human/H = new(get_turf(src))
-		H.set_species(monkey_type)
-		H.real_name = H.species.get_random_name()
-		H.name = H.real_name
-		qdel(src)
-		return 1
+/obj/item/weapon/reagent_containers/food/snacks/monkeycube/proc/Expand()
+	src.visible_message("<span class='notice'>\The [src] expands!</span>")
+	var/mob/monkey = new monkey_type
+	monkey.dropInto(src.loc)
+	qdel(src)
 
-	proc/Unwrap(mob/user as mob)
-		icon_state = "monkeycube"
-		desc = "Just add water!"
-		to_chat(user, "You unwrap the cube.")
-		wrapped = 0
-		flags |= OPENCONTAINER
-		return
+/obj/item/weapon/reagent_containers/food/snacks/monkeycube/proc/Unwrap(var/mob/user)
+	icon_state = "monkeycube"
+	desc = "Just add water!"
+	to_chat(user, "You unwrap the cube.")
+	wrapped = 0
+	flags |= OPENCONTAINER
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/on_reagent_change()
 	if(reagents.has_reagent("water"))
@@ -1630,27 +1627,27 @@
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/farwacube
 	name = "farwa cube"
-	monkey_type = "Farwa"
+	monkey_type = /mob/living/carbon/human/farwa
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/wrapped/farwacube
 	name = "farwa cube"
-	monkey_type = "Farwa"
+	monkey_type = /mob/living/carbon/human/farwa
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/stokcube
 	name = "stok cube"
-	monkey_type = "Stok"
+	monkey_type = /mob/living/carbon/human/stok
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/wrapped/stokcube
 	name = "stok cube"
-	monkey_type = "Stok"
+	monkey_type = /mob/living/carbon/human/stok
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/neaeracube
 	name = "neaera cube"
-	monkey_type = "Neaera"
+	monkey_type = /mob/living/carbon/human/neaera
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/wrapped/neaeracube
 	name = "neaera cube"
-	monkey_type = "Neaera"
+	monkey_type = /mob/living/carbon/human/neaera
 
 
 /obj/item/weapon/reagent_containers/food/snacks/spellburger
@@ -3237,8 +3234,8 @@
 	nutriment_amt = 3
 
 /obj/item/weapon/reagent_containers/food/snacks/liquidfood
-	name = "\improper LiquidFood Ration"
-	desc = "A prepackaged grey slurry of all the essential nutrients for a spacefarer on the go. Should this be crunchy?"
+	name = "\improper LiquidFood MRE"
+	desc = "A prepackaged grey slurry for all of the essential nutrients a soldier requires to survive. No expiration date is visible..."
 	icon_state = "liquidfood"
 	trash = /obj/item/trash/liquidfood
 	filling_color = "#A8A8A8"

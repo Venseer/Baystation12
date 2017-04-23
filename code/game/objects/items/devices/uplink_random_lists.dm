@@ -72,7 +72,7 @@ var/list/uplink_random_selections_
 	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/clerical)
 	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/space_suit, 50, 10)
 	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/thermal)
-	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/heavy_vest)
+	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/heavy_armor)
 	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/powersink, 10, 10)
 	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/ai_module, 25, 0)
 	items += new/datum/uplink_random_item(/datum/uplink_item/item/tools/teleporter, 10, 0)
@@ -138,6 +138,7 @@ var/list/uplink_random_selections_
 
 #ifdef DEBUG
 /proc/debug_uplink_purchage_log()
+	var/list/all_antag_types = all_antag_types()
 	for(var/antag_type in all_antag_types)
 		var/datum/antagonist/A = all_antag_types[antag_type]
 		A.print_player_summary()

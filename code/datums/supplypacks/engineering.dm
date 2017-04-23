@@ -237,12 +237,12 @@
 	containername = "\improper Radiation suit locker"
 
 /decl/hierarchy/supply_pack/engineering/painters
-	name = "Station Painting Supplies"
+	name = "Painting Supplies"
 	contains = list(/obj/item/device/pipe_painter = 2,
 					/obj/item/device/floor_painter = 2,
 					/obj/item/device/cable_painter = 2)
 	cost = 10
-	containername = "\improper station painting supplies crate"
+	containername = "\improper painting supplies crate"
 	containertype = /obj/structure/closet/crate
 
 /decl/hierarchy/supply_pack/engineering/bluespacerelay
@@ -255,3 +255,14 @@
 					/obj/item/weapon/storage/toolbox/electrical)
 	cost = 75
 	containername = "\improper emergency bluespace relay assembly kit"
+
+/decl/hierarchy/supply_pack/engineering/firefighter
+	name = "Firefighting equipment"
+	contains = list(/obj/item/clothing/suit/fire/firefighter,
+			/obj/item/clothing/mask/gas,
+			/obj/item/weapon/tank/oxygen/red,
+			/obj/item/weapon/extinguisher,
+			/obj/item/clothing/head/hardhat/red)
+	cost = 20
+	containertype = /obj/structure/closet/firecloset
+	containername = "\improper fire-safety closet"

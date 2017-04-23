@@ -25,10 +25,10 @@
 	item_cost = 16
 	path = /obj/item/weapon/plastique
 
-/datum/uplink_item/item/tools/heavy_vest
-	name = "Heavy Armor Vest"
+/datum/uplink_item/item/tools/heavy_armor
+	name = "Heavy Armor Vest and Helmet"
 	item_cost = 16
-	path = /obj/item/clothing/suit/storage/vest/merc
+	path = /obj/item/weapon/storage/backpack/satchel/syndie_kit/armor
 
 /datum/uplink_item/item/tools/encryptionkey_radio
 	name = "Encrypted Radio Channel Key"
@@ -39,6 +39,11 @@
 	name = "Handheld Shield Diffuser"
 	item_cost = 16
 	path = /obj/item/weapon/shield_diffuser
+
+/datum/uplink_item/item/tools/flashdark
+	name = "Flashdark"
+	item_cost = 16
+	path = /obj/item/device/flashlight/flashdark
 
 /datum/uplink_item/item/tools/suit_sensor_mobile
 	name = "Suit Sensor Jamming Device"

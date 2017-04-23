@@ -3,7 +3,7 @@
 /////////////////////////////////////////////
 /obj/item/weapon/card/id/guest
 	name = "guest pass"
-	desc = "Allows temporary access to station areas."
+	desc = "Allows temporary access to restricted areas."
 	icon_state = "guest"
 	light_color = "#0099ff"
 
@@ -18,7 +18,7 @@
 		return temp_access
 
 /obj/item/weapon/card/id/guest/examine(mob/user)
-	..(user)
+	. = ..()
 	if (world.time < expiration_time)
 		to_chat(user, "<span class='notice'>This pass expires at [worldtime2stationtime(expiration_time)].</span>")
 	else

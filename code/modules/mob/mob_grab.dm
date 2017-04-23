@@ -34,7 +34,6 @@
 	plane = HUD_PLANE
 	layer = HUD_ITEM_LAYER
 
-	abstract = 1
 	item_state = "nothing"
 	simulated = 0
 
@@ -45,8 +44,7 @@
 	assailant = user
 	affecting = victim
 
-	if(affecting.anchored || !assailant.Adjacent(victim))
-		qdel(src)
+	if(affecting.anchored || !assailant.Adjacent(victim)) //Shouldn't even be created if these aren't met
 		return
 
 	affecting.grabbed_by += src
@@ -74,14 +72,22 @@
 	if(affecting)
 		if(affecting.buckled)
 			return null
+
+		if(!affecting.Adjacent(assailant))
+			qdel(src)
+			return null
 		if(state >= GRAB_AGGRESSIVE)
 			animate(affecting, pixel_x = 0, pixel_y = 0, 4, 1)
-			return affecting
+			var/mob/living/affected = affecting
+			qdel(src)
+			return affected
 	return null
 
 
 //This makes sure that the grab screen object is displayed in the correct hand.
 /obj/item/weapon/grab/proc/synch() //why is this needed?
+	if(deleted(src))
+		return
 	if(affecting)
 		if(assailant.r_hand == src)
 			hud.screen_loc = ui_rhand
@@ -89,10 +95,12 @@
 			hud.screen_loc = ui_lhand
 
 /obj/item/weapon/grab/process()
-	if(gcDestroyed) // GC is trying to delete us, we'll kill our processing so we can cleanly GC
+	if(deleted(src)) // GC is trying to delete us, we'll kill our processing so we can cleanly GC
 		return PROCESS_KILL
 
-	confirm()
+	if(!confirm())
+		return PROCESS_KILL	//qdel'd in confirm.
+
 	if(!assailant)
 		qdel(src) // Same here, except we're trying to delete ourselves.
 		return PROCESS_KILL
@@ -230,6 +238,8 @@
 			animate(affecting, pixel_x =-shift, pixel_y = 0, 5, 1, LINEAR_EASING)
 
 /obj/item/weapon/grab/proc/s_click(obj/screen/S)
+	if(deleted(src))
+		return
 	if(!affecting)
 		return
 	if(state == GRAB_UPGRADING)
@@ -244,45 +254,78 @@
 
 	last_action = world.time
 
-	if(state < GRAB_AGGRESSIVE)
-		if(!allow_upgrade)
-			return
-		if(!affecting.lying || size_difference(affecting, assailant) > 0)
-			assailant.visible_message("<span class='warning'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
-		else
-			assailant.visible_message("<span class='warning'>[assailant] pins [affecting] down to the ground (now hands)!</span>")
-			apply_pinning(affecting, assailant)
+	if(assailant.a_intent == I_HELP)
+		switch(state)
+			if(GRAB_PASSIVE) //Lets go
+				assailant.visible_message("<span class='notice'>[assailant] lets go of [affecting].</span>")
+				qdel(src)
 
-		state = GRAB_AGGRESSIVE
-		icon_state = "grabbed1"
-		hud.icon_state = "reinforce1"
-	else if(state < GRAB_NECK)
-		if(isslime(affecting))
-			to_chat(assailant, "<span class='notice'>You squeeze [affecting], but nothing interesting happens.</span>")
-			return
+			if(GRAB_AGGRESSIVE) //downgrade to GRAB_PASSIVE
+				if(force_down)
+					to_chat(assailant, "<span class='warning'>You are no longer pinning [affecting] to the ground.</span>")
+					force_down = 0
 
-		assailant.visible_message("<span class='warning'>[assailant] has reinforced \his grip on [affecting] (now neck)!</span>")
-		state = GRAB_NECK
-		icon_state = "grabbed+1"
-		assailant.set_dir(get_dir(assailant, affecting))
-		admin_attack_log(assailant, affecting, "Grabbed the neck of their victim.", "Had their neck grabbed", "grabbed the neck of")
+				assailant.visible_message("<span class='notice'>[assailant] has relaxed \his grip on [affecting]'s hands.</span>")
+				state = GRAB_PASSIVE
+				icon_state = "grabbed"
+				assailant.set_dir(get_dir(assailant, affecting))
 
-		hud.icon_state = "kill"
-		hud.name = "kill"
-		affecting.Stun(10) //10 ticks of ensured grab
-	else if(state < GRAB_UPGRADING)
-		assailant.visible_message("<span class='danger'>[assailant] starts to tighten \his grip on [affecting]'s neck!</span>")
-		hud.icon_state = "kill1"
+				hud.icon_state = "reinforce"
+				hud.name = "reinforce grab"
 
-		state = GRAB_KILL
-		assailant.visible_message("<span class='danger'>[assailant] has tightened \his grip on [affecting]'s neck!</span>")
-		admin_attack_log(assailant, affecting, "Strangled their victim", "Was strangled", "strangled")
+			if(GRAB_NECK) //downgrade to GRAB_AGGRESSIVE
+				assailant.visible_message("<span class='notice'>[assailant] has relaxed \his grip on [affecting]'s neck, grabbing their hands!</span>")
+				hud.icon_state = "reinforce1"
+				icon_state = "grabbed1"
+				hud.name = "reinforce grab"
+				state = GRAB_AGGRESSIVE
 
-		affecting.setClickCooldown(10)
-		affecting.set_dir(WEST)
-		if(iscarbon(affecting))
-			var/mob/living/carbon/C = affecting
-			C.losebreath += 1
+			if(GRAB_KILL) //downgrade to GRAB_NECK
+				assailant.visible_message("<span class='notice'>[assailant] has relaxed \his grip on [affecting]'s throat.</span>")
+				hud.icon_state = "kill"
+				hud.name = "kill"
+				state = GRAB_NECK
+	else
+		switch(state)
+			if(GRAB_PASSIVE) //upgrade to GRAB_AGGRESSIVE
+				if(!allow_upgrade)
+					return
+				if(!affecting.lying || size_difference(affecting, assailant) > 0)
+					assailant.visible_message("<span class='warning'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
+				else
+					assailant.visible_message("<span class='warning'>[assailant] pins [affecting] down to the ground (now hands)!</span>")
+					apply_pinning(affecting, assailant)
+
+				state = GRAB_AGGRESSIVE
+				icon_state = "grabbed1"
+				hud.icon_state = "reinforce1"
+			if(GRAB_AGGRESSIVE) //upgrade to GRAB_NECK
+				if(isslime(affecting))
+					to_chat(assailant, "<span class='notice'>You squeeze [affecting], but nothing interesting happens.</span>")
+					return
+
+				assailant.visible_message("<span class='warning'>[assailant] has reinforced \his grip on [affecting] (now neck)!</span>")
+				state = GRAB_NECK
+				icon_state = "grabbed+1"
+				assailant.set_dir(get_dir(assailant, affecting))
+				admin_attack_log(assailant, affecting, "Grabbed the neck of their victim.", "Had their neck grabbed", "grabbed the neck of")
+
+				hud.icon_state = "kill"
+				hud.name = "kill"
+				affecting.Stun(10) //10 ticks of ensured grab
+			if(GRAB_NECK) //upgrade to GRAB_KILL
+				assailant.visible_message("<span class='danger'>[assailant] starts to tighten \his grip on [affecting]'s neck!</span>")
+				hud.icon_state = "kill1"
+
+				state = GRAB_KILL
+				assailant.visible_message("<span class='danger'>[assailant] has tightened \his grip on [affecting]'s neck!</span>")
+				admin_attack_log(assailant, affecting, "Strangled their victim", "Was strangled", "strangled")
+
+				affecting.setClickCooldown(10)
+				affecting.set_dir(WEST)
+				if(iscarbon(affecting))
+					var/mob/living/carbon/C = affecting
+					C.losebreath += 1
 	adjust_position()
 
 //This is used to make sure the victim hasn't managed to yackety sax away before using the grab.
@@ -299,9 +342,14 @@
 	return 1
 
 /obj/item/weapon/grab/attack(mob/M, mob/living/user)
+	if(deleted(src))
+		return
 	if(!affecting)
 		return
 	if(world.time < (last_action + 20))
+		return
+	if(!M.Adjacent(user))
+		qdel(src)
 		return
 
 	last_action = world.time
@@ -346,10 +394,13 @@
 /obj/item/weapon/grab/dropped()
 	..()
 	loc = null
-	if(!destroying)
+	if(!deleted(src))
 		qdel(src)
 
 /obj/item/weapon/grab/proc/reset_kill_state()
+	if(!assailant)
+		qdel(src)
+		return
 	if(state == GRAB_KILL)
 		assailant.visible_message("<span class='warning'>[assailant] lost \his tight grip on [affecting]'s neck!</span>")
 		hud.icon_state = "kill"
@@ -380,21 +431,30 @@
 				break_strength++
 			break_chance_table = list(3, 18, 45, 100)
 
+		if(GRAB_KILL)
+			grab_name = "stranglehold"
+			break_chance_table = list(5, 20, 40, 80, 100)
+
+
 	//It's easier to break out of a grab by a smaller mob
 	break_strength += max(size_difference(affecting, assailant), 0)
 
 	var/break_chance = break_chance_table[Clamp(break_strength, 1, break_chance_table.len)]
 	if(prob(break_chance))
-		if(grab_name)
-			affecting.visible_message("<span class='warning'>[affecting] has broken free of [assailant]'s [grab_name]!</span>")
-		qdel(src)
+		if(state == GRAB_KILL && !prob((break_chance+100)/2))
+			if(grab_name)
+				affecting.visible_message("<span class='warning'>[affecting] has broken free of [assailant]'s [grab_name]!</span>")
+			reset_kill_state()
+			return
+		else
+			if(grab_name)
+				affecting.visible_message("<span class='warning'>[affecting] has broken free of [assailant]'s [grab_name]!</span>")
+			qdel(src)
+
 
 //returns the number of size categories between affecting and assailant, rounded. Positive means A is larger than B
 /obj/item/weapon/grab/proc/size_difference(mob/A, mob/B)
 	return mob_size_difference(A.mob_size, B.mob_size)
-
-/obj/item/weapon/grab
-	var/destroying = 0
 
 /obj/item/weapon/grab/Destroy()
 	if(affecting)
@@ -408,5 +468,4 @@
 		assailant = null
 	qdel(hud)
 	hud = null
-	destroying = 1 // stops us calling qdel(src) on dropped()
 	..()

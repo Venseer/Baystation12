@@ -414,6 +414,9 @@ Turf and target are seperate in case you want to teleport some distance from a t
 
 	return creatures
 
+/proc/get_follow_targets()
+	return follow_repository.get_follow_targets()
+
 //Orders mobs by type then by name
 /proc/sortmobs()
 	var/list/moblist = list()
@@ -793,7 +796,7 @@ proc/DuplicateObject(obj/original, var/perfectcopy = 0 , var/sameloc = 0)
 
 					for(var/obj/O in T)
 
-						if(!istype(O,/obj))
+						if(!istype(O,/obj) || !O.simulated)
 							continue
 
 						objs += O
@@ -804,18 +807,18 @@ proc/DuplicateObject(obj/original, var/perfectcopy = 0 , var/sameloc = 0)
 
 
 					for(var/obj/O in newobjs)
-						O.loc = X
+						O.forceMove(X)
 
 					for(var/mob/M in T)
 
-						if(!istype(M,/mob) || isEye(M)) continue // If we need to check for more mobs, I'll add a variable
+						if(!istype(M,/mob) || !M.simulated) continue // If we need to check for more mobs, I'll add a variable
 						mobs += M
 
 					for(var/mob/M in mobs)
 						newmobs += DuplicateObject(M , 1)
 
 					for(var/mob/M in newmobs)
-						M.loc = X
+						M.forceMove(X)
 
 					copiedobjs += newobjs
 					copiedobjs += newmobs
@@ -1029,22 +1032,27 @@ proc/is_hot(obj/item/W as obj)
 /obj/item/clothing/mask/smokable/cigarette/can_puncture()
 	return src.lit
 
-/proc/is_surgery_tool(obj/item/W as obj)
-	return (	\
-	istype(W, /obj/item/weapon/scalpel)			||	\
-	istype(W, /obj/item/weapon/hemostat)		||	\
-	istype(W, /obj/item/weapon/retractor)		||	\
-	istype(W, /obj/item/weapon/cautery)			||	\
-	istype(W, /obj/item/weapon/bonegel)			||	\
-	istype(W, /obj/item/weapon/bonesetter)
-	)
-
 //check if mob is lying down on something we can operate him on.
-/proc/can_operate(mob/living/carbon/M)
-	return (M.lying && \
-	locate(/obj/machinery/optable, M.loc) || \
-	(locate(/obj/structure/bed/roller, M.loc) && prob(75)) || \
-	(locate(/obj/structure/table/, M.loc) && prob(66)))
+/proc/can_operate(mob/living/carbon/M, mob/living/carbon/user)
+	var/turf/T = get_turf(M)
+	if(locate(/obj/machinery/optable, T))
+		. = TRUE
+	if(locate(/obj/structure/bed, T))
+		. = TRUE
+	if(locate(/obj/structure/table, T))
+		. = TRUE
+
+	if(M == user)
+		var/hitzone = check_zone(user.zone_sel.selecting)
+		var/list/badzones = list(BP_HEAD)
+		if(user.hand)
+			badzones += BP_L_ARM
+			badzones += BP_L_HAND
+		else
+			badzones += BP_R_ARM
+			badzones += BP_R_HAND
+		if(hitzone in badzones)
+			return FALSE
 
 /proc/reverse_direction(var/dir)
 	switch(dir)

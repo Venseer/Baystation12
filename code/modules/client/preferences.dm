@@ -18,6 +18,7 @@ datum/preferences
 	var/lastchangelog = ""				//Saved changlog filesize to detect if there was a change
 	var/ooccolor = "#010000"			//Whatever this is set to acts as 'reset' color and is thus unusable as an actual custom color
 	var/list/never_be_special_role = list()
+	var/list/sometimes_be_special_role = list()
 	var/list/be_special_role = list()		//Special role selection
 	var/UI_style = "Midnight"
 	var/UI_style_color = "#ffffff"
@@ -45,7 +46,7 @@ datum/preferences
 	var/r_eyes = 0						//Eye color
 	var/g_eyes = 0						//Eye color
 	var/b_eyes = 0						//Eye color
-	var/species = "Human"               //Species datum to use.
+	var/species = SPECIES_HUMAN               //Species datum to use.
 	var/species_preview                 //Used for the species selection window.
 	var/list/alternate_languages = list() //Secondary language(s)
 	var/list/language_prefixes = list() //Kanguage prefix keys
@@ -69,10 +70,9 @@ datum/preferences
 	var/list/job_low    = list() //List of all the things selected for low weight
 
 	//Keeps track of preferrence for not getting any wanted jobs
-	var/alternate_option = 0
+	var/alternate_option = 2
 
 	var/used_skillpoints = 0
-	var/skill_specialization = null
 	var/list/skills = list() // skills can range from 0 to 3
 
 	// maps each organ to either null(intact), "cyborg" or "amputated"
@@ -105,6 +105,10 @@ datum/preferences
 	var/savefile/loaded_character
 	var/datum/category_collection/player_setup_collection/player_setup
 	var/datum/browser/panel
+
+	var/list/relations
+	var/list/relations_info
+
 
 /datum/preferences/New(client/C)
 	player_setup = new(src)
@@ -244,6 +248,8 @@ datum/preferences
 		sanitize_preferences()
 		close_load_dialog(usr)
 	else if(href_list["resetslot"])
+		if("No" == alert("This will reset the current slot. Continue?", "Reset current slot?", "No", "Yes"))
+			return 0
 		load_character(SAVE_RESET)
 		sanitize_preferences()
 	else
@@ -354,7 +360,7 @@ datum/preferences
 				character.all_underwear_metadata[underwear_category_name] = all_underwear_metadata[underwear_category_name]
 		else
 			all_underwear -= underwear_category_name
-	if(backbag > 4 || backbag < 1)
+	if(backbag > 6 || backbag < 1)
 		backbag = 1 //Same as above
 	character.backbag = backbag
 
@@ -364,6 +370,9 @@ datum/preferences
 	character.update_underwear(0)
 	character.update_hair(0)
 	character.update_icons()
+
+	character.char_branch = mil_branches.get_branch(char_branch)
+	character.char_rank = mil_branches.get_rank(char_branch, char_rank)
 
 	if(is_preview_copy)
 		return
@@ -388,11 +397,11 @@ datum/preferences
 	character.personal_faction = faction
 	character.religion = religion
 
-	character.char_branch = mil_branches.get_branch(char_branch)
-	character.char_rank = mil_branches.get_rank(char_branch, char_rank)
-
 	character.skills = skills
 	character.used_skillpoints = used_skillpoints
+	
+	if(!character.isSynthetic())
+		character.nutrition = rand(140,360)
 
 /datum/preferences/proc/open_load_dialog(mob/user)
 	var/dat  = list()
@@ -404,7 +413,7 @@ datum/preferences
 		dat += "<b>Select a character slot to load</b><hr>"
 		var/name
 		for(var/i=1, i<= config.character_slots, i++)
-			S.cd = "/character[i]"
+			S.cd = using_map.character_load_path(S, i)
 			S["real_name"] >> name
 			if(!name)	name = "Character[i]"
 			if(i==default_slot)

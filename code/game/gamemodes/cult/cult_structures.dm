@@ -3,9 +3,6 @@
 	anchored = 1
 	icon = 'icons/obj/cult.dmi'
 
-/obj/structure/cult/cultify()
-	return
-
 /obj/structure/cult/talisman
 	name = "Altar"
 	desc = "A bloodstained altar dedicated to Nar-Sie."
@@ -48,7 +45,7 @@
 			user.do_attack_animation(src)
 			playsound(get_turf(src), 'sound/effects/Glassbr3.ogg', 75, 1)
 			isbroken = 1
-			density = 0
+			set_density(0)
 			icon_state = "pylon-broken"
 			set_light(0)
 		else
@@ -67,7 +64,7 @@
 	if(isbroken)
 		to_chat(user, "You repair the pylon.")
 		isbroken = 0
-		density = 1
+		set_density(1)
 		icon_state = "pylon"
 		set_light(5)
 
@@ -123,9 +120,6 @@
 		/mob/living/simple_animal/hostile/creature/cult,
 		/mob/living/simple_animal/hostile/faithless/cult
 	)
-
-/obj/effect/gateway/active/cult/cultify()
-	return
 
 /obj/effect/gateway/active/New()
 	spawn(rand(30,60) SECONDS)

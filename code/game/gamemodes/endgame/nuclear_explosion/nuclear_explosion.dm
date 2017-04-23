@@ -23,12 +23,12 @@
 
 	var/turf/T = get_turf(explosion_source)
 	if(isStationLevel(T.z))
-		to_world("<span class='danger'>The station was destoyed by the nuclear blast!</span>")
+		to_world("<span class='danger'>The [station_name()] was destoyed by the nuclear blast!</span>")
 
 		dust_mobs(using_map.station_levels)
 		play_cinematic_station_destroyed()
 	else
-		to_world("<span class='danger'>A nuclear device was set off, but the explosion was out of reach of the station!</span>")
+		to_world("<span class='danger'>A nuclear device was set off, but the explosion was out of reach of the [station_name()]!</span>")
 
 		dust_mobs(list(T.z))
 		play_cinematic_station_unaffected()
@@ -95,7 +95,7 @@
 //MALF
 /datum/universal_state/nuclear_explosion/malf/start_cinematic_intro()
 	for(var/mob/M in player_list) //I guess so that people in the lobby only hear the explosion
-		to_chat(M, sound('sound/machines/Alarm.ogg'))
+		to_chat(M, sound('sound/machines/Alarm.ogg'))
 
 	sleep(28)
 

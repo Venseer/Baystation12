@@ -113,20 +113,20 @@ var/list/gamemode_cache = list()
 	//game_options.txt configs
 
 	var/health_threshold_softcrit = 0
-	var/health_threshold_crit = 0
+	var/health_threshold_crit = -50
 	var/health_threshold_dead = -100
 
-	var/organ_health_multiplier = 1
-	var/organ_regeneration_multiplier = 1
+	var/organ_health_multiplier = 0.9
+	var/organ_regeneration_multiplier = 0.25
 	var/organs_decay
 	var/default_brain_health = 400
 
 	//Paincrit knocks someone down once they hit 60 shock_stage, so by default make it so that close to 100 additional damage needs to be dealt,
-	//so that it's similar to HALLOSS. Lowered it a bit since hitting paincrit takes much longer to wear off than a halloss stun.
+	//so that it's similar to PAIN. Lowered it a bit since hitting paincrit takes much longer to wear off than a halloss stun.
 	var/organ_damage_spillover_multiplier = 0.5
 
-	var/bones_can_break = 0
-	var/limbs_can_break = 0
+	var/bones_can_break = 1
+	var/limbs_can_break = 1
 
 	var/revival_pod_plants = 1
 	var/revival_cloning = 1
@@ -140,8 +140,8 @@ var/list/gamemode_cache = list()
 
 	//Used for modifying movement speed for mobs.
 	//Unversal modifiers
-	var/run_speed = 0
-	var/walk_speed = 0
+	var/run_speed = 2
+	var/walk_speed = 1
 
 	//Mob specific modifiers. NOTE: These will affect different mob types in different ways
 	var/human_delay = 0
@@ -150,6 +150,7 @@ var/list/gamemode_cache = list()
 	var/alien_delay = 0
 	var/slime_delay = 0
 	var/animal_delay = 0
+	var/maximum_mushrooms = 15 //After this amount alive, mushrooms will not boom boom
 
 
 	var/admin_legacy_system = 0	//Defines whether the server uses the legacy admin system with admins.txt or the SQL system. Config option in config.txt
@@ -177,7 +178,6 @@ var/list/gamemode_cache = list()
 	var/announce_shuttle_dock_to_irc = FALSE
 	var/python_path = "" //Path to the python executable.  Defaults to "python" on windows and "/usr/bin/env python2" on unix
 	var/use_lib_nudge = 0 //Use the C library nudge instead of the python nudge.
-	var/use_overmap = 0
 
 	// Event settings
 	var/expected_round_length = 3 * 60 * 60 * 10 // 3 hours
@@ -199,10 +199,11 @@ var/list/gamemode_cache = list()
 	var/looc_allowed = 1
 	var/dooc_allowed = 1
 	var/dsay_allowed = 1
+	var/aooc_allowed = 1
 
 	var/starlight = 0	// Whether space turfs have ambient light or not
 
-	var/list/ert_species = list("Human")
+	var/list/ert_species = list(SPECIES_HUMAN)
 
 	var/law_zero = "ERROR ER0RR $R0RRO$!R41.%%!!(%$^^__+ @#F0E4'ALL LAWS OVERRIDDEN#*?&110010"
 
@@ -216,6 +217,10 @@ var/list/gamemode_cache = list()
 	var/allow_map_switching = 0 // Whether map switching is allowed
 	var/auto_map_vote = 0 // Automatically call a map vote at end of round and switch to the selected map
 	var/wait_for_sigusr1_reboot = 0 // Don't allow reboot unless it was caused by SIGUSR1
+
+	var/radiation_decay_rate = 1 //How much radiation is reduced by each tick
+	var/radiation_resistance_multiplier = 6.5
+	var/radiation_lower_limit = 0.35 //If the radiation level for a turf would be below this, ignore it.
 
 /datum/configuration/New()
 	var/list/L = typesof(/datum/game_mode) - /datum/game_mode
@@ -437,6 +442,9 @@ var/list/gamemode_cache = list()
 					config.ooc_allowed = 0
 					config.looc_allowed = 0
 
+				if ("disable_aooc")
+					config.aooc_allowed = 0
+
 				if ("disable_entry")
 					config.enter_allowed = 0
 
@@ -646,9 +654,6 @@ var/list/gamemode_cache = list()
 				if("max_maint_drones")
 					config.max_maint_drones = text2num(value)
 
-				if("use_overmap")
-					config.use_overmap = 1
-
 				if("expected_round_length")
 					config.expected_round_length = MinutesToTicks(text2num(value))
 
@@ -689,7 +694,7 @@ var/list/gamemode_cache = list()
 				if("ert_species")
 					config.ert_species = splittext(value, ";")
 					if(!config.ert_species.len)
-						config.ert_species += "Human"
+						config.ert_species += SPECIES_HUMAN
 
 				if("law_zero")
 					law_zero = value
@@ -769,6 +774,8 @@ var/list/gamemode_cache = list()
 					config.slime_delay = value
 				if("animal_delay")
 					config.animal_delay = value
+				if("maximum_mushrooms")
+					config.maximum_mushrooms = value
 
 
 				if("use_loyalty_implants")

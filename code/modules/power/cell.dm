@@ -87,7 +87,7 @@
 	return amount_used
 
 /obj/item/weapon/cell/examine(mob/user)
-	..()
+	. = ..()
 	to_chat(user, "The label states it's capacity is [maxcharge] Wh")
 	to_chat(user, "The charge meter reads [round(src.percent(), 0.1)]%")
 
@@ -161,7 +161,7 @@
 
 /obj/item/weapon/cell/standard
 	name = "standard power cell"
-	desc = "A standard and relatively cheap power cell, commonly used around the station."
+	desc = "A standard and relatively cheap power cell, commonly used."
 	origin_tech = list(TECH_POWER = 0)
 	maxcharge = 250
 	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 40)

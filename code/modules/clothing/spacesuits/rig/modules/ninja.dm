@@ -16,11 +16,11 @@
 	disruptable = 1
 	disruptive = 0
 
-	use_power_cost = 5 KILOWATTS
-	active_power_cost = 500
+	use_power_cost = 250 KILOWATTS
+	active_power_cost = 6 KILOWATTS		// 30 min battery life /w best (3kWh) cell
 	passive_power_cost = 0
-	module_cooldown = 30
-
+	module_cooldown = 10 SECONDS
+	origin_tech = list(TECH_MATERIAL = 5, TECH_POWER = 6, TECH_MAGNET = 6, TECH_ILLEGAL = 6, TECH_ENGINEERING = 7)
 	activate_string = "Enable Cloak"
 	deactivate_string = "Disable Cloak"
 
@@ -138,11 +138,13 @@
 
 	return 1
 
+
 /obj/item/rig_module/fabricator/energy_net
 
 	name = "net projector"
 	desc = "Some kind of complex energy projector with a hardsuit mount."
 	icon_state = "enet"
+	module_cooldown = 100
 
 	interface_name = "energy net launcher"
 	interface_desc = "An advanced energy-patterning projector used to capture targets."
@@ -151,6 +153,7 @@
 
 	fabrication_type = /obj/item/weapon/energy_net
 	use_power_cost = 20 KILOWATTS
+	origin_tech = list(TECH_MATERIAL = 5, TECH_POWER = 6, TECH_MAGNET = 5, TECH_ILLEGAL = 4, TECH_ENGINEERING = 6)
 
 /obj/item/rig_module/fabricator/energy_net/engage(atom/target)
 

@@ -27,6 +27,11 @@
 /obj/item/clothing/head/hairflower/yellow
 	icon_state = "hairflower_yellow"
 
+/obj/item/clothing/head/hairflower/bow
+	icon_state = "bow"
+	name = "hair bow"
+	desc = "A ribbon tied into a bow with a clip on the back to attach to hair."
+
 /obj/item/clothing/head/powdered_wig
 	name = "powdered wig"
 	desc = "A powdered wig."
@@ -48,7 +53,7 @@
 	body_parts_covered = 0
 
 /obj/item/clothing/head/mailman
-	name = "station cap"
+	name = "mail cap"
 	icon_state = "mailman"
 	desc = "<i>Choo-choo</i>!"
 	body_parts_covered = 0

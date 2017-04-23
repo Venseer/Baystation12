@@ -33,7 +33,7 @@
 	icon_state = "helmet_security"
 
 /obj/item/clothing/head/helmet/nt
-	name = "\improper NanoTrasen helmet"
+	name = "\improper corporate security helmet"
 	desc = "A helmet with 'CORPORATE SECURITY' printed on the back in red lettering."
 	icon_state = "helmet_nt"
 
@@ -41,6 +41,11 @@
 	name = "\improper PCRC helmet"
 	desc = "A helmet with 'PRIVATE SECURITY' printed on the back in cyan lettering."
 	icon_state = "helmet_pcrc"
+
+/obj/item/clothing/head/helmet/nt/guard
+	name = "\improper NanoTrasen helmet"
+	desc = "A helmet painted in NanoTrasen colors. Probably belongs to corporate security."
+	icon_state = "helmet_ntguard"
 
 /obj/item/clothing/head/helmet/tactical
 	name = "tactical helmet"
@@ -85,7 +90,7 @@
 	name = "ballistic helmet"
 	desc = "A helmet with reinforced plating to protect against ballistic projectiles."
 	icon_state = "helmet_bulletproof"
-	armor = list(melee = 5, bullet = 82, laser = 15, energy = 5, bomb = 30, bio = 2, rad = 0)
+	armor = list(melee = 5, bullet = 82, laser = 30, energy = 5, bomb = 30, bio = 2, rad = 0)
 	siemens_coefficient = 0.7
 
 /obj/item/clothing/head/helmet/swat
@@ -120,8 +125,8 @@
 	desc = "An armored helmet capable of being fitted with a multitude of attachments."
 	icon_state = "swathelm"
 	sprite_sheets = list(
-		"Tajara" = 'icons/mob/species/tajaran/helmet.dmi',
-		"Unathi" = 'icons/mob/species/unathi/helmet.dmi'
+		SPECIES_TAJARA = 'icons/mob/species/tajaran/helmet.dmi',
+		SPECIES_UNATHI = 'icons/mob/species/unathi/helmet.dmi'
 		)
 
 	armor = list(melee = 62, bullet = 50, laser = 50,energy = 35, bomb = 10, bio = 2, rad = 0)

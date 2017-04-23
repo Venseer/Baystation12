@@ -9,11 +9,13 @@
 //////////////////////////////////////////////////////////////////
 /datum/surgery_step/cavity
 	priority = 1
+	shock_level = 40
+	delicate = 1
 /datum/surgery_step/cavity/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	if(!hasorgans(target))
 		return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	return affected && affected.open == (affected.encased ? 3 : 2) && !(affected.status & ORGAN_BLEEDING)
+	return affected && affected.open >= (affected.encased ? 3 : 2) && !(affected.status & ORGAN_BLEEDING)
 
 /datum/surgery_step/cavity/proc/get_max_wclass(var/obj/item/organ/external/affected)
 	switch (affected.organ_tag)
@@ -39,7 +41,7 @@
 	var/obj/item/organ/external/chest/affected = target.get_organ(target_zone)
 	user.visible_message("<span class='warning'>[user]'s hand slips, scraping around inside [target]'s [affected.name] with \the [tool]!</span>", \
 	"<span class='warning'>Your hand slips, scraping around inside [target]'s [affected.name] with \the [tool]!</span>")
-	affected.createwound(CUT, 20)
+	affected.take_damage(20, 0, (DAM_SHARP|DAM_EDGE), used_weapon = tool)
 
 //////////////////////////////////////////////////////////////////
 //	 create implant space surgery step
@@ -63,7 +65,7 @@
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("[user] starts making some space inside [target]'s [get_cavity(affected)] cavity with \the [tool].", \
 	"You start making some space inside [target]'s [get_cavity(affected)] cavity with \the [tool]." )
-	target.custom_pain("The pain in your chest is living hell!",1)
+	target.custom_pain("The pain in your chest is living hell!",1,affecting = affected)
 	affected.cavity = 1
 	..()
 
@@ -96,7 +98,7 @@
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("[user] starts mending [target]'s [get_cavity(affected)] cavity wall with \the [tool].", \
 	"You start mending [target]'s [get_cavity(affected)] cavity wall with \the [tool]." )
-	target.custom_pain("The pain in your chest is living hell!",1)
+	target.custom_pain("The pain in your chest is living hell!",1,affecting = affected)
 	affected.cavity = 0
 	..()
 
@@ -119,20 +121,31 @@
 	if(..())
 		var/obj/item/organ/external/affected = target.get_organ(target_zone)
 		if(istype(user,/mob/living/silicon/robot))
-			return
+			return FALSE
 		if(affected && affected.cavity)
-			var/total_volume = tool.w_class
+			var/max_w_class = get_max_wclass(affected)
+			var/max_volume = base_storage_capacity(max_w_class)
+
+			if(tool.w_class > max_w_class)
+				to_chat(user, "<span class='warning'>\The [tool] is too big for this cavity.</span>")
+				return FALSE
+
+			var/total_volume = tool.get_storage_cost()
 			for(var/obj/item/I in affected.implants)
 				if(istype(I,/obj/item/weapon/implant))
 					continue
-				total_volume += I.w_class
-			return total_volume <= get_max_wclass(affected)
+				total_volume += I.get_storage_cost()
+			if(total_volume > max_volume)
+				to_chat(user, "<span class='warning'>There isn't enough space left in this cavity for [tool].</span>")
+				return FALSE
+			return TRUE
+
 
 /datum/surgery_step/cavity/place_item/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("[user] starts putting \the [tool] inside [target]'s [get_cavity(affected)] cavity.", \
 	"You start putting \the [tool] inside [target]'s [get_cavity(affected)] cavity." )
-	target.custom_pain("The pain in your chest is living hell!",1)
+	target.custom_pain("The pain in your chest is living hell!",1,affecting = affected)
 	playsound(target.loc, 'sound/effects/squelch1.ogg', 50, 1)
 	..()
 
@@ -141,11 +154,9 @@
 
 	user.visible_message("<span class='notice'>[user] puts \the [tool] inside [target]'s [get_cavity(affected)] cavity.</span>", \
 	"<span class='notice'>You put \the [tool] inside [target]'s [get_cavity(affected)] cavity.</span>" )
-	if (tool.w_class > get_max_wclass(affected)/2 && prob(50) && !(affected.robotic >= ORGAN_ROBOT))
+	if (tool.w_class > get_max_wclass(affected)/2 && prob(50) && !(affected.robotic >= ORGAN_ROBOT) && affected.sever_artery())
 		to_chat(user, "<span class='warning'>You tear some blood vessels trying to fit such a big object in this cavity.</span>")
-		var/datum/wound/internal_bleeding/I = new (10)
-		affected.wounds += I
-		affected.owner.custom_pain("You feel something rip in your [affected.name]!", 1)
+		affected.owner.custom_pain("You feel something rip in your [affected.name]!", 1,affecting = affected)
 	user.drop_item()
 	affected.implants += tool
 	tool.loc = affected
@@ -180,7 +191,7 @@
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("[user] starts poking around inside [target]'s [affected.name] with \the [tool].", \
 	"You start poking around inside [target]'s [affected.name] with \the [tool]" )
-	target.custom_pain("The pain in your [affected.name] is living hell!",1)
+	target.custom_pain("The pain in your [affected.name] is living hell!",1,affecting = affected)
 	..()
 
 /datum/surgery_step/cavity/implant_removal/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
@@ -205,6 +216,10 @@
 			user.visible_message("<span class='notice'>[user] takes something out of incision on [target]'s [affected.name] with \the [tool].</span>", \
 			"<span class='notice'>You take [obj] out of incision on [target]'s [affected.name]s with \the [tool].</span>" )
 			affected.implants -= obj
+			for(var/datum/wound/wound in affected.wounds)
+				if(obj in wound.embedded_objects)
+					wound.embedded_objects -= obj
+					break
 
 			BITSET(target.hud_updateflag, IMPLOYAL_HUD)
 
@@ -232,12 +247,11 @@
 
 /datum/surgery_step/cavity/implant_removal/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	..()
-	var/obj/item/organ/external/chest/affected = target.get_organ(target_zone)
-	if (affected.implants.len)
+	var/obj/item/organ/external/affected = target.get_organ(target_zone)
+	for(var/obj/item/weapon/implant/imp in affected.implants)
 		var/fail_prob = 10
 		fail_prob += 100 - tool_quality(tool)
 		if (prob(fail_prob))
-			var/obj/item/weapon/implant/imp = affected.implants[1]
 			user.visible_message("<span class='warning'>Something beeps inside [target]'s [affected.name]!</span>")
 			playsound(imp.loc, 'sound/items/countdown.ogg', 75, 1, -3)
 			spawn(25)

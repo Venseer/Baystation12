@@ -222,6 +222,72 @@ datum/unit_test/map_check/start_test()
 	else
 		pass("Map size met minimum requirements.")
 	return 1
+//=======================================================================================
+
+datum/unit_test/ladder_check
+	name = "MAP: Ladder Check"
+
+datum/unit_test/ladder_check/start_test()
+	var/succeeded = TRUE
+	for(var/obj/structure/ladder/L)
+		if(L.allowed_directions & UP)
+			succeeded = check_direction(L, GetAbove(L), UP, DOWN) && succeeded
+		if(L.allowed_directions & DOWN)
+			succeeded = check_direction(L, GetBelow(L), DOWN, UP) && succeeded
+	if(succeeded)
+		pass("All ladders are correctly setup.")
+	else
+		fail("One or more ladders are incorrectly setup.")
+
+	return 1
+
+datum/unit_test/ladder_check/proc/check_direction(var/obj/structure/ladder/L, var/turf/destination_turf, var/check_direction, var/other_ladder_direction)
+	if(!destination_turf)
+		log_bad("Unable to acquire turf in the [dir2text(check_direction)] for [log_info_line(L)]")
+		return FALSE
+	var/obj/structure/ladder/other_ladder = (locate(/obj/structure/ladder) in destination_turf)
+	if(!other_ladder)
+		log_bad("Unable to acquire ladder in the direction [dir2text(check_direction)] for [log_info_line(L)]")
+		return FALSE
+	if(!(other_ladder.allowed_directions & other_ladder_direction))
+		log_bad("The ladder in the direction [dir2text(check_direction)] is not allowed to connect to [log_info_line(L)]")
+		return FALSE
+	return TRUE
+
+//=======================================================================================
+
+datum/unit_test/landmark_check
+	name = "MAP: Landmark Check"
+
+datum/unit_test/landmark_check/start_test()
+	var/safe_landmarks = 0
+	var/space_landmarks = 0
+
+	for(var/lm in landmarks_list)
+		var/obj/effect/landmark/landmark = lm
+		if(istype(landmark, /obj/effect/landmark/test/safe_turf))
+			log_debug("Safe landmark found: [log_info_line(landmark)]")
+			safe_landmarks++
+		else if(istype(landmark, /obj/effect/landmark/test/space_turf))
+			log_debug("Space landmark found: [log_info_line(landmark)]")
+			space_landmarks++
+		else if(istype(landmark, /obj/effect/landmark/test))
+			log_debug("Test landmark with unknown tag found: [log_info_line(landmark)]")
+
+	if(safe_landmarks != 1 || space_landmarks != 1)
+		if(safe_landmarks != 1)
+			log_bad("Found [safe_landmarks] safe landmarks. Expected 1.")
+		if(space_landmarks != 1)
+			log_bad("Found [space_landmarks] space landmarks. Expected 1.")
+		fail("Expected exactly one safe landmark, and one space landmark.")
+	else
+		pass("Exactly one safe landmark, and exactly one space landmark found.")
+
+	return 1
+
+//=======================================================================================
+
+
 
 #undef SUCCESS
 #undef FAILURE

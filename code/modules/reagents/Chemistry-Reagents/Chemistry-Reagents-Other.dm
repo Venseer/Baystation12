@@ -209,8 +209,12 @@
 /datum/reagent/water/holywater/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
 	..()
 	if(ishuman(M)) // Any location
-		if(M.mind && cult.is_antagonist(M.mind) && prob(10))
-			cult.remove_antagonist(M.mind)
+		if(iscultist(M))
+			if(prob(10))
+				cult.offer_uncult(M)
+			if(prob(2))
+				var/obj/effect/spider/spiderling/S = new /obj/effect/spider/spiderling(M.loc)
+				M.visible_message("<span class='warning'>\The [M] coughs up \the [S]!</span>")
 
 /datum/reagent/water/holywater/touch_turf(var/turf/T)
 	if(volume >= 5)
@@ -283,7 +287,9 @@
 		if(istype(T, /turf/simulated))
 			var/turf/simulated/S = T
 			S.dirt = 0
+			S.wet = min(S.wet, 1)
 		T.clean_blood()
+
 
 		for(var/mob/living/carbon/slime/M in T)
 			M.adjustToxLoss(rand(5, 10))
@@ -327,7 +333,7 @@
 	if(!istype(T))
 		return
 	if(volume >= 1)
-		T.wet_floor(2)
+		T.wet_floor(80)
 
 /datum/reagent/silicate
 	name = "Silicate"

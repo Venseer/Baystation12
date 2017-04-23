@@ -185,6 +185,7 @@ var/global/list/light_type_cache = list()
 
 /obj/machinery/light/spot
 	name = "spotlight"
+	desc = "A more robust socket for light tubes that demand more power."
 	light_type = /obj/item/weapon/light/tube/large
 
 // create a new lighting fixture
@@ -302,6 +303,7 @@ var/global/list/light_type_cache = list()
 
 // examine verb
 /obj/machinery/light/examine(mob/user)
+	. = ..()
 	var/fitting = get_fitting_name()
 	switch(status)
 		if(LIGHT_OK)
@@ -510,6 +512,7 @@ var/global/list/light_type_cache = list()
 		if(status == LIGHT_OK || status == LIGHT_BURNED)
 			playsound(src.loc, 'sound/effects/Glasshit.ogg', 75, 1)
 		if(on)
+			s.set_up(3, 1, src)
 			s.start()
 	status = LIGHT_BROKEN
 	update()

@@ -15,6 +15,7 @@
 	var/light_range_on = 2
 	var/light_power_on = 1
 	var/overlay_layer
+	flags = OBJ_CLIMBABLE
 
 /obj/machinery/computer/New()
 	overlay_layer = layer
@@ -96,7 +97,7 @@
 			A.circuit = M
 			A.anchored = 1
 			for (var/obj/C in src)
-				C.loc = src.loc
+				C.dropInto(loc)
 			if (src.stat & BROKEN)
 				to_chat(user, "<span class='notice'>The broken glass falls out.</span>")
 				new /obj/item/weapon/material/shard( src.loc )

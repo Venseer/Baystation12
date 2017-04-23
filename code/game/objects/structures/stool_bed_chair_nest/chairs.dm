@@ -1,6 +1,6 @@
 /obj/structure/bed/chair	//YES, chairs are a type of bed, which are a type of stool. This works, believe me.	-Pete
 	name = "chair"
-	desc = "You sit in this. Either by will or force."
+	desc = "You sit in this, either by will or force."
 	icon_state = "chair_preview"
 	color = "#666666"
 	base_icon = "chair"
@@ -20,7 +20,7 @@
 		playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
 		E.set_dir(dir)
 		E.part = SK
-		SK.loc = E
+		SK.forceMove(E)
 		SK.master = E
 		qdel(src)
 
@@ -124,6 +124,16 @@
 
 /obj/structure/bed/chair/comfy/lime/New(var/newloc,var/newmaterial)
 	..(newloc,"steel","lime")
+
+/obj/structure/bed/chair/comfy/captain
+	name = "captain chair"
+	desc = "It's a chair. Only for the highest ranked asses."
+	icon_state = "capchair_preview"
+	base_icon = "capchair"
+	buckle_movable = 1
+
+/obj/structure/bed/chair/comfy/captain/New(var/newloc,var/newmaterial)
+	..(newloc,"steel","black")
 
 /obj/structure/bed/chair/office
 	anchored = 0

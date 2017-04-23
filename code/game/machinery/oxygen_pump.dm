@@ -3,6 +3,8 @@
 	icon = 'icons/obj/walllocker.dmi'
 	icon_state = "emerg"
 
+	anchored = TRUE
+
 	var/obj/item/weapon/tank/tank
 	var/obj/item/clothing/mask/gas/contained
 	var/mob/living/carbon/breather
@@ -103,7 +105,7 @@
 		use_power = 1
 
 /obj/machinery/oxygen_pump/examine(var/mob/user)
-	..()
+	. = ..()
 	if(tank)
 		to_chat(user, "The meter shows [round(tank.air_contents.return_pressure())]")
 	else
@@ -129,4 +131,4 @@
 /obj/machinery/oxygen_pump/anesthetic
 	name = "anesthetic pump"
 	spawn_type = /obj/item/weapon/tank/anesthetic
-//	icon_state = "anesthetic_tank" //TODO
+	icon_state = "anesthetic_tank"

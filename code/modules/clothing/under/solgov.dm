@@ -47,6 +47,9 @@
 	worn_state = "blackutility_crew"
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 10, rad = 10)
 
+/obj/item/clothing/under/utility/expeditionary/pilot
+	starting_accessories = list(/obj/item/clothing/accessory/speciality/pilot)
+
 /obj/item/clothing/under/utility/expeditionary/medical
 	name = "expeditionary medical uniform"
 	desc = "The utility uniform of the SCG Expeditionary Corps, made from biohazard resistant material. This one has silver trim and blue blazes."
@@ -61,13 +64,13 @@
 
 /obj/item/clothing/under/utility/expeditionary/engineering
 	name = "expeditionary engineering uniform"
-	desc = "The utility uniform of the SCG Expeditionary Corps, made from biohazard resistant material. This one has silver trim and organge blazes."
+	desc = "The utility uniform of the SCG Expeditionary Corps, made from biohazard resistant material. This one has silver trim and orange blazes."
 	icon_state = "blackutility_eng"
 	worn_state = "blackutility_eng"
 
 /obj/item/clothing/under/utility/expeditionary/engineering/command
 	name = "expeditionary engineering command uniform"
-	desc = "The utility uniform of the SCG Expeditionary Corps, made from biohazard resistant material. This one has gold trim and organge blazes."
+	desc = "The utility uniform of the SCG Expeditionary Corps, made from biohazard resistant material. This one has gold trim and orange blazes."
 	icon_state = "blackutility_engcom"
 	worn_state = "blackutility_engcom"
 
@@ -104,6 +107,9 @@
 	worn_state = "navyutility"
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 10, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0.7
+
+/obj/item/clothing/under/utility/fleet/pilot
+	starting_accessories = list(/obj/item/clothing/accessory/speciality/pilot)
 
 /obj/item/clothing/under/utility/fleet/medical
 	name = "fleet medical coveralls"
@@ -144,6 +150,9 @@
 	worn_state = "greyutility"
 	armor = list(melee = 10, bullet = 0, laser = 10,energy = 0, bomb = 0, bio = 0, rad = 0)
 
+/obj/item/clothing/under/utility/marine/pilot
+	starting_accessories = list(/obj/item/clothing/accessory/speciality/pilot)
+
 /obj/item/clothing/under/utility/marine/green
 	name = "green fatigues"
 	desc = "A green version of the SCG marine utility uniform, made from durable material."
@@ -163,6 +172,9 @@
 	desc = "The utility uniform of the SCG Marine Corps, made from durable material. This one has blue markings."
 	icon_state = "greyutility_med"
 	worn_state = "greyutility_med"
+
+/obj/item/clothing/under/utility/marine/medical/banded
+	starting_accessories = list(/obj/item/clothing/accessory/armband/medblue)
 
 /obj/item/clothing/under/utility/marine/engineering
 	name = "marine engineering fatigues"
@@ -204,6 +216,13 @@
 	icon_state = "whiteservice"
 	item_state = "nursesuit"
 	worn_state = "whiteservice"
+	starting_accessories = list(/obj/item/clothing/accessory/navy)
+
+/obj/item/clothing/under/service/fleet/skirt
+	name = "fleet service skirt"
+	desc = "The service uniform skirt of the SCG Fleet, made from immaculate white fabric."
+	icon_state = "whiteservicefem"
+	worn_state = "whiteservicefem"
 
 /obj/item/clothing/under/service/marine
 	name = "marine service uniform"
@@ -211,6 +230,7 @@
 	icon_state = "greenservice"
 	item_state = "johnny"
 	worn_state = "greenservice"
+	starting_accessories = list(/obj/item/clothing/accessory/brown)
 
 /obj/item/clothing/under/service/marine/command
 	name = "marine command service uniform"
@@ -218,9 +238,10 @@
 	icon_state = "greenservice_com"
 	item_state = "johnny"
 	worn_state = "greenservice_com"
+	starting_accessories = list(/obj/item/clothing/accessory/brown)
 
 //Dress
-/obj/item/clothing/under/dress
+/obj/item/clothing/under/mildress
 	name = "dress uniform"
 	desc = "A dress uniform of some kind."
 	icon_state = "greydress"
@@ -228,29 +249,53 @@
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0.9
 
-/obj/item/clothing/under/dress/expeditionary
+/obj/item/clothing/under/mildress/expeditionary
 	name = "expeditionary dress uniform"
 	desc = "The dress uniform of the SCG Expeditionary Corps in silver trim."
 	icon_state = "greydress"
 	worn_state = "greydress"
 
-/obj/item/clothing/under/dress/expeditionary/command
-	name = "expeditionary command dress uniform"
+/obj/item/clothing/under/mildress/expeditionary/skirt
+	name = "expeditionary dress skirt"
+	desc = "A feminine version of the SCG Expeditionary Corps dress uniform in silver trim."
+	icon_state = "greydressfem"
+	worn_state = "greydressfem"
+
+/obj/item/clothing/under/mildress/expeditionary/command
+	name = "expeditionary officer's dress uniform"
 	desc = "The dress uniform of the SCG Expeditionary Corps in gold trim."
 	icon_state = "greydress_com"
 	worn_state = "greydress_com"
 
-/obj/item/clothing/under/dress/marine
+/obj/item/clothing/under/mildress/expeditionary/command/skirt
+	name = "expeditionary officer's dress skirt"
+	desc = "A feminine version of the SCG Expeditionary Corps dress uniform in gold trim."
+	icon_state = "greydressfem_com"
+	worn_state = "greydressfem_com"
+
+/obj/item/clothing/under/mildress/marine
 	name = "marine dress uniform"
 	desc = "The dress uniform of the SCG Marine Corps, class given form."
 	icon_state = "blackdress"
 	worn_state = "blackdress"
 
-/obj/item/clothing/under/dress/marine/command
+/obj/item/clothing/under/mildress/marine/skirt
+	name = "marine dress skirt"
+	desc = "A  feminine version of the SCG Marine Corps dress uniform, class given form."
+	icon_state = "blackdressfem"
+	worn_state = "blackdressfem"
+
+/obj/item/clothing/under/mildress/marine/command
 	name = "marine command dress uniform"
 	desc = "The dress uniform of the SCG Marine Corps, even classier in gold."
-	icon_state = "blackdress_com"
+	icon_state = "blackdress"
 	worn_state = "blackdress_com"
+
+/obj/item/clothing/under/mildress/marine/command/skirt
+	name = "marine command dress skirt"
+	desc = "A feminine version of the SCG Marine Corps dress uniform, even classier in gold."
+	icon_state = "blackdressfem"
+	worn_state = "blackdressfem_com"
 
 
 //Misc

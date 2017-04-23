@@ -26,7 +26,7 @@ datum/unit_test/human_breath
 
 
 datum/unit_test/human_breath/start_test()
-	var/turf/T = locate(20,20,1) //TODO:  Find better way.
+	var/turf/T = get_space_turf()
 
 	if(!istype(T, /turf/space))	//If the above isn't a space turf then we force it to find one will most likely pick 1,1,1
 		T = locate(/turf/space)
@@ -47,18 +47,11 @@ datum/unit_test/human_breath/check_result()
 	if(starting_oxyloss < ending_oxyloss)
 		pass("Oxyloss = [ending_oxyloss]")
 	else
-		fail("Mob is not taking oxygen damage.  Damange is [ending_oxyloss]")
+		fail("Mob is not taking oxygen damage.  Damage is [ending_oxyloss]")
 
 	return 1	// return 1 to show we're done and don't want to recheck the result.
 
 // ============================================================================
-
-//#define BRUTE     "brute"
-//#define BURN      "fire"
-//#define TOX       "tox"
-//#define OXY       "oxy"
-//#define CLONE     "clone"
-//#define HALLOSS   "halloss"
 
 /var/default_mobloc = null
 
@@ -104,7 +97,7 @@ proc/damage_check(var/mob/living/M, var/damage_type)
 			loss = M.getOxyLoss()
 		if(CLONE)
 			loss = M.getCloneLoss()
-		if(HALLOSS)
+		if(PAIN)
 			loss = M.getHalLoss()
 
 	if(!loss && istype(M, /mob/living/carbon/human))
@@ -168,9 +161,6 @@ datum/unit_test/mob_damage/start_test()
 	var/initial_health = H.health
 
 	H.apply_damage(damage_amount, damagetype, damage_location)
-
-	H.updatehealth() // Just in case, though at this time apply_damage does this for us.
-                         // We operate with the assumption that someone might mess with that proc one day.
 
 	var/ending_damage = damage_check(H, damagetype)
 
@@ -244,7 +234,7 @@ datum/unit_test/mob_damage/clone
 
 datum/unit_test/mob_damage/halloss
 	name = "MOB: Human Halloss damage check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Unathi
@@ -277,7 +267,7 @@ datum/unit_test/mob_damage/unathi/clone
 
 datum/unit_test/mob_damage/unathi/halloss
 	name = "MOB: Unathi Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // SpessKahjit aka Tajaran
@@ -311,7 +301,7 @@ datum/unit_test/mob_damage/tajaran/clone
 
 datum/unit_test/mob_damage/tajaran/halloss
 	name = "MOB: Tajaran Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Resomi
@@ -345,7 +335,7 @@ datum/unit_test/mob_damage/resomi/clone
 
 datum/unit_test/mob_damage/resomi/halloss
 	name = "MOB: Resomi Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Skrell
@@ -377,7 +367,7 @@ datum/unit_test/mob_damage/skrell/clone
 
 datum/unit_test/mob_damage/skrell/halloss
 	name = "MOB: Skrell Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Vox
@@ -411,7 +401,7 @@ datum/unit_test/mob_damage/vox/clone
 
 datum/unit_test/mob_damage/vox/halloss
 	name = "MOB: Vox Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
 
 // =================================================================
 // Diona
@@ -445,7 +435,8 @@ datum/unit_test/mob_damage/diona/clone
 
 datum/unit_test/mob_damage/diona/halloss
 	name = "MOB: Diona Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
+	expected_vulnerability = IMMUNE
 
 // =================================================================
 // SPECIAL WHITTLE SNOWFLAKES aka IPC
@@ -480,7 +471,8 @@ datum/unit_test/mob_damage/machine/clone
 
 datum/unit_test/mob_damage/machine/halloss
 	name = "MOB: IPC Halloss Damage Check"
-	damagetype = HALLOSS
+	damagetype = PAIN
+	expected_vulnerability = IMMUNE
 
 
 // ==============================================================================

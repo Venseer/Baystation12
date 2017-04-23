@@ -2,7 +2,7 @@ datum/preferences
 	//The mob should have a gender you want before running this proc. Will run fine without H
 	proc/randomize_appearance_and_body_for(var/mob/living/carbon/human/H)
 		var/datum/species/current_species = all_species[species]
-		if(!current_species) current_species = all_species["Human"]
+		if(!current_species) current_species = all_species[SPECIES_HUMAN]
 		gender = pick(current_species.genders)
 
 		h_style = random_hair_style(gender, species)
@@ -27,7 +27,7 @@ datum/preferences
 				var/datum/category_item/underwear/WRI = pick(WRC.items)
 				all_underwear[WRC.name] = WRI.name
 
-		backbag = rand(1,4)
+		backbag = rand(1,5)
 		age = rand(current_species.min_age, current_species.max_age)
 		b_type = RANDOM_BLOOD_TYPE
 		if(H)
@@ -235,7 +235,7 @@ datum/preferences
 
 	if((equip_preview_mob & EQUIP_PREVIEW_JOB) && previewJob)
 		mannequin.job = previewJob.title
-		previewJob.equip_preview(mannequin, player_alt_titles[previewJob.title])
+		previewJob.equip_preview(mannequin, player_alt_titles[previewJob.title], mannequin.char_branch)
 		update_icon = TRUE
 
 	if(update_icon)

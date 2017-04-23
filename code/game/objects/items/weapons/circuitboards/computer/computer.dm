@@ -127,6 +127,14 @@
 	name = T_BOARD("disease splicer")
 	build_path = /obj/machinery/computer/diseasesplicer
 
+/obj/item/weapon/circuitboard/helm
+	name = T_BOARD("helm control console")
+	build_path = /obj/machinery/computer/helm
+
+/obj/item/weapon/circuitboard/nav
+	name = T_BOARD("navigation console")
+	build_path = /obj/machinery/computer/navigation
+
 /obj/item/weapon/circuitboard/mining_shuttle
 	name = T_BOARD("mining shuttle console")
 	build_path = /obj/machinery/computer/shuttle_control/mining
@@ -151,3 +159,7 @@
 	name = T_BOARD("RCON remote control console")
 	build_path = /obj/machinery/computer/rcon
 	origin_tech = list(TECH_DATA = 4, TECH_ENGINEERING = 3, TECH_POWER = 5)
+
+/obj/item/weapon/circuitboard/account_database
+	name = T_BOARD("accounts uplink terminal")
+	build_path = /obj/machinery/computer/account_database

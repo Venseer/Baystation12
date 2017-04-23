@@ -87,6 +87,21 @@
 	path = /obj/item/weapon/crowbar
 	category = "Tools"
 
+/datum/autolathe/recipe/int_wirer
+	name = "integrated circuit wirer"
+	path = /obj/item/device/integrated_electronics/wirer
+	category = "Tools"
+
+/datum/autolathe/recipe/int_debugger
+	name = "integrated circuit debugger"
+	path = /obj/item/device/integrated_electronics/debugger
+	category = "Tools"
+
+/datum/autolathe/recipe/int_analyzer
+	name = "integrated circuit analyzer"
+	path = /obj/item/device/integrated_electronics/analyzer
+	category = "Tools"
+
 /datum/autolathe/recipe/multitool
 	name = "multitool"
 	path = /obj/item/device/multitool
@@ -133,7 +148,7 @@
 	category = "General"
 
 /datum/autolathe/recipe/radio_bounced
-	name = "station bounced radio"
+	name = "shortwave radio"
 	path = /obj/item/device/radio/off
 	category = "General"
 
@@ -326,6 +341,11 @@
 	path = /obj/item/device/assembly/prox_sensor
 	category = "Devices and Components"
 
+/datum/autolathe/recipe/tube/large
+	name = "spotlight tube"
+	path = /obj/item/weapon/light/tube/large
+	category = "General"
+
 /datum/autolathe/recipe/tube
 	name = "light tube"
 	path = /obj/item/weapon/light/tube
@@ -366,6 +386,12 @@
 /datum/autolathe/recipe/magazine_revolver_2
 	name = "ammunition (.45)"
 	path = /obj/item/ammo_magazine/c45m
+	hidden = 1
+	category = "Arms and Ammunition"
+
+/datum/autolathe/recipe/magazine_revolver_3
+	name = "ammunition (.38)"
+	path = /obj/item/ammo_magazine/c38
 	hidden = 1
 	category = "Arms and Ammunition"
 
@@ -426,6 +452,18 @@
 /datum/autolathe/recipe/stunshell
 	name = "ammunition (stun cartridge, shotgun)"
 	path = /obj/item/ammo_casing/shotgun/stunshell
+	hidden = 1
+	category = "Arms and Ammunition"
+
+/datum/autolathe/recipe/magazine_uzi
+	name = "ammunition (machine.45)"
+	path = /obj/item/ammo_magazine/c45uzi
+	hidden = 1
+	category = "Arms and Ammunition"
+
+/datum/autolathe/recipe/magazine_deagle
+	name = "ammunition (.50 AE)"
+	path = /obj/item/ammo_magazine/a50
 	hidden = 1
 	category = "Arms and Ammunition"
 

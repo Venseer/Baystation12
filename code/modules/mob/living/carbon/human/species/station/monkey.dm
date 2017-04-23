@@ -10,9 +10,8 @@
 	blood_mask = 'icons/mob/human_races/masks/blood_monkey.dmi'
 	language = null
 	default_language = "Chimpanzee"
-	greater_form = "Human"
+	greater_form = SPECIES_HUMAN
 	mob_size = MOB_SMALL
-	has_fine_manipulation = 0
 	show_ssd = null
 	health_hud_intensity = 1.75
 
@@ -31,7 +30,7 @@
 	brute_mod = 1.5
 	burn_mod = 1.5
 
-	spawn_flags = IS_RESTRICTED
+	spawn_flags = SPECIES_IS_RESTRICTED
 
 	bump_flag = MONKEY
 	swap_flags = MONKEY|SLIME|SIMPLE_ANIMAL
@@ -90,7 +89,7 @@
 	icobase = 'icons/mob/human_races/monkeys/r_neaera.dmi'
 	deform = 'icons/mob/human_races/monkeys/r_neaera.dmi'
 
-	greater_form = "Skrell"
+	greater_form = SPECIES_SKRELL
 	default_language = "Neaera"
 	flesh_color = "#8CD7A3"
 	blood_color = "#1D2CBF"
@@ -106,7 +105,7 @@
 	deform = 'icons/mob/human_races/monkeys/r_stok.dmi'
 
 	tail = "stoktail"
-	greater_form = "Unathi"
+	greater_form = SPECIES_UNATHI
 	default_language = "Stok"
 	flesh_color = "#34AF10"
 	base_color = "#066000"

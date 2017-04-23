@@ -12,7 +12,9 @@
 
 	action_button_name = "Toggle Flashlight"
 	var/on = 0
-	var/brightness_on = 4 //luminosity when on
+	var/brightness_on = 4 //range of light when on
+	var/activation_sound = 'sound/effects/flashlight.ogg'
+	var/flashlight_power //luminosity of light when on, can be negative
 
 /obj/item/device/flashlight/initialize()
 	..()
@@ -21,7 +23,10 @@
 /obj/item/device/flashlight/update_icon()
 	if(on)
 		icon_state = "[initial(icon_state)]-on"
-		set_light(brightness_on)
+		if(flashlight_power)
+			set_light(l_range = brightness_on, l_power = flashlight_power)
+		else
+			set_light(brightness_on)
 	else
 		icon_state = "[initial(icon_state)]"
 		set_light(0)
@@ -32,6 +37,8 @@
 
 		return 0
 	on = !on
+	if(on && activation_sound)
+		playsound(src.loc, activation_sound, 75, 1)
 	update_icon()
 	user.update_action_buttons()
 	return 1
@@ -103,6 +110,15 @@
 
 	//if someone wants to implement inspecting robot eyes here would be the place to do it.
 
+/obj/item/device/flashlight/flashdark
+	name = "flashdark"
+	desc = "A strange device manufactured with mysterious elements that somehow emits darkness. Or maybe it just sucks in light? Nobody knows for sure."
+	icon_state = "flashdark"
+	item_state = "flashdark"
+	w_class = ITEM_SIZE_NORMAL
+	brightness_on = 8
+	flashlight_power = -6
+
 /obj/item/device/flashlight/pen
 	name = "penlight"
 	desc = "A pen-sized light, used by medical staff."
@@ -112,6 +128,15 @@
 	slot_flags = SLOT_EARS
 	brightness_on = 2
 	w_class = ITEM_SIZE_TINY
+
+/obj/item/device/flashlight/maglight
+	name = "maglight"
+	desc = "A very, very heavy duty flashlight."
+	icon_state = "maglight"
+	force = 10
+	attack_verb = list ("smacked", "thwacked", "thunked")
+	matter = list(DEFAULT_WALL_MATERIAL = 200,"glass" = 50)
+	hitsound = "swing_hit"
 
 /obj/item/device/flashlight/drone
 	name = "low-power flashlight"
@@ -167,6 +192,7 @@
 	var/fuel = 0
 	var/on_damage = 7
 	var/produce_heat = 1500
+	activation_sound = 'sound/effects/flare.ogg'
 
 /obj/item/device/flashlight/flare/New()
 	fuel = rand(800, 1000) // Sorry for changing this so much but I keep under-estimating how long X number of ticks last in seconds.
@@ -206,6 +232,96 @@
 	processing_objects += src
 	update_icon()
 	return 1
+
+//Glowsticks
+/obj/item/device/flashlight/glowstick
+	name = "green glowstick"
+	desc = "A military-grade glowstick."
+	w_class = 2.0
+	brightness_on = 4
+	light_power = 2
+	color = "#49F37C"
+	icon_state = "glowstick"
+	item_state = "glowstick"
+	randpixel = 12
+	var/fuel = 0
+	activation_sound = null
+
+/obj/item/device/flashlight/glowstick/New()
+	fuel = rand(1600, 2000)
+	light_color = color
+	..()
+
+/obj/item/device/flashlight/glowstick/process()
+	fuel = max(fuel - 1, 0)
+	if(!fuel)
+		turn_off()
+		processing_objects -= src
+		update_icon()
+
+/obj/item/device/flashlight/glowstick/proc/turn_off()
+	on = 0
+	update_icon()
+
+/obj/item/device/flashlight/glowstick/update_icon()
+	item_state = "glowstick"
+	overlays.Cut()
+	if(!fuel)
+		icon_state = "glowstick-empty"
+		set_light(0)
+	else if (on)
+		var/image/I = overlay_image(icon,"glowstick-on",color)
+		I.blend_mode = BLEND_ADD
+		overlays += I
+		item_state = "glowstick-on"
+		set_light(brightness_on)
+	else
+		icon_state = "glowstick"
+	var/mob/M = loc
+	if(istype(M))
+		if(M.l_hand == src)
+			M.update_inv_l_hand()
+		if(M.r_hand == src)
+			M.update_inv_r_hand()
+
+/obj/item/device/flashlight/glowstick/attack_self(mob/user)
+
+	if(!fuel)
+		to_chat(user,"<span class='notice'>The [src] is spent.</span>")
+		return
+	if(on)
+		to_chat(user,"<span class='notice'>The [src] is already lit.</span>")
+		return
+
+	. = ..()
+	if(.)
+		user.visible_message("<span class='notice'>[user] cracks and shakes the glowstick.</span>", "<span class='notice'>You crack and shake the glowstick, turning it on!</span>")
+		processing_objects += src
+
+/obj/item/device/flashlight/glowstick/red
+	name = "red glowstick"
+	color = "#FC0F29"
+
+/obj/item/device/flashlight/glowstick/blue
+	name = "blue glowstick"
+	color = "#599DFF"
+
+/obj/item/device/flashlight/glowstick/orange
+	name = "orange glowstick"
+	color = "#FA7C0B"
+
+/obj/item/device/flashlight/glowstick/yellow
+	name = "yellow glowstick"
+	color = "#FEF923"
+
+/obj/item/device/flashlight/glowstick/random
+	name = "glowstick"
+	desc = "A party-grade glowstick."
+	color = "#FF00FF"
+
+/obj/item/device/flashlight/glowstick/random/New()
+	color = rgb(rand(50,255),rand(50,255),rand(50,255))
+	..()
 
 /obj/item/device/flashlight/slime
 	gender = PLURAL

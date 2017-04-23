@@ -1,3 +1,4 @@
+
 //Torch Large Pods
 
 /datum/shuttle/ferry/escape_pod/escape_pod_six
@@ -146,44 +147,16 @@
 	dock_target_offsite = "escape_pod_17_recovery"
 	transit_direction = SOUTH
 
-//Calypso.
-/datum/shuttle/multi_shuttle/calypso
-	name = "Calypso"
-	warmup_time = 0
-	origin = /area/calypso_hangar/start
-	interim = /area/calypso_hangar/transit
-	start_location = "SEV Torch Hangar Deck"
-	destinations = list(
-		"North of First Deck" = /area/calypso_hangar/firstdeck,
-		"South of Second Deck" = /area/calypso_hangar/seconddeck,
-		"West of Third Deck" = /area/calypso_hangar/thirddeck,
-		"East of Fourth Deck" = /area/calypso_hangar/fourthdeck,
-		"Asteroid" = /area/calypso_hangar/mining,
-		"Away Site" = /area/calypso_hangar/away,
-		)
-	announcer = "SEV Torch Docking Computer"
-	arrival_message = "Attention, shuttle Calypso returning. Clear the Hangar Deck."
-	departure_message = "Attention, shuttle Calypso departing. Clear the Hangar Deck."
 
-//General Utility Pod.
-/datum/shuttle/multi_shuttle/gup
-	name = "GUP"
-	warmup_time = 0
-	origin = /area/guppy_hangar/start
-	interim = /area/guppy_hangar/transit
-	start_location = "SEV Torch Hangar Deck"
+//Petrov
 
-	destinations = list(
-		"East of First Deck" = /area/guppy_hangar/firstdeck,
-		"West of Second Deck" = /area/guppy_hangar/seconddeck,
-		"South of Third Deck" = /area/guppy_hangar/thirddeck,
-		"North of Fourth Deck" = /area/guppy_hangar/fourthdeck,
-		"Asteroid" = /area/guppy_hangar/mining,
-		)
-
-	announcer = "SEV Torch Docking Computer"
-	arrival_message = "Attention, General Utility Pod returning. Clear the Hangar Deck."
-	departure_message = "Attention, General Utility Pod departing. Clear the Hangar Deck."
+/datum/shuttle/ferry/petrov
+	name = "Petrov"
+	warmup_time = 10
+	area_offsite = /area/shuttle/petrov/away
+	area_station = /area/shuttle/petrov/docked
+	docking_controller_tag = "petrov_shuttle"
+	dock_target_station = "petrov_shuttle_dock_airlock"
 
 //Ninja Shuttle.
 /datum/shuttle/multi_shuttle/ninja
@@ -193,6 +166,7 @@
 	interim = /area/ninja_dojo/transit
 	start_location = "Clan Dojo"
 	destinations = list(
+		"Southeast of Bridge" = /area/ninja_dojo/bridge,
 		"South of First Deck" = /area/ninja_dojo/firstdeck,
 		"North of Second Deck" = /area/ninja_dojo/seconddeck,
 		"East of Third Deck" = /area/ninja_dojo/thirddeck,
@@ -204,6 +178,7 @@
 	announcer = "SEV Torch Sensor Array"
 	arrival_message = "Attention, anomalous sensor reading detected entering vessel proximity."
 	departure_message = "Attention, anomalous sensor reading detected leaving vessel proximity."
+
 
 //Merchant
 
@@ -228,6 +203,18 @@
 	dock_target_station = "admin_shuttle_dock_airlock"
 	dock_target_offsite = "admin_shuttle_bay"
 
+//Transport
+
+/datum/shuttle/ferry/centcom
+	name = "Centcom"
+	location = 1
+	warmup_time = 10
+	area_offsite = /area/shuttle/transport1/centcom
+	area_station = /area/shuttle/transport1/station
+	docking_controller_tag = "centcom_shuttle"
+	dock_target_station = "centcom_shuttle_dock_airlock"
+	dock_target_offsite = "centcom_shuttle_bay"
+
 //Merc
 
 /datum/shuttle/multi_shuttle/mercenary
@@ -237,10 +224,11 @@
 	interim = /area/syndicate_station/transit
 	start_location = "Mercenary Base"
 	destinations = list(
-		"Northeast of first deck" = /area/syndicate_station/firstdeck,
-		"Southeast of the second deck" = /area/syndicate_station/seconddeck,
-		"South of third deck" = /area/syndicate_station/thirddeck,
-		"Northwest of fourth deck" = /area/syndicate_station/fourthdeck,
+		"East of Bridge" = /area/syndicate_station/bridge,
+		"Northeast of First Deck" = /area/syndicate_station/firstdeck,
+		"Southeast of the Second deck" = /area/syndicate_station/seconddeck,
+		"South of Third deck" = /area/syndicate_station/thirddeck,
+		"Northwest of Fourth Deck" = /area/syndicate_station/fourthdeck,
 		"Away Site" = /area/syndicate_station/away,
 		"Debris Field" = /area/syndicate_station/salvage,
 		"Mining Site" = /area/syndicate_station/mining,
@@ -266,10 +254,11 @@
 	origin = /area/skipjack_station/start
 	interim = /area/skipjack_station/transit
 	destinations = list(
-		"Northwest of first deck" = /area/skipjack_station/firstdeck,
-		"Southwest of second deck" = /area/skipjack_station/seconddeck,
-		"Southeast of third deck" = /area/skipjack_station/thirddeck,
-		"Northeast of fourth deck" = /area/skipjack_station/fourthdeck,
+		"South of Bridge" = /area/skipjack_station/bridge,
+		"Northwest of First deck" = /area/skipjack_station/firstdeck,
+		"Southwest of Second deck" = /area/skipjack_station/seconddeck,
+		"Southeast of Third deck" = /area/skipjack_station/thirddeck,
+		"Northeast of Fourth Deck" = /area/skipjack_station/fourthdeck,
 		"Mining Site" = /area/skipjack_station/mining,
 		"Debris Field" = /area/skipjack_station/salvage,
 		"Away Site" = /area/skipjack_station/away,
@@ -296,10 +285,11 @@
 	interim = /area/rescue_base/transit
 	start_location = "Response Team Base"
 	destinations = list(
-		"Southwest of first deck" = /area/rescue_base/firstdeck,
-		"Northwest of second deck" = /area/rescue_base/seconddeck,
-		"North of third deck" = /area/rescue_base/thirddeck,
-		"Southeast of fourth deck" = /area/rescue_base/fourthdeck,
+		"West of Bridge" = /area/rescue_base/bridge,
+		"Southwest of First deck" = /area/rescue_base/firstdeck,
+		"Northwest of Second deck" = /area/rescue_base/seconddeck,
+		"North of Third deck" = /area/rescue_base/thirddeck,
+		"Southeast of Fourth Deck" = /area/rescue_base/fourthdeck,
 		"Away Site" = /area/rescue_base/away,
 		"Debris Field" = /area/rescue_base/salvage,
 		"Mining Site" = /area/rescue_base/mining,
@@ -331,3 +321,12 @@
 	dock_target_station = "specops_centcom_dock"
 	dock_target_offsite = "specops_dock_airlock"
 
+//Cargo drone
+
+/datum/shuttle/ferry/supply/drone
+	name = "Supply Drone"
+	location = 1
+	warmup_time = 10
+	area_offsite = /area/supply/dock
+	area_station = /area/supply/station
+	docking_controller_tag = "" // lands, doesn't dock

@@ -24,7 +24,7 @@
 	if(N == /turf/space)
 		var/turf/below = GetBelow(src)
 		if(istype(below) && !istype(below,/turf/space))
-			N = /turf/simulated/open
+			N = below.density ? /turf/simulated/floor/airless : /turf/simulated/open
 
 	var/obj/fire/old_fire = fire
 	var/old_opacity = opacity
@@ -69,6 +69,8 @@
 	. = W
 
 	lighting_overlay = old_lighting_overlay
+	if(lighting_overlay)
+		lighting_overlay.update_overlay()
 	affecting_lights = old_affecting_lights
 	if((old_opacity != opacity) || (dynamic_lighting != old_dynamic_lighting) || force_lighting_update)
 		reconsider_lights()
@@ -81,12 +83,14 @@
 /turf/proc/transport_properties_from(turf/other)
 	if(!istype(other, src.type))
 		return 0
-
 	src.set_dir(other.dir)
 	src.icon_state = other.icon_state
 	src.icon = other.icon
 	src.overlays = other.overlays.Copy()
 	src.underlays = other.underlays.Copy()
+	if(other.decals)
+		src.decals = other.decals.Copy()
+		src.update_icon()
 	return 1
 
 //I would name this copy_from() but we remove the other turf from their air zone for some reason

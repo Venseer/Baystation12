@@ -7,19 +7,21 @@
 	light_color = "#b5ff5b"
 	desc = "Some blob creature thingy."
 	density = 1
-	opacity = 0
+	opacity = 1
 	anchored = 1
 	mouse_opacity = 2
-	layer = 4
+
+	plane = BLOB_PLANE
+	layer = BLOB_SHIELD_LAYER
 
 	var/maxHealth = 30
 	var/health
 	var/regen_rate = 5
 	var/brute_resist = 4
 	var/fire_resist = 1
-	var/laser_resist = 5	// Special resist for laser based weapons - Emitters or handheld energy weaponry. Damage is divided by this and THEN by fire_resist.
+	var/laser_resist = 4	// Special resist for laser based weapons - Emitters or handheld energy weaponry. Damage is divided by this and THEN by fire_resist.
 	var/expandType = /obj/effect/blob
-	var/secondary_core_growth_chance = 2.5 //% chance to grow a secondary blob core instead of whatever was suposed to grown. Secondary cores are considerably weaker, but still nasty.
+	var/secondary_core_growth_chance = 5 //% chance to grow a secondary blob core instead of whatever was suposed to grown. Secondary cores are considerably weaker, but still nasty.
 
 /obj/effect/blob/New(loc)
 	health = maxHealth
@@ -95,14 +97,14 @@
 	if(V)
 		V.ex_act(2)
 		return
-	var/obj/machinery/bot/B = locate() in T
-	if(B)
-		B.ex_act(2)
-		return
 	var/obj/mecha/M = locate() in T
 	if(M)
 		M.visible_message("<span class='danger'>The blob attacks \the [M]!</span>")
 		M.take_damage(40)
+		return
+	var/obj/machinery/camera/CA = locate() in T
+	if(CA)
+		CA.take_damage(30)
 		return
 
 	// Above things, we destroy completely and thus can use locate. Mobs are different.
@@ -113,14 +115,14 @@
 		playsound(loc, 'sound/effects/attackblob.ogg', 50, 1)
 		L.take_organ_damage(rand(30, 40))
 		return
-	if(prob(secondary_core_growth_chance))
+	if(!(locate(/obj/effect/blob/core) in range(T, 2)) && prob(secondary_core_growth_chance))
 		new/obj/effect/blob/core/secondary(T)
 	else
 		new expandType(T, min(health, 30))
 
 /obj/effect/blob/proc/pulse(var/forceLeft, var/list/dirs)
 	regen()
-	sleep(5)
+	sleep(4)
 	var/pushDir = pick(dirs)
 	var/turf/T = get_step(src, pushDir)
 	var/obj/effect/blob/B = (locate() in T)
@@ -144,8 +146,8 @@
 
 /obj/effect/blob/attackby(var/obj/item/weapon/W, var/mob/user)
 	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
+	user.do_attack_animation(src)
 	playsound(loc, 'sound/effects/attackblob.ogg', 50, 1)
-	visible_message("<span class='danger'>\The [src] has been attacked with \the [W][(user ? " by [user]." : ".")]</span>")
 	var/damage = 0
 	switch(W.damtype)
 		if("fire")
@@ -165,8 +167,10 @@
 	maxHealth = 200
 	brute_resist = 2
 	fire_resist = 2
-	laser_resist = 10
+	laser_resist = 8
 	regen_rate = 2
+
+	layer = BLOB_CORE_LAYER
 
 	expandType = /obj/effect/blob/shield
 	var/blob_may_process = 1
@@ -207,13 +211,18 @@
 /obj/effect/blob/core/secondary
 	name = "small blob core"
 	icon = 'icons/mob/blob.dmi'
-	icon_state = "blob_core"
+	icon_state = "blob_node"
 	maxHealth = 100
 	brute_resist = 1
 	fire_resist = 1
 	laser_resist = 5
 	regen_rate = 1
 	growth_range = 3
+
+	layer = BLOB_NODE_LAYER
+
+/obj/effect/blob/core/secondary/update_icon()
+	icon_state = (health / maxHealth >= 0.5) ? "blob_node" : "blob_factory"
 
 /obj/effect/blob/shield
 	name = "strong blob"
@@ -223,14 +232,13 @@
 	maxHealth = 60
 	brute_resist = 1
 	fire_resist = 2
-	laser_resist = 7
-
+	laser_resist = 6
 /obj/effect/blob/shield/New()
 	..()
 	update_nearby_tiles()
 
 /obj/effect/blob/shield/Destroy()
-	density = 0
+	set_density(0)
 	update_nearby_tiles()
 	..()
 

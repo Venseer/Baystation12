@@ -62,7 +62,7 @@
 	var/scoped_accuracy = null
 	var/list/burst_accuracy = list(0) //allows for different accuracies for each shot in a burst. Applied on top of accuracy
 	var/list/dispersion = list(0)
-	var/requires_two_hands
+	var/one_hand_penalty
 	var/wielded_item_state
 
 	var/next_fire_time = 0
@@ -88,7 +88,7 @@
 		scoped_accuracy = accuracy
 
 /obj/item/weapon/gun/update_twohanding()
-	if(requires_two_hands)
+	if(one_hand_penalty)
 		var/mob/living/M = loc
 		if(istype(M))
 			if(M.can_wield_item(src) && src.is_held_twohanded(M))
@@ -251,9 +251,9 @@
 				"You hear a [fire_sound_text]!"
 				)
 
-	if(requires_two_hands)
+	if(one_hand_penalty)
 		if(!src.is_held_twohanded(user))
-			switch(requires_two_hands)
+			switch(one_hand_penalty)
 				if(1)
 					if(prob(50)) //don't need to tell them every single time
 						to_chat(user, "<span class='warning'>Your aim wavers slightly.</span>")
@@ -264,7 +264,7 @@
 				if(4 to INFINITY)
 					to_chat(user, "<span class='warning'>You struggle to keep \the [src] on target with just one hand!</span>")
 		else if(!user.can_wield_item(src))
-			switch(requires_two_hands)
+			switch(one_hand_penalty)
 				if(1)
 					if(prob(50)) //don't need to tell them every single time
 						to_chat(user, "<span class='warning'>Your aim wavers slightly.</span>")
@@ -310,10 +310,10 @@
 	var/acc_mod = burst_accuracy[min(burst, burst_accuracy.len)]
 	var/disp_mod = dispersion[min(burst, dispersion.len)]
 
-	if(requires_two_hands)
+	if(one_hand_penalty)
 		if(!held_twohanded)
-			acc_mod += -ceil(requires_two_hands/2)
-			disp_mod += requires_two_hands*0.5 //dispersion per point of two-handedness
+			acc_mod += -ceil(one_hand_penalty/2)
+			disp_mod += one_hand_penalty*0.5 //dispersion per point of two-handedness
 
 	//Accuracy modifiers
 	P.accuracy = accuracy + acc_mod
@@ -350,13 +350,16 @@
 	var/launched = !P.launch_from_gun(target, user, src, target_zone, x_offset, y_offset)
 
 	if(launched)
-		var/shot_sound = P.fire_sound? P.fire_sound : fire_sound
-		if(silenced)
-			playsound(user, shot_sound, 10, 1)
-		else
-			playsound(user, shot_sound, 50, 1)
+		play_fire_sound(user,P)
 
 	return launched
+
+/obj/item/weapon/gun/proc/play_fire_sound(var/mob/user, var/obj/item/projectile/P)
+	var/shot_sound = (istype(P) && P.fire_sound)? P.fire_sound : fire_sound
+	if(silenced)
+		playsound(user, shot_sound, 10, 1)
+	else
+		playsound(user, shot_sound, 50, 1)
 
 //Suicide handling.
 /obj/item/weapon/gun/var/mouthshoot = 0 //To stop people from suiciding twice... >.>
@@ -385,13 +388,13 @@
 			return
 
 		in_chamber.on_hit(M)
-		if (in_chamber.damage_type != HALLOSS)
+		if (in_chamber.damage_type != PAIN)
 			log_and_message_admins("[key_name(user)] commited suicide using \a [src]")
-			user.apply_damage(in_chamber.damage*2.5, in_chamber.damage_type, BP_HEAD, used_weapon = "Point blank shot in the mouth with \a [in_chamber]", sharp=1)
+			user.apply_damage(in_chamber.damage*2.5, in_chamber.damage_type, BP_HEAD, 0, in_chamber.damage_flags(), used_weapon = "Point blank shot in the mouth with \a [in_chamber]")
 			user.death()
 		else
 			to_chat(user, "<span class = 'notice'>Ow...</span>")
-			user.apply_effect(110,AGONY,0)
+			user.apply_effect(110,PAIN,0)
 		qdel(in_chamber)
 		mouthshoot = 0
 		return
@@ -421,7 +424,7 @@
 		screen_shake = initial(screen_shake)
 
 /obj/item/weapon/gun/examine(mob/user)
-	..()
+	. = ..()
 	if(firemodes.len > 1)
 		var/datum/firemode/current_mode = firemodes[sel_mode]
 		to_chat(user, "The fire selector is set to [current_mode.name].")

@@ -130,17 +130,15 @@
 	return ..()
 
 /obj/machinery/portable_atmospherics/hydroponics/attack_ghost(var/mob/observer/ghost/user)
-
 	if(!(harvest && seed && seed.has_mob_product))
 		return
 
-	var/datum/ghosttrap/plant/G = get_ghost_trap("living plant")
-	if(!G.assess_candidate(user))
+	if(!user.can_admin_interact())
 		return
+
 	var/response = alert(user, "Are you sure you want to harvest this [seed.display_name]?", "Living plant request", "Yes", "No")
 	if(response == "Yes")
 		harvest()
-	return
 
 /obj/machinery/portable_atmospherics/hydroponics/attack_generic(var/mob/user)
 
@@ -180,9 +178,14 @@
 		return
 
 	//Override for somatoray projectiles.
-	if(istype(Proj ,/obj/item/projectile/energy/floramut) && prob(20))
-		mutate(1)
-		return
+	if(istype(Proj ,/obj/item/projectile/energy/floramut)&& prob(20))
+		if(istype(Proj, /obj/item/projectile/energy/floramut/gene))
+			var/obj/item/projectile/energy/floramut/gene/G = Proj
+			if(seed)
+				seed = seed.diverge_mutate_gene(G.gene, get_turf(loc))	//get_turf just in case it's not in a turf.
+		else
+			mutate(1)
+			return
 	else if(istype(Proj ,/obj/item/projectile/energy/florayield) && prob(20))
 		yield_mod = min(10,yield_mod+rand(1,2))
 		return
@@ -566,7 +569,7 @@
 
 /obj/machinery/portable_atmospherics/hydroponics/examine()
 
-	..()
+	. = ..()
 
 	if(!seed)
 		to_chat(usr, "[src] is empty.")

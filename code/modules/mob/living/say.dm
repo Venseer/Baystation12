@@ -11,6 +11,7 @@ var/list/department_radio_keys = list(
 	  ":s" = "Security",	".s" = "Security",
 	  ":w" = "whisper",		".w" = "whisper",
 	  ":t" = "Mercenary",	".t" = "Mercenary",
+	  ":x" = "Raider",		".x" = "Raider",
 	  ":u" = "Supply",		".u" = "Supply",
 	  ":v" = "Service",		".v" = "Service",
 	  ":p" = "AI Private",	".p" = "AI Private",
@@ -27,6 +28,7 @@ var/list/department_radio_keys = list(
 	  ":S" = "Security",	".S" = "Security",
 	  ":W" = "whisper",		".W" = "whisper",
 	  ":T" = "Mercenary",	".T" = "Mercenary",
+	  ":X" = "Raider",		".X" = "Raider",
 	  ":U" = "Supply",		".U" = "Supply",
 	  ":V" = "Service",		".V" = "Service",
 	  ":P" = "AI Private",	".P" = "AI Private",
@@ -250,8 +252,9 @@ proc/get_radio_key_from_channel(var/channel)
 	spawn(30) qdel(speech_bubble)
 
 	for(var/mob/M in listening)
-		to_chat(M, speech_bubble)
-		M.hear_say(message, verb, speaking, alt_name, italics, src, speech_sound, sound_vol)
+		if(M)
+			M << speech_bubble
+			M.hear_say(message, verb, speaking, alt_name, italics, src, speech_sound, sound_vol)
 
 	for(var/obj/O in listening_obj)
 		spawn(0)

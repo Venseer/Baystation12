@@ -209,6 +209,11 @@
 
 	if(mob.transforming)	return//This is sota the goto stop mobs from moving var
 
+	if(Process_Grab())	return
+
+	if(!mob.canmove)
+		return
+
 	if(isliving(mob))
 		var/mob/living/L = mob
 		if(L.incorporeal_move)//Move though walls
@@ -231,10 +236,7 @@
 						b.zoom()
 				*/
 
-	if(Process_Grab())	return
 
-	if(!mob.canmove)
-		return
 
 	//if(istype(mob.loc, /turf/space) || (mob.flags & NOGRAV))
 	//	if(!mob.Allow_Spacemove(0))	return 0
@@ -391,6 +393,15 @@
 ///Called by client/Move()
 ///Allows mobs to run though walls
 /client/proc/Process_Incorpmove(direct)
+	if(mob.confused)
+		switch(mob.m_intent)
+			if("run")
+				if(prob(75))
+					direct = turn(direct, pick(90, -90))
+			if("walk")
+				if(prob(25))
+					direct = turn(direct, pick(90, -90))
+
 	var/turf/T = get_step(mob, direct)
 	if(mob.check_is_holy_turf(T))
 		to_chat(mob, "<span class='warning'>You cannot enter holy grounds while you are in this plane of existence!</span>")
@@ -470,3 +481,27 @@
 	if(Check_Shoegrip())
 		return 0
 	return prob_slip
+
+#define DO_MOVE(this_dir) var/final_dir = turn(this_dir, -dir2angle(dir)); Move(get_step(mob, final_dir), final_dir);
+
+/client/verb/moveup()
+	set name = ".moveup"
+	set instant = 1
+	DO_MOVE(NORTH)
+
+/client/verb/movedown()
+	set name = ".movedown"
+	set instant = 1
+	DO_MOVE(SOUTH)
+
+/client/verb/moveright()
+	set name = ".moveright"
+	set instant = 1
+	DO_MOVE(EAST)
+
+/client/verb/moveleft()
+	set name = ".moveleft"
+	set instant = 1
+	DO_MOVE(WEST)
+
+#undef DO_MOVE

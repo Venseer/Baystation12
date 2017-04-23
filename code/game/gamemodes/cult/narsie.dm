@@ -35,8 +35,8 @@ var/global/list/narsie_list = list()
 	light_range = 1
 	light_color = "#3e0000"
 
-	current_size = 12
-	consume_range = 12 // How many tiles out do we eat.
+	current_size = 6
+	consume_range = 6 // How many tiles out do we eat.
 	var/announce=1
 	var/cause_hell = 1
 
@@ -152,8 +152,8 @@ var/global/list/narsie_list = list()
 	T.desc = "An opening has been made on that wall, but who can say if what you seek truly lies on the other side?"
 	T.icon = 'icons/turf/walls.dmi'
 	T.icon_state = "cult-narsie"
-	T.opacity = 0
-	T.density = 0
+	T.set_opacity(0)
+	T.set_density(0)
 	set_light(1)
 
 /obj/singularity/narsie/large/consume(const/atom/A) //Has its own consume proc because it doesn't need energy and I don't want BoHs to explode it. --NEO
@@ -174,11 +174,6 @@ var/global/list/narsie_list = list()
 			return 0
 
 		M.cultify()
-
-//ITEM PROCESSING
-	else if (istype(A, /obj/))
-		var/obj/O = A
-		O.cultify()
 
 //TURF PROCESSING
 	else if (isturf(A))
@@ -291,6 +286,8 @@ var/global/list/narsie_list = list()
 		if(food.stat)
 			continue
 		var/turf/pos = get_turf(food)
+		if(!pos)	//Catches failure of get_turf.
+			continue
 		if(pos.z != src.z)
 			continue
 		cultists += food
@@ -342,9 +339,6 @@ var/global/list/narsie_list = list()
 	chained = 0
 	move_self = 1
 	icon_state ="narsie"
-
-/obj/singularity/narsie/cultify()
-	return
 
 /**
  * Wizard narsie.

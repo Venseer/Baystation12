@@ -31,11 +31,12 @@ var/global/list/additional_antag_types = list()
 
 	var/station_was_nuked = 0                // See nuclearbomb.dm and malfunction.dm.
 	var/explosion_in_progress = 0            // Sit back and relax
-	var/waittime_l = 600                     // Lower bound on time before intercept arrives (in tenths of seconds)
-	var/waittime_h = 1800                    // Upper bound on time before intercept arrives (in tenths of seconds)
 
 	var/event_delay_mod_moderate             // Modifies the timing of random events.
 	var/event_delay_mod_major                // As above.
+
+	var/waittime_l = 60 SECONDS				 // Lower bound on time before start of shift report
+	var/waittime_h = 180 SECONDS		     // Upper bounds on time before start of shift report
 
 /datum/game_mode/New()
 	..()
@@ -94,7 +95,7 @@ var/global/list/additional_antag_types = list()
 		if(href_list["debug_antag"] == "self")
 			usr.client.debug_variables(src)
 			return
-		var/datum/antagonist/antag = all_antag_types[href_list["debug_antag"]]
+		var/datum/antagonist/antag = all_antag_types()[href_list["debug_antag"]]
 		if(antag)
 			usr.client.debug_variables(antag)
 			message_admins("Admin [key_name_admin(usr)] is debugging the [antag.role_text] template.")
@@ -102,16 +103,16 @@ var/global/list/additional_antag_types = list()
 		if(antag_tags && (href_list["remove_antag_type"] in antag_tags))
 			to_chat(usr, "Cannot remove core mode antag type.")
 			return
-		var/datum/antagonist/antag = all_antag_types[href_list["remove_antag_type"]]
+		var/datum/antagonist/antag = all_antag_types()[href_list["remove_antag_type"]]
 		if(antag_templates && antag_templates.len && antag && (antag in antag_templates) && (antag.id in additional_antag_types))
 			antag_templates -= antag
 			additional_antag_types -= antag.id
 			message_admins("Admin [key_name_admin(usr)] removed [antag.role_text] template from game mode.")
 	else if(href_list["add_antag_type"])
-		var/choice = input("Which type do you wish to add?") as null|anything in all_antag_types
+		var/choice = input("Which type do you wish to add?") as null|anything in all_antag_types()
 		if(!choice)
 			return
-		var/datum/antagonist/antag = all_antag_types[choice]
+		var/datum/antagonist/antag = all_antag_types()[choice]
 		if(antag)
 			if(!islist(ticker.mode.antag_templates))
 				ticker.mode.antag_templates = list()
@@ -162,6 +163,7 @@ var/global/list/additional_antag_types = list()
 		return 0
 
 	var/enemy_count = 0
+	var/list/all_antag_types = all_antag_types()
 	if(antag_tags && antag_tags.len)
 		for(var/antag_tag in antag_tags)
 			var/datum/antagonist/antag = all_antag_types[antag_tag]
@@ -210,9 +212,9 @@ var/global/list/additional_antag_types = list()
 		display_roundstart_logout_report()
 
 	spawn (rand(waittime_l, waittime_h))
-		send_intercept()
-		spawn(rand(100,150))
-			announce_ert_disabled()
+		using_map.send_welcome()
+		sleep(rand(100,150))
+		announce_ert_disabled()
 
 	//Assign all antag types for this game mode. Any players spawned as antags earlier should have been removed from the pending list, so no need to worry about those.
 	for(var/datum/antagonist/antag in antag_templates)
@@ -293,6 +295,8 @@ var/global/list/additional_antag_types = list()
 
 	check_victory()
 	sleep(2)
+
+	var/list/all_antag_types = all_antag_types()
 	for(var/datum/antagonist/antag in antag_templates)
 		antag.check_victory()
 		antag.print_player_summary()
@@ -357,55 +361,11 @@ var/global/list/additional_antag_types = list()
 /datum/game_mode/proc/check_win() //universal trigger to be called at mob death, nuke explosion, etc. To be called from everywhere.
 	return 0
 
-/datum/game_mode/proc/send_intercept()
-
-	var/intercepttext = "<FONT size = 3><B>Cent. Com. Update</B> Requested status information:</FONT><HR>"
-	intercepttext += "<B> In case you have misplaced your copy, attached is a list of personnel whom reliable sources&trade; suspect may be affiliated with subversive elements:</B><br>"
-
-	var/list/disregard_roles = list()
-	for(var/antag_type in all_antag_types)
-		var/datum/antagonist/antag = all_antag_types[antag_type]
-		if(antag.flags & ANTAG_SUSPICIOUS)
-			disregard_roles |= antag.role_text
-
-	var/list/suspects = list()
-	for(var/mob/living/carbon/human/man in player_list) if(man.client && man.mind)
-
-		// NT relation option
-		var/special_role = man.mind.special_role
-		var/datum/antagonist/special_role_data = get_antag_data(special_role)
-
-		if (special_role in disregard_roles)
-			continue
-		else if(man.client.prefs.nanotrasen_relation == COMPANY_OPPOSED && prob(50) || \
-			man.client.prefs.nanotrasen_relation == COMPANY_SKEPTICAL && prob(20))
-			suspects += man
-		// Antags
-		else if(special_role_data && prob(special_role_data.suspicion_chance))
-			suspects += man
-
-		// Some poor people who were just in the wrong place at the wrong time..
-		else if(prob(10))
-			suspects += man
-
-	for(var/mob/M in suspects)
-		if(player_is_antag(M.mind, only_offstation_roles = 1))
-			continue
-		switch(rand(1, 100))
-			if(1 to 50)
-				intercepttext += "Someone with the job of <b>[M.mind.assigned_role]</b> <br>"
-			else
-				intercepttext += "<b>[M.name]</b>, the <b>[M.mind.assigned_role]</b> <br>"
-
-	//New message handling
-	post_comm_message("Cent. Com. Status Summary", intercepttext)
-
-	sound_to(world, sound('sound/AI/commandreport.ogg'))
-
 /datum/game_mode/proc/get_players_for_role(var/role, var/antag_id)
 	var/list/players = list()
 	var/list/candidates = list()
 
+	var/list/all_antag_types = all_antag_types()
 	var/datum/antagonist/antag_template = all_antag_types[antag_id]
 	if(!antag_template)
 		return candidates
@@ -461,6 +421,7 @@ var/global/list/additional_antag_types = list()
 	if(!config.traitor_scaling)
 		antag_scaling_coeff = 0
 
+	var/list/all_antag_types = all_antag_types()
 	if(antag_tags && antag_tags.len)
 		antag_templates = list()
 		for(var/antag_tag in antag_tags)

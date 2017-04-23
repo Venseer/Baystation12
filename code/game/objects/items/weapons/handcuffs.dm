@@ -17,7 +17,7 @@
 	var/breakouttime = 1200 //Deciseconds = 120s = 2 minutes
 	var/cuff_sound = 'sound/weapons/handcuffs.ogg'
 	var/cuff_type = "handcuffs"
-	sprite_sheets = list("Resomi" = 'icons/mob/species/resomi/handcuffs.dmi')
+	sprite_sheets = list(SPECIES_RESOMI = 'icons/mob/species/resomi/handcuffs.dmi')
 
 /obj/item/weapon/handcuffs/get_mob_overlay(mob/user_mob, slot)
 	var/image/ret = ..()
@@ -115,8 +115,7 @@ var/last_chew = 0
 	H.visible_message("<span class='warning'>\The [H] chews on \his [O.name]!</span>", "<span class='warning'>You chew on your [O.name]!</span>")
 	admin_attacker_log(H, "chewed on their [O.name]!")
 
-	if(O.take_damage(3,0,1,1,"teeth marks"))
-		H:UpdateDamageIcon()
+	O.take_damage(3,0, DAM_SHARP|DAM_EDGE ,"teeth marks")
 
 	last_chew = world.time
 

@@ -8,7 +8,7 @@
 	var/uses = 1        // Uses before the kit deletes itself.
 
 /obj/item/device/kit/examine()
-	..()
+	. = ..()
 	to_chat(usr, "It has [uses] use\s left.")
 
 /obj/item/device/kit/proc/use(var/amt, var/mob/user)
@@ -43,7 +43,7 @@
 		to_chat(user, "You set about modifying the helmet into [src].")
 		var/mob/living/carbon/human/H = user
 		if(istype(H))
-			species_restricted = list(H.species.get_bodytype())
+			species_restricted = list(H.species.get_bodytype(H))
 		kit.use(1,user)
 		return 1
 	return ..()
@@ -62,7 +62,7 @@
 		to_chat(user, "You set about modifying the suit into [src].")
 		var/mob/living/carbon/human/H = user
 		if(istype(H))
-			species_restricted = list(H.species.get_bodytype())
+			species_restricted = list(H.species.get_bodytype(H))
 		kit.use(1,user)
 		return 1
 	return ..()
@@ -74,7 +74,7 @@
 	var/list/allowed_types = list()
 
 /obj/item/device/kit/paint/examine()
-	..()
+	. = ..()
 	to_chat(usr, "This kit will convert an exosuit into: [new_name].")
 	to_chat(usr, "This kit can be used on the following exosuit models:")
 	for(var/exotype in allowed_types)

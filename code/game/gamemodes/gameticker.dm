@@ -79,7 +79,7 @@ var/global/datum/controller/gameticker/ticker
 						for(var/i=0, i<10, i++)
 							sleep(1)
 							vote.process()
-			if(pregame_timeleft <= 0 || (initialization_stage == INITIALIZATION_NOW_AND_COMPLETE))
+			if(pregame_timeleft <= 0 || ((initialization_stage & INITIALIZATION_NOW_AND_COMPLETE) == INITIALIZATION_NOW_AND_COMPLETE))
 				current_state = GAME_STATE_SETTING_UP
 	while (!setup())
 
@@ -223,10 +223,10 @@ var/global/datum/controller/gameticker/ticker
 						var/turf/T = get_turf(M)
 						if(T && T.z in using_map.station_levels)				//we don't use M.death(0) because it calls a for(/mob) loop and
 							M.health = 0
-							M.stat = DEAD
+							M.set_stat(DEAD)
 					if(1)	//on a z-level 1 turf.
 						M.health = 0
-						M.stat = DEAD
+						M.set_stat(DEAD)
 
 		//Now animate the cinematic
 		switch(station_missed)
@@ -249,7 +249,7 @@ var/global/datum/controller/gameticker/ticker
 
 			if(2)	//nuke was nowhere nearby	//TODO: a really distant explosion animation
 				sleep(50)
-				sound_to(world, sound('sound/effects/explosionfar.ogg'))				
+				sound_to(world, sound('sound/effects/explosionfar.ogg'))
 			else	//station was destroyed
 				if( mode && !override )
 					override = mode.name
@@ -258,7 +258,7 @@ var/global/datum/controller/gameticker/ticker
 						flick("intro_nuke",cinematic)
 						sleep(35)
 						flick("station_explode_fade_red",cinematic)
-						sound_to(world, sound('sound/effects/explosionfar.ogg'))						
+						sound_to(world, sound('sound/effects/explosionfar.ogg'))
 						cinematic.icon_state = "summary_nukewin"
 					if("AI malfunction") //Malf (screen,explosion,summary)
 						flick("intro_malf",cinematic)
@@ -362,7 +362,7 @@ var/global/datum/controller/gameticker/ticker
 					else
 						feedback_set_details("end_proper","universe destroyed")
 					if(!delay_end)
-						to_world("<span class='notice'><b>Rebooting due to destruction of station in [restart_timeout/10] seconds</b></span>")
+						to_world("<span class='notice'><b>Rebooting due to destruction of [station_name()] in [restart_timeout/10] seconds</b></span>")
 
 				else
 					feedback_set_details("end_proper","proper completion")
@@ -417,7 +417,7 @@ var/global/datum/controller/gameticker/ticker
 				else if(issilicon(Player))
 					to_chat(Player, "<font color='green'><b>You remain operational after the events on [station_name()] as [Player.real_name].</b></font>")
 				else
-					to_chat(Player, "<font color='blue'><b>You missed the crew transfer after the events on [station_name()] as [Player.real_name].</b></font>")
+					to_chat(Player, "<font color='blue'><b>You got through just another workday on [station_name()] as [Player.real_name].</b></font>")
 			else
 				if(isghost(Player))
 					var/mob/observer/ghost/O = Player
@@ -466,6 +466,19 @@ var/global/datum/controller/gameticker/ticker
 	if(dronecount)
 		to_world("<b>There [dronecount>1 ? "were" : "was"] [dronecount] industrious maintenance [dronecount>1 ? "drones" : "drone"] at the end of this round.</b>")
 
+	if(all_money_accounts.len)
+		var/datum/money_account/max_profit = all_money_accounts[1]
+		var/datum/money_account/max_loss = all_money_accounts[1]
+		for(var/datum/money_account/D in all_money_accounts)
+			if(D == vendor_account) //yes we know you get lots of money
+				continue
+			var/saldo = D.get_balance()
+			if(saldo >= max_profit.get_balance())
+				max_profit = D
+			if(saldo <= max_loss.get_balance())
+				max_loss = D
+		to_world("<b>[max_profit.owner_name]</b> received most <font color='green'><B>PROFIT</B></font> today, with net profit of <b>T[max_profit.get_balance()]</b>.")
+		to_world("On the other hand, <b>[max_loss.owner_name]</b> had most <font color='red'><B>LOSS</B></font>, with total loss of <b>T[max_loss.get_balance()]</b>.")
 
 	mode.declare_completion()//To declare normal completion.
 

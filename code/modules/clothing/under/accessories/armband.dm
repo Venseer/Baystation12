@@ -14,11 +14,6 @@
 	desc = "An armband, worn by the crew to display which department they're assigned to. This one is orange with a reflective strip!"
 	icon_state = "engie"
 
-/obj/item/clothing/accessory/armband/science
-	name = "science armband"
-	desc = "An armband, worn by the crew to display which department they're assigned to. This one is purple."
-	icon_state = "rnd"
-
 /obj/item/clothing/accessory/armband/hydro
 	name = "hydroponics armband"
 	desc = "An armband, worn by the crew to display which department they're assigned to. This one is green and blue."
@@ -43,3 +38,8 @@
 	name = "peacekeeper armband"
 	desc = "An armband, worn by the crew to display which department they're assigned to. This one is blue and gold."
 	icon_state = "solblue"
+
+/obj/item/clothing/accessory/armband/whitered
+	name = "\improper NanoTrasen armband"
+	desc = "An armband, worn by the crew to display which department they're assigned to. This one is white and red."
+	icon_state = "whitered"

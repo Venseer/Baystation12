@@ -53,7 +53,9 @@ var/list/name_to_material
 /proc/get_material_by_name(name)
 	if(!name_to_material)
 		populate_material_list()
-	return name_to_material[name]
+	. = name_to_material[name]
+	if(!.)
+		log_error("Unable to acquire material by name '[name]'")
 
 /proc/material_display_name(name)
 	var/material/material = get_material_by_name(name)
@@ -285,7 +287,7 @@ var/list/name_to_material
 	stack_type = /obj/item/stack/material/phoron
 	ignition_point = PHORON_MINIMUM_BURN_TEMPERATURE
 	icon_base = "stone"
-	icon_colour = "#FC2BC5"
+	icon_colour = "#E37108"
 	shard_type = SHARD_SHARD
 	hardness = 30
 	stack_origin_tech = list(TECH_MATERIAL = 2, TECH_PHORON = 2)
@@ -302,8 +304,8 @@ var/list/name_to_material
 	stack_type = null
 	luminescence = 3
 
-/*
-// Commenting this out while fires are so spectacularly lethal, as I can't seem to get this balanced appropriately.
+
+//Controls phoron and phoron based objects reaction to being in a turf over 200c -- Phoron's flashpoint.
 /material/phoron/combustion_effect(var/turf/T, var/temperature, var/effect_multiplier)
 	if(isnull(ignition_point))
 		return 0
@@ -317,7 +319,7 @@ var/list/name_to_material
 		spawn (0)
 			target_tile.hotspot_expose(temperature, 400)
 	return round(totalPhoron/100)
-*/
+
 
 /material/stone
 	name = "sandstone"
@@ -403,6 +405,21 @@ var/list/name_to_material
 	door_icon_base = "metal"
 	icon_colour = "#D1E6E3"
 	icon_reinf = "reinf_metal"
+
+/material/plasteel/ocp
+	name = "osmium-carbide plasteel"
+	stack_type = /obj/item/stack/material/ocp
+	integrity = 200
+	melting_point = 12000
+	icon_base = "solid"
+	icon_reinf = "reinf_over"
+	icon_colour = "#9bc6f2"
+	brute_armor = 4
+	burn_armor = 20
+	weight = 27
+	stack_origin_tech = list(TECH_MATERIAL = 3)
+	composite_material = list("plasteel" = 7500, "osmium" = 3750)
+
 
 /material/glass
 	name = "glass"

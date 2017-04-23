@@ -5,7 +5,7 @@
 	var/obj/structure/table/T
 	for(var/angle in list(-90,90))
 		T = locate() in get_step(src.loc,turn(direction,angle))
-		if(T && T.flipped == 0 && T.material.name == material.name)
+		if(T && T.flipped == 0 && T.material && material && T.material.name == material.name)
 			return 0
 	T = locate() in get_step(src.loc,direction)
 	if (!T || T.flipped == 1 || T.material != material)
@@ -27,8 +27,8 @@
 
 	usr.visible_message("<span class='warning'>[usr] flips \the [src]!</span>")
 
-	if(climbable)
-		structure_shaken()
+	if(flags & OBJ_CLIMBABLE)
+		object_shaken()
 
 	return
 
@@ -50,7 +50,7 @@
 		L.Add(turn(src.dir,90))
 	for(var/new_dir in L)
 		var/obj/structure/table/T = locate() in get_step(src.loc,new_dir)
-		if(T && T.material.name == material.name)
+		if(T && T.material && material && T.material.name == material.name)
 			if(T.flipped == 1 && T.dir == src.dir && !T.unflipping_check(new_dir))
 				return 0
 	return 1
@@ -86,12 +86,12 @@
 	if(dir != NORTH)
 		plane = ABOVE_HUMAN_PLANE
 		layer = ABOVE_HUMAN_LAYER
-	climbable = 0 //flipping tables allows them to be used as makeshift barriers
+	flags &= ~OBJ_CLIMBABLE //flipping tables allows them to be used as makeshift barriers
 	flipped = 1
 	flags |= ON_BORDER
 	for(var/D in list(turn(direction, 90), turn(direction, -90)))
 		var/obj/structure/table/T = locate() in get_step(src,D)
-		if(T && T.flipped == 0 && material && T.material && T.material.name == material.name)
+		if(T && T.can_connect() && T.flipped == 0 && material && T.material && T.material.name == material.name)
 			T.flip(direction)
 	take_damage(rand(5, 10))
 	update_connections(1)
@@ -104,8 +104,8 @@
 	verbs +=/obj/structure/table/verb/do_flip
 
 	reset_plane_and_layer()
+	flags |= OBJ_CLIMBABLE
 	flipped = 0
-	climbable = initial(climbable)
 	flags &= ~ON_BORDER
 	for(var/D in list(turn(dir, 90), turn(dir, -90)))
 		var/obj/structure/table/T = locate() in get_step(src.loc,D)
