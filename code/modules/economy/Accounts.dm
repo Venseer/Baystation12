@@ -19,6 +19,7 @@
 	for(var/datum/transaction/T in transaction_log)
 		if(T.purpose == "Account creation")
 			continue
+		T.sanitize_amount()
 		. += T.amount
 
 /datum/transaction
@@ -31,12 +32,26 @@
 
 /datum/transaction/New(_target, _purpose, _amount, _source)
 	..()
-	date = current_date_string
+	date = stationdate2text()
 	time = stationtime2text()
 	target_name = _target
 	purpose = _purpose
 	amount = _amount
 	source_terminal = _source
+
+/datum/transaction/proc/sanitize_amount() //some place still uses (number) for negative amounts and I can't find it
+	if(!istext(amount))
+		return
+
+	// Check if the text is numeric.
+	var/text = amount
+	amount = text2num(text)
+
+	// Otherwise, the (digits) thing is going on.
+	if(!amount)
+		var/regex/R = regex("\\d+")
+		R.Find(text)
+		amount = -text2num(R.match)
 
 /proc/create_account(var/new_owner_name = "Default user", var/starting_funds = 0, var/obj/machinery/computer/account_database/source_db)
 
@@ -53,7 +68,7 @@
 	T.amount = starting_funds
 	if(!source_db)
 		//set a random date, time and location some time over the past few decades
-		T.date = "[num2text(rand(1,31))] [pick("January","February","March","April","May","June","July","August","September","October","November","December")], [text2num(time2text(world.timeofday, "YYYY"))+544-rand(8,18)]"
+		T.date = "[num2text(rand(1,31))] [pick("January","February","March","April","May","June","July","August","September","October","November","December")], [game_year-rand(8,18)]"
 		T.time = "[rand(0,24)]:[rand(11,59)]"
 		T.source_terminal = "NTGalaxyNet Terminal #[rand(111,1111)]"
 
@@ -69,13 +84,13 @@
 
 		var/obj/item/weapon/paper/R = new /obj/item/weapon/paper(P)
 		P.wrapped = R
-		R.name = "Account information: [M.owner_name]"
+		R.SetName("Account information: [M.owner_name]")
 		R.info = "<b>Account details (confidential)</b><br><hr><br>"
 		R.info += "<i>Account holder:</i> [M.owner_name]<br>"
 		R.info += "<i>Account number:</i> [M.account_number]<br>"
 		R.info += "<i>Account pin:</i> [M.remote_access_pin]<br>"
-		R.info += "<i>Starting balance:</i> þ[M.money]<br>"
-		R.info += "<i>Date and time:</i> [stationtime2text()], [current_date_string]<br><br>"
+		R.info += "<i>Starting balance:</i> T[M.money]<br>"
+		R.info += "<i>Date and time:</i> [stationtime2text()], [stationdate2text()]<br><br>"
 		R.info += "<i>Creation terminal ID:</i> [source_db.machine_id]<br>"
 		R.info += "<i>Authorised NT officer overseeing creation:</i> [source_db.held_card.registered_name]<br>"
 
@@ -109,7 +124,7 @@
 //this returns the first account datum that matches the supplied accnum/pin combination, it returns null if the combination did not match any account
 /proc/attempt_account_access(var/attempt_account_number, var/attempt_pin_number, var/security_level_passed = 0)
 	var/datum/money_account/D = get_account(attempt_account_number)
-	if(D.security_level <= security_level_passed && (!D.security_level || D.remote_access_pin == attempt_pin_number) )
+	if(D && D.security_level <= security_level_passed && (!D.security_level || D.remote_access_pin == attempt_pin_number) )
 		return D
 
 /proc/get_account(var/account_number)

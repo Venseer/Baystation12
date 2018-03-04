@@ -5,59 +5,59 @@
   Note that walkie-talkie, intercoms and headsets handle transmission using nonstandard way.
   procs:
 
-    add_object(obj/device as obj, var/new_frequency as num, var/filter as text|null = null)
-      Adds listening object.
-      parameters:
-        device - device receiving signals, must have proc receive_signal (see description below).
-          one device may listen several frequencies, but not same frequency twice.
-        new_frequency - see possibly frequencies below;
-        filter - thing for optimization. Optional, but recommended.
-                 All filters should be consolidated in this file, see defines later.
-                 Device without listening filter will receive all signals (on specified frequency).
-                 Device with filter will receive any signals sent without filter.
-                 Device with filter will not receive any signals sent with different filter.
-      returns:
-       Reference to frequency object.
+	add_object(obj/device as obj, var/new_frequency as num, var/filter as text|null = null)
+	  Adds listening object.
+	  parameters:
+		device - device receiving signals, must have proc receive_signal (see description below).
+		  one device may listen several frequencies, but not same frequency twice.
+		new_frequency - see possibly frequencies below;
+		filter - thing for optimization. Optional, but recommended.
+				 All filters should be consolidated in this file, see defines later.
+				 Device without listening filter will receive all signals (on specified frequency).
+				 Device with filter will receive any signals sent without filter.
+				 Device with filter will not receive any signals sent with different filter.
+	  returns:
+	   Reference to frequency object.
 
-    remove_object (obj/device, old_frequency)
-      Obliviously, after calling this proc, device will not receive any signals on old_frequency.
-      Other frequencies will left unaffected.
+	remove_object (obj/device, old_frequency)
+	  Obliviously, after calling this proc, device will not receive any signals on old_frequency.
+	  Other frequencies will left unaffected.
 
    return_frequency(var/frequency as num)
-      returns:
-       Reference to frequency object. Use it if you need to send and do not need to listen.
+	  returns:
+	   Reference to frequency object. Use it if you need to send and do not need to listen.
 
   radio_frequency is a global object maintaining list of devices that listening specific frequency.
   procs:
 
-    post_signal(obj/source as obj|null, datum/signal/signal, var/filter as text|null = null, var/range as num|null = null)
-      Sends signal to all devices that wants such signal.
-      parameters:
-        source - object, emitted signal. Usually, devices will not receive their own signals.
-        signal - see description below.
-        filter - described above.
-        range - radius of regular byond's square circle on that z-level. null means everywhere, on all z-levels.
+	post_signal(obj/source as obj|null, datum/signal/signal, var/filter as text|null = null, var/range as num|null = null)
+	  Sends signal to all devices that wants such signal.
+	  parameters:
+		source - object, emitted signal. Usually, devices will not receive their own signals.
+		signal - see description below.
+		filter - described above.
+		range - radius of regular byond's square circle on that z-level. null means everywhere, on all z-levels.
 
   obj/proc/receive_signal(datum/signal/signal, var/receive_method as num, var/receive_param)
-    Handler from received signals. By default does nothing. Define your own for your object.
-    Avoid of sending signals directly from this proc, use spawn(-1). DO NOT use sleep() here or call procs that sleep please. If you must, use spawn()
-      parameters:
-        signal - see description below. Extract all needed data from the signal before doing sleep(), spawn() or return!
-        receive_method - may be TRANSMISSION_WIRE or TRANSMISSION_RADIO.
-          TRANSMISSION_WIRE is currently unused.
-        receive_param - for TRANSMISSION_RADIO here comes frequency.
+	Handler from received signals. By default does nothing. Define your own for your object.
+	Avoid of sending signals directly from this proc, use spawn(-1). DO NOT use sleep() here or call procs that sleep please. If you must, use spawn()
+	  parameters:
+		signal - see description below. Extract all needed data from the signal before doing sleep(), spawn() or return!
+		receive_method - may be TRANSMISSION_WIRE or TRANSMISSION_RADIO.
+		  TRANSMISSION_WIRE is currently unused.
+		receive_param - for TRANSMISSION_RADIO here comes frequency.
 
   datum/signal
-    vars:
-    source
-      an object that emitted signal. Used for debug and bearing.
-    data
-      list with transmitting data. Usual use pattern:
-        data["msg"] = "hello world"
-    encryption
-      Some number symbolizing "encryption key".
-      Note that game actually do not use any cryptography here.
-      If receiving object don't know right key, it must ignore encrypted signal in its receive_signal.
+	vars:
+	source
+	  an object that emitted signal. Used for debug and bearing.
+	data
+	  list with transmitting data. Usual use pattern:
+		data["msg"] = "hello world"
+	encryption
+	  Some number symbolizing "encryption key".
+	  Note that game actually do not use any cryptography here.
+	  If receiving object don't know right key, it must ignore encrypted signal in its receive_signal.
 
 */
 
@@ -108,6 +108,7 @@ var/const/ERT_FREQ	= 1345
 var/const/AI_FREQ	= 1343
 var/const/DTH_FREQ	= 1341
 var/const/SYND_FREQ = 1213
+var/const/RAID_FREQ	= 1277
 var/const/ENT_FREQ	= 1461 //entertainment frequency. This is not a diona exclusive frequency.
 
 // department channels
@@ -118,6 +119,7 @@ var/const/MED_FREQ = 1355
 var/const/SCI_FREQ = 1351
 var/const/SRV_FREQ = 1349
 var/const/SUP_FREQ = 1347
+var/const/EXP_FREQ = 1361
 
 // internal department channels
 var/const/MED_I_FREQ = 1485
@@ -133,6 +135,8 @@ var/list/radiochannels = list(
 	"Response Team" = ERT_FREQ,
 	"Special Ops" 	= DTH_FREQ,
 	"Mercenary" 	= SYND_FREQ,
+	"Raider"		= RAID_FREQ,
+	"Exploration"	= EXP_FREQ,
 	"Supply" 		= SUP_FREQ,
 	"Service" 		= SRV_FREQ,
 	"AI Private"	= AI_FREQ,
@@ -145,10 +149,10 @@ var/list/radiochannels = list(
 var/list/CENT_FREQS = list(ERT_FREQ, DTH_FREQ)
 
 // Antag channels, i.e. Syndicate
-var/list/ANTAG_FREQS = list(SYND_FREQ)
+var/list/ANTAG_FREQS = list(SYND_FREQ, RAID_FREQ)
 
 //Department channels, arranged lexically
-var/list/DEPT_FREQS = list(AI_FREQ, COMM_FREQ, ENG_FREQ, MED_FREQ, SEC_FREQ, SCI_FREQ, SRV_FREQ, SUP_FREQ, ENT_FREQ)
+var/list/DEPT_FREQS = list(AI_FREQ, COMM_FREQ, ENG_FREQ, MED_FREQ, SEC_FREQ, SCI_FREQ, SRV_FREQ, SUP_FREQ, EXP_FREQ, ENT_FREQ)
 
 #define TRANSMISSION_WIRE	0
 #define TRANSMISSION_RADIO	1
@@ -175,6 +179,8 @@ var/list/DEPT_FREQS = list(AI_FREQ, COMM_FREQ, ENG_FREQ, MED_FREQ, SEC_FREQ, SCI
 		return "sciradio"
 	if(frequency == MED_FREQ)
 		return "medradio"
+	if(frequency == EXP_FREQ) // exploration
+		return "EXPradio"
 	if(frequency == SUP_FREQ) // cargo
 		return "supradio"
 	if(frequency == SRV_FREQ) // service
@@ -312,7 +318,6 @@ var/global/datum/controller/radio/radio_controller
 			devices_line -= null
 		if (devices_line.len==0)
 			devices -= devices_filter
-			qdel(devices_line)
 
 /datum/signal
 	var/obj/source

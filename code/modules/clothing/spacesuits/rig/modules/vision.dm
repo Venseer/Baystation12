@@ -13,30 +13,29 @@
 	var/mode
 	var/obj/item/clothing/glasses/glasses
 
+/datum/rig_vision/New()
+	if(ispath(glasses))
+		glasses = new glasses
+
 /datum/rig_vision/nvg
 	mode = "night vision"
-/datum/rig_vision/nvg/New()
-	glasses = new /obj/item/clothing/glasses/night
+	glasses = /obj/item/clothing/glasses/night
 
 /datum/rig_vision/thermal
 	mode = "thermal scanner"
-/datum/rig_vision/thermal/New()
-	glasses = new /obj/item/clothing/glasses/thermal
+	glasses = /obj/item/clothing/glasses/thermal
 
 /datum/rig_vision/meson
 	mode = "meson scanner"
-/datum/rig_vision/meson/New()
-	glasses = new /obj/item/clothing/glasses/meson
+	glasses = /obj/item/clothing/glasses/meson
 
 /datum/rig_vision/sechud
 	mode = "security HUD"
-/datum/rig_vision/sechud/New()
-	glasses = new /obj/item/clothing/glasses/hud/security
+	glasses = /obj/item/clothing/glasses/hud/security
 
 /datum/rig_vision/medhud
 	mode = "medical HUD"
-/datum/rig_vision/medhud/New()
-	glasses = new /obj/item/clothing/glasses/hud/health
+	glasses = /obj/item/clothing/glasses/hud/health
 
 /obj/item/rig_module/vision
 
@@ -87,7 +86,7 @@
 	name = "hardsuit meson scanner"
 	desc = "A layered, translucent visor system for a hardsuit."
 	icon_state = "meson"
-
+	origin_tech = list(TECH_MAGNET = 2, TECH_ENGINEERING = 5)
 	usable = 0
 
 	interface_name = "meson scanner"
@@ -113,7 +112,7 @@
 	name = "hardsuit night vision interface"
 	desc = "A multi input night vision system for a hardsuit."
 	icon_state = "night"
-
+	origin_tech = list(TECH_MAGNET = 6, TECH_ENGINEERING = 6)
 	usable = 0
 
 	interface_name = "night vision interface"
@@ -126,7 +125,7 @@
 	name = "hardsuit security hud"
 	desc = "A simple tactical information system for a hardsuit."
 	icon_state = "securityhud"
-
+	origin_tech = list(TECH_MAGNET = 3, TECH_BIO = 2, TECH_ENGINEERING = 5)
 	usable = 0
 
 	interface_name = "security HUD"
@@ -139,7 +138,7 @@
 	name = "hardsuit medical hud"
 	desc = "A simple medical status indicator for a hardsuit."
 	icon_state = "healthhud"
-
+	origin_tech = list(TECH_MAGNET = 3, TECH_BIO = 2, TECH_ENGINEERING = 5)
 	usable = 0
 
 	interface_name = "medical HUD"
@@ -176,8 +175,8 @@
 		to_chat(holder.wearer, "<font color='blue'>Your sensors only have one mode.</font>")
 	return 1
 
-/obj/item/rig_module/vision/New()
-	..()
+/obj/item/rig_module/vision/Initialize()
+	. = ..()
 
 	if(!vision_modes)
 		return

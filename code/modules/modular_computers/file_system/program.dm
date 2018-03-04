@@ -12,6 +12,8 @@
 	var/filedesc = "Unknown Program"		// User-friendly name of this program.
 	var/extended_desc = "N/A"				// Short description of this program's function.
 	var/program_icon_state = null			// Program-specific screen icon state
+	var/program_key_state = "standby_key"	// Program-specific keyboard icon state
+	var/program_menu_icon = "newwin"		// Icon to use for program's link in main menu
 	var/requires_ntnet = 0					// Set to 1 for program to require nonstop NTNet connection to run. If NTNet connection is lost program crashes.
 	var/requires_ntnet_feature = 0			// Optional, if above is set to 1 checks for specific function of NTNet (currently NTNET_SOFTWAREDOWNLOAD, NTNET_PEERTOPEER, NTNET_SYSTEMCONTROL and NTNET_COMMUNICATION)
 	var/ntnet_status = 1					// NTNet status, updated every tick by computer running this program. Don't use this for checks if NTNet works, computers do that. Use this for calculations, etc.
@@ -21,6 +23,7 @@
 	var/available_on_syndinet = 0			// Whether the program can be downloaded from SyndiNet (accessible via emagging the computer). Set to 1 to enable.
 	var/computer_emagged = 0				// Set to 1 if computer that's running us was emagged. Computer updates this every Process() tick
 	var/ui_header = null					// Example: "something.gif" - a header image that will be rendered in computer's UI when this program is running at background. Images are taken from /nano/images/status_icons. Be careful not to use too large images!
+	var/ntnet_speed = 0						// GQ/s - current network connectivity transfer rate
 
 /datum/computer_file/program/New(var/obj/item/modular_computer/comp = null)
 	..()
@@ -59,7 +62,7 @@
 /datum/computer_file/program/proc/is_supported_by_hardware(var/hardware_flag = 0, var/loud = 0, var/mob/user = null)
 	if(!(hardware_flag & usage_flags))
 		if(loud && computer && user)
-			to_chat(user, "<span class='danger'>\The [computer] flashes an \"Hardware Error - Incompatible software\" warning.</span>")
+			to_chat(user, "<span class='warning'>\The [computer] flashes: \"Hardware Error - Incompatible software\".</span>")
 		return 0
 	return 1
 
@@ -70,7 +73,18 @@
 
 // Called by Process() on device that runs us, once every tick.
 /datum/computer_file/program/proc/process_tick()
+	update_netspeed()
 	return 1
+
+/datum/computer_file/program/proc/update_netspeed()
+	ntnet_speed = 0
+	switch(ntnet_status)
+		if(1)
+			ntnet_speed = NTNETSPEED_LOWSIGNAL
+		if(2)
+			ntnet_speed = NTNETSPEED_HIGHSIGNAL
+		if(3)
+			ntnet_speed = NTNETSPEED_ETHERNET
 
 // Check if the user can run program. Only humans can operate computer. Automatically called in run_program()
 // User has to wear their ID or have it inhand for ID Scan to work.
@@ -92,13 +106,13 @@
 	var/obj/item/weapon/card/id/I = user.GetIdCard()
 	if(!I)
 		if(loud)
-			to_chat(user, "<span class='danger'>\The [computer] flashes an \"RFID Error - Unable to scan ID\" warning.</span>")
+			to_chat(user, "<span class='notice'>\The [computer] flashes an \"RFID Error - Unable to scan ID\" warning.</span>")
 		return 0
 
 	if(access_to_check in I.access)
 		return 1
 	else if(loud)
-		to_chat(user, "<span class='danger'>\The [computer] flashes an \"Access Denied\" warning.</span>")
+		to_chat(user, "<span class='notice'>\The [computer] flashes an \"Access Denied\" warning.</span>")
 
 // This attempts to retrieve header data for NanoUIs. If implementing completely new device of different type than existing ones
 // always include the device here in this proc. This proc basically relays the request to whatever is running the program.
@@ -113,6 +127,7 @@
 	if(can_run(user, 1) || !requires_access_to_run)
 		if(nanomodule_path)
 			NM = new nanomodule_path(src, new /datum/topic_manager/program(src), src)
+			NM.using_access = user.GetAccess()
 		if(requires_ntnet && network_destination)
 			generate_network_log("Connection opened to [network_destination].")
 		program_state = PROGRAM_STATE_ACTIVE

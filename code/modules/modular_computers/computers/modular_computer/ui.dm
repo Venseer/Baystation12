@@ -31,13 +31,14 @@
 		var/list/program = list()
 		program["name"] = P.filename
 		program["desc"] = P.filedesc
+		program["icon"] = P.program_menu_icon
 		program["autorun"] = (istype(autorun) && (autorun.stored_data == P.filename)) ? 1 : 0
 		if(P in idle_threads)
 			program["running"] = 1
 		programs.Add(list(program))
 
 	data["programs"] = programs
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "laptop_mainscreen.tmpl", "NTOS Main Menu", 400, 500)
 		ui.auto_update_layout = 1
@@ -89,15 +90,7 @@
 	if( href_list["PC_setautorun"] )
 		if(!hard_drive)
 			return
-		var/datum/computer_file/data/autorun = hard_drive.find_file_by_name("autorun")
-		if(!istype(autorun))
-			autorun = new/datum/computer_file/data()
-			autorun.filename = "autorun"
-			hard_drive.store_file(autorun)
-		if(autorun.stored_data == href_list["PC_setautorun"])
-			autorun.stored_data = null
-		else
-			autorun.stored_data = href_list["PC_setautorun"]
+		set_autorun(href_list["PC_setautorun"])
 
 	if(.)
 		update_uis()
@@ -130,15 +123,18 @@
 	if(tesla_link && tesla_link.enabled && apc_powered)
 		data["PC_apclinkicon"] = "charging.gif"
 
-	switch(get_ntnet_status())
-		if(0)
-			data["PC_ntneticon"] = "sig_none.gif"
-		if(1)
-			data["PC_ntneticon"] = "sig_low.gif"
-		if(2)
-			data["PC_ntneticon"] = "sig_high.gif"
-		if(3)
-			data["PC_ntneticon"] = "sig_lan.gif"
+	if(network_card && network_card.is_banned())
+		data["PC_ntneticon"] = "sig_warning.gif"
+	else
+		switch(get_ntnet_status())
+			if(0)
+				data["PC_ntneticon"] = "sig_none.gif"
+			if(1)
+				data["PC_ntneticon"] = "sig_low.gif"
+			if(2)
+				data["PC_ntneticon"] = "sig_high.gif"
+			if(3)
+				data["PC_ntneticon"] = "sig_lan.gif"
 
 	var/list/program_headers = list()
 	for(var/datum/computer_file/program/P in idle_threads)

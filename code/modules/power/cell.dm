@@ -24,8 +24,8 @@
 	c_uid = sequential_id(/obj/item/weapon/cell)
 	..()
 
-/obj/item/weapon/cell/initialize()
-	..()
+/obj/item/weapon/cell/Initialize()
+	. = ..()
 	update_icon()
 
 /obj/item/weapon/cell/drain_power(var/drain_check, var/surge, var/power = 0)
@@ -161,7 +161,7 @@
 
 /obj/item/weapon/cell/standard
 	name = "standard power cell"
-	desc = "A standard and relatively cheap power cell, commonly used around the station."
+	desc = "A standard and relatively cheap power cell, commonly used."
 	origin_tech = list(TECH_POWER = 0)
 	maxcharge = 250
 	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 40)

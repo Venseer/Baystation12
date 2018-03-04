@@ -41,12 +41,12 @@ datum/controller/vote
 				result()
 				for(var/client/C in voting)
 					if(C)
-						C << browse(null,"window=vote")
+						C << browse(null,"window=vote;size=450x740")
 				reset()
 			else
 				for(var/client/C in voting)
 					if(C)
-						C << browse(vote.interface(C),"window=vote")
+						C << browse(vote.interface(C),"window=vote;size=450x740")
 
 				voting.Cut()
 
@@ -89,7 +89,7 @@ datum/controller/vote
 
 		//default-vote for everyone who didn't vote
 		if(!config.vote_no_default && choices.len)
-			var/non_voters = (clients.len - total_votes)
+			var/non_voters = (GLOB.clients.len - total_votes)
 			if(non_voters > 0)
 				if(mode == "restart")
 					choices["Continue Playing"] += non_voters
@@ -225,12 +225,12 @@ datum/controller/vote
 								.[i] = pick(choices)
 								to_world("The random antag in [i]\th place is [.[i]].")
 
-						var/antag_type = antag_names_to_ids[.[1]]
+						var/antag_type = antag_names_to_ids()[.[1]]
 						if(ticker.current_state < GAME_STATE_SETTING_UP)
 							additional_antag_types |= antag_type
 						else
 							spawn(0) // break off so we don't hang the vote process
-								var/list/antag_choices = list(all_antag_types[antag_type], all_antag_types[antag_names_to_ids[.[2]]], all_antag_types[antag_names_to_ids[.[3]]])
+								var/list/antag_choices = list(all_antag_types()[antag_type], all_antag_types()[antag_names_to_ids()[.[2]]], all_antag_types()[antag_names_to_ids()[.[3]]])
 								if(ticker.attempt_late_antag_spawn(antag_choices))
 									antag_add_finished = 1
 									if(auto_add_antag)
@@ -245,7 +245,7 @@ datum/controller/vote
 										spawn(10)
 											autotransfer()
 				if("map")
-					var/datum/map/M = all_maps[.[1]]
+					var/datum/map/M = GLOB.all_maps[.[1]]
 					fdel("use_map")
 					text2file(M.path, "use_map")
 
@@ -323,7 +323,8 @@ datum/controller/vote
 						if (config.allow_extra_antags && !antag_add_finished)
 							choices.Add("Add Antagonist")
 					else
-						if (get_security_level() == "red" || get_security_level() == "delta")
+						var/decl/security_state/security_state = decls_repository.get_decl(GLOB.using_map.security_state)
+						if (security_state.current_security_level_is_same_or_higher_than(security_state.high_security_level) && !automatic)
 							to_chat(initiator_key, "The current alert status is too high to call for a crew transfer!")
 							return 0
 						if(ticker.current_state <= GAME_STATE_SETTING_UP)
@@ -341,6 +342,7 @@ datum/controller/vote
 
 					if(!config.allow_extra_antags)
 						return 0
+					var/list/all_antag_types = all_antag_types()
 					for(var/antag_type in all_antag_types)
 						var/datum/antagonist/antag = all_antag_types[antag_type]
 						if(!(antag.id in additional_antag_types) && antag.is_votable())
@@ -351,7 +353,7 @@ datum/controller/vote
 				if("map")
 					if(!config.allow_map_switching)
 						return 0
-					for(var/name in all_maps)
+					for(var/name in GLOB.all_maps)
 						choices.Add(name)
 				if("custom")
 					question = sanitizeSafe(input(usr,"What is the vote for?") as text|null)
@@ -490,7 +492,7 @@ datum/controller/vote
 			switch(href_list["vote"])
 				if("close")
 					voting -= usr.client
-					usr << browse(null, "window=vote")
+					usr << browse(null, "window=vote;size=450x740")
 					return
 				if("cancel")
 					if(usr.client.holder)
@@ -537,7 +539,7 @@ datum/controller/vote
 // Helper proc for determining whether addantag vote can be called.
 datum/controller/vote/proc/is_addantag_allowed(var/automatic)
 	// Gamemode has to be determined before we can add antagonists, so we can respect gamemode's add antag vote settings.
-	if((ticker.current_state <= 2) || !ticker.mode)
+	if(!ticker || (ticker.current_state <= 2) || !ticker.mode)
 		return 0
 	if(automatic)
 		return (ticker.mode.addantag_allowed & ADDANTAG_AUTO) && !antag_add_finished
@@ -553,4 +555,4 @@ datum/controller/vote/proc/is_addantag_allowed(var/automatic)
 	set name = "Vote"
 
 	if(vote)
-		src << browse(vote.interface(client),"window=vote")
+		src << browse(vote.interface(client),"window=vote;size=450x740")

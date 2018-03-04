@@ -12,11 +12,17 @@
 
 /turf/simulated/wall/cult
 	icon_state = "cult"
-/turf/simulated/wall/cult/New(var/newloc)
-	..(newloc,"cult","cult2")
+
+/turf/simulated/wall/cult/New(var/newloc, var/reinforce = 0)
+	..(newloc,"cult",reinforce ? "cult2" : null)
+
+/turf/simulated/wall/cult/reinf/New(var/newloc)
+	..(newloc, 1)
+
 /turf/simulated/wall/cult/dismantle_wall()
 	cult.remove_cultiness(CULTINESS_PER_TURF)
 	..()
+
 /turf/unsimulated/wall/cult
 	name = "cult wall"
 	desc = "Hideous images dance beneath the surface."
@@ -56,3 +62,15 @@
 	return
 /turf/simulated/wall/titanium/New(var/newloc)
 	..(newloc,"titanium")
+
+/turf/simulated/wall/alium
+	icon_state = "jaggy"
+	floor_type = /turf/simulated/floor/fixed/alium
+
+/turf/simulated/wall/alium/New(var/newloc)
+	..(newloc,"alien alloy")
+
+/turf/simulated/wall/alium/ex_act(severity)
+	if(prob(explosion_resistance))
+		return
+	..()

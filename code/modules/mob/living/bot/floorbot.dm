@@ -28,7 +28,7 @@
 
 /mob/living/bot/floorbot/GetInteractTitle()
 	. = "<head><title>Repairbot v1.0 controls</title></head>"
-	. += "<b>Automatic Station Floor Repairer v1.0</b>"
+	. += "<b>Automatic Floor Repairer v1.0</b>"
 
 /mob/living/bot/floorbot/GetInteractStatus()
 	. = ..()
@@ -40,7 +40,7 @@
 	. += "<br>Make singles pieces of metal into tiles when empty: <a href='?src=\ref[src];command=make'>[maketiles ? "Yes" : "No"]</a>"
 
 /mob/living/bot/floorbot/GetInteractMaintenance()
-	. = "Station disassembly mode: "
+	. = "Disassembly mode: "
 	switch(emagged)
 		if(0)
 			. += "<a href='?src=\ref[src];command=emag'>Off</a>"
@@ -88,7 +88,7 @@
 		UnarmedAttack(target)
 
 /mob/living/bot/floorbot/lookForTargets()
-	for(var/turf/simulated/floor/T in view(src)) 
+	for(var/turf/simulated/floor/T in view(src))
 		if(confirmTarget(T))
 			target = T
 			return
@@ -143,7 +143,6 @@
 				F.ReplaceWithLattice()
 				addTiles(1)
 		target = null
-		busy = 0
 		update_icons()
 	else if(istype(A, /turf/simulated/floor))
 		var/turf/simulated/floor/F = A
@@ -166,7 +165,6 @@
 					F.set_flooring(get_flooring_data(floor_build_type))
 					addTiles(-1)
 			target = null
-			busy = 0
 			update_icons()
 	else if(istype(A, /obj/item/stack/tile/floor) && amount < maxAmount)
 		var/obj/item/stack/tile/floor/T = A
@@ -179,7 +177,6 @@
 				T.use(eaten)
 				addTiles(eaten)
 		target = null
-		busy = 0
 		update_icons()
 	else if(istype(A, /obj/item/stack/material) && amount + 4 <= maxAmount)
 		var/obj/item/stack/material/M = A
@@ -215,6 +212,8 @@
 		amount = 0
 	else if(amount > maxAmount)
 		amount = maxAmount
+	busy = FALSE
+
 
 /* Assembly */
 
@@ -285,7 +284,7 @@
 		qdel(W)
 		var/turf/T = get_turf(user.loc)
 		var/mob/living/bot/floorbot/A = new /mob/living/bot/floorbot(T)
-		A.name = created_name
+		A.SetName(created_name)
 		to_chat(user, "<span class='notice'>You add the robot arm to the odd looking toolbox assembly! Boop beep!</span>")
 		user.drop_from_inventory(src)
 		qdel(src)

@@ -125,7 +125,7 @@
 
 /datum/random_map/droppod/proc/get_spawned_drop(var/turf/T)
 	var/obj/structure/bed/chair/C = new(T)
-	C.set_light(3, l_color = "#CC0000")
+	C.set_light(3, l_color = "#cc0000")
 	var/mob/living/drop
 	// This proc expects a list of mobs to be passed to the spawner.
 	// Use the supply pod if you don't want to drop mobs.
@@ -172,7 +172,7 @@
 			spawned_mobs |= M
 	else
 		var/list/candidates = list()
-		for(var/client/player in clients)
+		for(var/client/player in GLOB.clients)
 			if(player.mob && isghost(player.mob))
 				candidates |= player
 
@@ -191,6 +191,7 @@
 
 		// Equip them, if they are human and it is desirable.
 		if(istype(spawned_mob, /mob/living/carbon/human))
+			var/list/all_antag_types = all_antag_types()
 			var/antag_type = input("Select an equipment template to use or cancel for nude.", null) as null|anything in all_antag_types
 			if(antag_type)
 				var/datum/antagonist/A = all_antag_types[antag_type]

@@ -1,10 +1,12 @@
 /obj/machinery/computer/teleporter
 	name = "Teleporter Control Console"
-	desc = "Used to control a linked teleportation Hub and Station."
+	desc = "Used to control a linked teleportation hub and station."
 	icon_keyboard = "teleport_key"
 	icon_screen = "teleport"
 	circuit = /obj/item/weapon/circuitboard/teleporter
 	dir = 4
+	var/obj/machinery/teleport/station/station = null
+	var/obj/machinery/teleport/hub/hub = null
 	var/obj/item/locked = null
 	var/id = null
 	var/one_time_use = 0 //Used for one-time-use teleport cards (such as clown planet coordinates.)
@@ -17,10 +19,9 @@
 	underlays += image('icons/obj/stationobjs.dmi', icon_state = "telecomp-wires")
 	return
 
-/obj/machinery/computer/teleporter/initialize()
-	..()
-	var/obj/machinery/teleport/station/station = locate(/obj/machinery/teleport/station, get_step(src, dir))
-	var/obj/machinery/teleport/hub/hub
+/obj/machinery/computer/teleporter/Initialize()
+	. = ..()
+	station = locate(/obj/machinery/teleport/station, get_step(src, dir))
 	if(station)
 		hub = locate(/obj/machinery/teleport/hub, get_step(station, dir))
 
@@ -31,6 +32,13 @@
 	if(istype(hub))
 		hub.com = src
 		hub.set_dir(dir)
+
+/obj/machinery/computer/teleporter/examine(mob/user)
+	. = ..()
+	if(locked)
+		var/turf/T = get_turf(locked)
+		to_chat(user, "<span class='notice'>The console is locked on to \[[T.loc.name]\].</span>")
+
 
 /obj/machinery/computer/teleporter/attackby(I as obj, mob/living/user as mob)
 	if(istype(I, /obj/item/weapon/card/data/))
@@ -52,7 +60,7 @@
 
 		if(istype(L, /obj/effect/landmark/) && istype(L.loc, /turf))
 			to_chat(usr, "You insert the coordinates into the machine.")
-			to_chat(usr, "A message flashes across the screen reminding the traveller that the nuclear authentication disk is to remain on the station at all times.")
+			to_chat(usr, "A message flashes across the screen reminding the traveller that the nuclear authentication disk is to remain on the [station_name()] at all times.")
 			user.drop_item()
 			qdel(I)
 
@@ -94,7 +102,7 @@
 		var/turf/T = get_turf(R)
 		if (!T)
 			continue
-		if(!(T.z in using_map.player_levels))
+		if(!(T.z in GLOB.using_map.player_levels))
 			continue
 		var/tmpname = T.loc.name
 		if(areaindex[tmpname])
@@ -112,8 +120,10 @@
 				if (M.timeofdeath + 6000 < world.time)
 					continue
 			var/turf/T = get_turf(M)
-			if(T)	continue
-			if(T.z == 2)	continue
+			if(!T)
+				continue
+			if(!(T.z in GLOB.using_map.player_levels))
+				continue
 			var/tmpname = M.real_name
 			if(areaindex[tmpname])
 				tmpname = "[tmpname] ([++areaindex[tmpname]])"
@@ -130,7 +140,6 @@
 	src.locked = L[desc]
 	for(var/mob/O in hearers(src, null))
 		O.show_message("<span class='notice'>Locked In</span>", 2)
-	src.add_fingerprint(usr)
 	return
 
 /obj/machinery/computer/teleporter/verb/set_id(t as text)
@@ -166,7 +175,6 @@
 	desc = "It's the hub of a teleporting machine."
 	icon_state = "tele0"
 	dir = 4
-	var/accurate = 0
 	use_power = 1
 	idle_power_usage = 10
 	active_power_usage = 2000
@@ -192,25 +200,10 @@
 		for(var/mob/O in hearers(src, null))
 			O.show_message("<span class='warning'>Failure: Cannot authenticate locked on coordinates. Please reinstate coordinate matrix.</span>")
 		return
-	if (istype(M, /atom/movable))
-		if(prob(5) && !accurate) //oh dear a problem, put em in deep space
-			var/turf/T = get_turf(M)
-			var/destination_z = T ? using_map.get_transit_zlevel(T.z) : pick(using_map.player_levels)
-			do_teleport(M, locate(rand((2*TRANSITIONEDGE), world.maxx - (2*TRANSITIONEDGE)), rand((2*TRANSITIONEDGE), world.maxy - (2*TRANSITIONEDGE)), destination_z), 2)
-		else
-			do_teleport(M, com.locked) //dead-on precision
-
-		if(com.one_time_use) //Make one-time-use cards only usable one time!
-			com.one_time_use = 0
-			com.locked = null
-	else
-		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
-		s.set_up(5, 1, src)
-		s.start()
-		accurate = 1
-		spawn(3000)	accurate = 0 //Accurate teleporting for 5 minutes
-		for(var/mob/B in hearers(src, null))
-			B.show_message("<span class='notice'>Test fire completed.</span>")
+	do_teleport(M, com.locked)
+	if(com.one_time_use) //Make one-time-use cards only usable one time!
+		com.one_time_use = 0
+		com.locked = null
 	return
 /*
 /proc/do_teleport(atom/movable/M as mob|obj, atom/destination, precision)
@@ -349,34 +342,12 @@
 
 	if (com)
 		com.icon_state = "tele0"
-		com.accurate = 0
 		com.update_use_power(1)
 		update_use_power(1)
 		for(var/mob/O in hearers(src, null))
 			O.show_message("<span class='notice'>Teleporter disengaged!</span>", 2)
 	src.add_fingerprint(usr)
 	src.engaged = 0
-	return
-
-/obj/machinery/teleport/station/verb/testfire()
-	set name = "Test Fire Teleporter"
-	set category = "Object"
-	set src in oview(1)
-
-	if(stat & (BROKEN|NOPOWER) || !istype(usr,/mob/living))
-		return
-
-	if (com && !active)
-		active = 1
-		for(var/mob/O in hearers(src, null))
-			O.show_message("<span class='notice'>Test firing!</span>", 2)
-		com.teleport()
-		use_power(5000)
-
-		spawn(30)
-			active=0
-
-	src.add_fingerprint(usr)
 	return
 
 /obj/machinery/teleport/station/update_icon()

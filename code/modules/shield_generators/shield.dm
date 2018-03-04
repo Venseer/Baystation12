@@ -69,10 +69,11 @@
 	if(duration <= 0)
 		return
 
-	gen.damaged_segments |= src
+	if(gen)
+		gen.damaged_segments |= src
 	disabled_for += duration
 	set_density(0)
-	invisibility = INVISIBILITY_MAXIMUM
+	set_invisibility(INVISIBILITY_MAXIMUM)
 	update_nearby_tiles()
 	update_icon()
 	update_explosion_resistance()
@@ -88,7 +89,7 @@
 
 	if(!disabled_for && !diffused_for)
 		set_density(1)
-		invisibility = 0
+		set_invisibility(0)
 		update_nearby_tiles()
 		update_icon()
 		update_explosion_resistance()
@@ -104,7 +105,7 @@
 	diffused_for = max(duration, 0)
 	gen.damaged_segments |= src
 	set_density(0)
-	invisibility = INVISIBILITY_MAXIMUM
+	set_invisibility(INVISIBILITY_MAXIMUM)
 	update_nearby_tiles()
 	update_icon()
 	update_explosion_resistance()
@@ -143,6 +144,7 @@
 
 	new/obj/effect/shield_impact(get_turf(src))
 
+	var/list/field_segments = gen.field_segments
 	switch(gen.take_damage(damage, damtype))
 		if(SHIELD_ABSORBED)
 			return
@@ -157,7 +159,7 @@
 			return
 		if(SHIELD_BREACHED_FAILURE)
 			fail_adjacent_segments(rand(8, 16), hitby)
-			for(var/obj/effect/shield/S in gen.field_segments)
+			for(var/obj/effect/shield/S in field_segments)
 				S.fail(1)
 			return
 
@@ -262,6 +264,8 @@
 	else
 		explosion_resistance = 0
 
+/obj/effect/shield/get_explosion_resistance()
+	return explosion_resistance
 
 // Shield collision checks below
 

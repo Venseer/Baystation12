@@ -102,9 +102,9 @@
 			return
 		t = sanitizeSafe(t, MAX_NAME_LEN)
 		if (t)
-			src.name = text("Morgue- '[]'", t)
+			src.SetName(text("Morgue- '[]'", t))
 		else
-			src.name = "Morgue"
+			src.SetName("Morgue")
 	src.add_fingerprint(user)
 	return
 
@@ -194,8 +194,8 @@
 	var/_wifi_id
 	var/datum/wifi/receiver/button/crematorium/wifi_receiver
 
-/obj/structure/crematorium/initialize()
-	..()
+/obj/structure/crematorium/Initialize()
+	. = ..()
 	if(_wifi_id)
 		wifi_receiver = new(_wifi_id, src)
 
@@ -286,9 +286,9 @@
 			return
 		t = sanitizeSafe(t, MAX_NAME_LEN)
 		if (t)
-			src.name = text("Crematorium- '[]'", t)
+			src.SetName(text("Crematorium- '[]'", t))
 		else
-			src.name = "Crematorium"
+			src.SetName("Crematorium")
 	src.add_fingerprint(user)
 	return
 

@@ -8,14 +8,13 @@ var/list/holder_mob_icon_cache = list()
 	slot_flags = SLOT_HEAD | SLOT_HOLSTER
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/head.dmi',
-		"Resomi" = 'icons/mob/species/resomi/head.dmi'
+		SPECIES_VOX = 'icons/mob/species/vox/head.dmi',
 		)
 
 	origin_tech = null
 	item_icons = list(
-		slot_l_hand_str = 'icons/mob/items/lefthand_holder.dmi',
-		slot_r_hand_str = 'icons/mob/items/righthand_holder.dmi',
+		slot_l_hand_str = 'icons/mob/onmob/items/lefthand_holder.dmi',
+		slot_r_hand_str = 'icons/mob/onmob/items/righthand_holder.dmi',
 		)
 	pixel_y = 8
 
@@ -23,16 +22,21 @@ var/list/holder_mob_icon_cache = list()
 
 /obj/item/weapon/holder/New()
 	..()
-	processing_objects.Add(src)
+	START_PROCESSING(SSobj, src)
+
+/obj/item/weapon/holder/proc/destroy_all()
+	for(var/atom/movable/AM in src)
+		qdel(AM)
+	qdel(src)
 
 /obj/item/weapon/holder/Destroy()
 	for(var/atom/movable/AM in src)
 		AM.forceMove(get_turf(src))
 	last_holder = null
-	processing_objects.Remove(src)
+	STOP_PROCESSING(SSobj, src)
 	return ..()
 
-/obj/item/weapon/holder/process()
+/obj/item/weapon/holder/Process()
 	update_state()
 
 /obj/item/weapon/holder/dropped()
@@ -119,6 +123,10 @@ var/list/holder_mob_icon_cache = list()
 /obj/item/weapon/holder/borer
 	origin_tech = list(TECH_BIO = 6)
 
+//need own subtype to work with recipies
+/obj/item/weapon/holder/corgi
+	origin_tech = list(TECH_BIO = 4)
+
 /obj/item/weapon/holder/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	for(var/mob/M in src.contents)
 		M.attackby(W,user)
@@ -160,11 +168,10 @@ var/list/holder_mob_icon_cache = list()
 	return H
 
 /mob/living/MouseDrop(var/mob/living/carbon/human/over_object)
-	if(istype(over_object) && Adjacent(over_object) && (usr == src || usr == over_object) && over_object.a_intent == I_HELP)
-		if(!scoop_check(over_object))
+	if(istype(over_object) && Adjacent(over_object) && (usr == src || usr == over_object) && over_object.a_intent == I_GRAB)
+		if(scoop_check(over_object))
+			get_scooped(over_object, (usr == src))
 			return
-		get_scooped(over_object, (usr == src))
-		return
 	return ..()
 
 /mob/living/proc/scoop_check(var/mob/living/scooper)

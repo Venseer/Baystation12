@@ -56,11 +56,8 @@
 /obj/item/weapon/card/id/torch/contractor/medical
 	job_access_type = /datum/job/doctor_contractor
 
-/obj/item/weapon/card/id/torch/contractor/medical/chemist
+/obj/item/weapon/card/id/torch/contractor/chemist
 	job_access_type = /datum/job/chemist
-
-/obj/item/weapon/card/id/torch/contractor/medical/virologist
-	job_access_type = /datum/job/virologist
 
 /obj/item/weapon/card/id/torch/contractor/medical/counselor
 	job_access_type = /datum/job/psychiatrist
@@ -114,9 +111,6 @@
 /obj/item/weapon/card/id/torch/crew/service/chef
 	job_access_type = /datum/job/chef
 
-/obj/item/weapon/card/id/torch/crew/service/solgov_pilot
-	job_access_type = /datum/job/solgov_pilot
-
 /obj/item/weapon/card/id/torch/contractor/service //unused
 	job_access_type = /datum/job/assistant
 
@@ -132,6 +126,12 @@
 
 /obj/item/weapon/card/id/torch/crew/bridgeofficer
 	job_access_type = /datum/job/bridgeofficer
+
+/obj/item/weapon/card/id/torch/crew/pathfinder
+	job_access_type = /datum/job/pathfinder
+
+/obj/item/weapon/card/id/torch/crew/explorer
+	job_access_type = /datum/job/explorer
 
 //NanoTrasen and Passengers
 
@@ -166,9 +166,30 @@
 /obj/item/weapon/card/id/torch/passenger/research/liaison
 	job_access_type = /datum/job/liaison
 
+
 //Merchant
 /obj/item/weapon/card/id/torch/merchant
 	desc = "An identification card issued to Merchants, indicating their right to sell and buy goods."
 	icon_state = "trader"
 	job_access_type = /datum/job/merchant
 
+//Stowaway
+/obj/item/weapon/card/id/torch/stowaway
+	desc = "An identification card issued to personnel aboard the SEV Torch. Looks like the photo fell off this one."
+	icon_state = "id"
+	job_access_type = /datum/job/crew
+
+/obj/item/weapon/card/id/torch/stowaway/New()
+	..()
+	var/species = SPECIES_HUMAN
+	if(prob(10))
+		species = pick(SPECIES_SKRELL,SPECIES_TAJARA,SPECIES_IPC)
+	var/datum/species/S = all_species[species]
+	var/gender = pick(MALE,FEMALE)
+	registered_name = S.get_random_name(gender)
+	sex = capitalize(gender)
+	age = rand(19,25)
+	fingerprint_hash = md5(registered_name)
+	dna_hash = md5(fingerprint_hash)
+	blood_type = RANDOM_BLOOD_TYPE
+	update_name()

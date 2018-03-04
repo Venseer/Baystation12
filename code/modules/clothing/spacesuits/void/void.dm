@@ -10,18 +10,20 @@
 	siemens_coefficient = 0.4
 
 	//Species-specific stuff.
-	species_restricted = list("Human", "Machine")
+	species_restricted = list(SPECIES_HUMAN, SPECIES_IPC)
 	sprite_sheets = list(
-		"Unathi" = 'icons/mob/species/unathi/helmet.dmi',
-		"Tajara" = 'icons/mob/species/tajaran/helmet.dmi',
-		"Skrell" = 'icons/mob/species/skrell/helmet.dmi',
-		"Resomi" = 'icons/mob/species/resomi/helmet.dmi',
+		SPECIES_UNATHI = 'icons/mob/species/unathi/helmet.dmi',
+		SPECIES_TAJARA = 'icons/mob/species/tajaran/helmet.dmi',
+		SPECIES_SKRELL = 'icons/mob/species/skrell/helmet.dmi',
+		SPECIES_BOGANI = 'icons/mob/species/bogani/helmet.dmi',
+		SPECIES_EGYNO  = 'icons/mob/species/bogani/helmet.dmi',
 		)
 	sprite_sheets_obj = list(
-		"Unathi" = 'icons/obj/clothing/species/unathi/hats.dmi',
-		"Tajara" = 'icons/obj/clothing/species/tajaran/hats.dmi',
-		"Skrell" = 'icons/obj/clothing/species/skrell/hats.dmi',
-		"Resomi" = 'icons/obj/clothing/species/resomi/hats.dmi',
+		SPECIES_UNATHI = 'icons/obj/clothing/species/unathi/hats.dmi',
+		SPECIES_TAJARA = 'icons/obj/clothing/species/tajaran/hats.dmi',
+		SPECIES_SKRELL = 'icons/obj/clothing/species/skrell/hats.dmi',
+		SPECIES_BOGANI = 'icons/obj/clothing/species/bogani/hats.dmi',
+		SPECIES_EGYNO  = 'icons/obj/clothing/species/bogani/hats.dmi',
 		)
 
 	light_overlay = "helmet_light"
@@ -38,18 +40,21 @@
 	max_heat_protection_temperature = SPACE_SUIT_MAX_HEAT_PROTECTION_TEMPERATURE
 	siemens_coefficient = 0.4
 
-	species_restricted = list("Human", "Skrell", "Machine")
+	species_restricted = list(SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_IPC)
 	sprite_sheets = list(
-		"Unathi" = 'icons/mob/species/unathi/suit.dmi',
-		"Tajara" = 'icons/mob/species/tajaran/suit.dmi',
-		"Skrell" = 'icons/mob/species/skrell/suit.dmi',
-		"Resomi" = 'icons/mob/species/resomi/suit.dmi',
+		SPECIES_UNATHI = 'icons/mob/species/unathi/suit.dmi',
+		SPECIES_TAJARA = 'icons/mob/species/tajaran/suit.dmi',
+		SPECIES_SKRELL = 'icons/mob/species/skrell/suit.dmi',
+		SPECIES_BOGANI = 'icons/mob/species/bogani/suits.dmi',
+		SPECIES_EGYNO  = 'icons/mob/species/bogani/suits.dmi',
 		)
+
 	sprite_sheets_obj = list(
-		"Unathi" = 'icons/obj/clothing/species/unathi/suits.dmi',
-		"Tajara" = 'icons/obj/clothing/species/tajaran/suits.dmi',
-		"Skrell" = 'icons/obj/clothing/species/skrell/suits.dmi',
-		"Resomi" = 'icons/obj/clothing/species/resomi/suits.dmi',
+		SPECIES_UNATHI = 'icons/obj/clothing/species/unathi/suits.dmi',
+		SPECIES_TAJARA = 'icons/obj/clothing/species/tajaran/suits.dmi',
+		SPECIES_SKRELL = 'icons/obj/clothing/species/skrell/suits.dmi',
+		SPECIES_BOGANI = 'icons/obj/clothing/species/bogani/suits.dmi',
+		SPECIES_EGYNO  = 'icons/obj/clothing/species/bogani/suits.dmi',
 		)
 
 	//Breach thresholds, should ideally be inherited by most (if not all) voidsuits.
@@ -63,6 +68,28 @@
 	var/obj/item/weapon/tank/tank = null              // Deployable tank, if any.
 
 	action_button_name = "Toggle Helmet"
+
+#define VOIDSUIT_INIT_EQUIPMENT(equipment_var, expected_path) \
+if(ispath(##equipment_var, ##expected_path )){\
+	##equipment_var = new equipment_var (src);\
+}\
+else if(##equipment_var) {\
+	CRASH("[log_info_line(src)] has an invalid [#equipment_var] type: [log_info_line(##equipment_var)]");\
+}
+
+/obj/item/clothing/suit/space/void/Initialize()
+	. = ..()
+	VOIDSUIT_INIT_EQUIPMENT(boots,  /obj/item/clothing/shoes/magboots)
+	VOIDSUIT_INIT_EQUIPMENT(helmet, /obj/item/clothing/head/helmet)
+	VOIDSUIT_INIT_EQUIPMENT(tank,   /obj/item/weapon/tank)
+
+#undef VOIDSUIT_INIT_EQUIPMENT
+
+/obj/item/clothing/suit/space/void/Destroy()
+	. = ..()
+	QDEL_NULL(boots)
+	QDEL_NULL(helmet)
+	QDEL_NULL(tank)
 
 /obj/item/clothing/suit/space/void/examine(user)
 	. = ..(user)
@@ -197,7 +224,7 @@
 	if(istype(W,/obj/item/clothing/accessory) || istype(W, /obj/item/weapon/hand_labeler))
 		return ..()
 
-	if(istype(src.loc,/mob/living))
+	if(user.get_inventory_slot(src) == slot_wear_suit)
 		to_chat(user, "<span class='warning'>You cannot modify \the [src] while it is being worn.</span>")
 		return
 

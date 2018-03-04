@@ -6,16 +6,16 @@
 	var/ammo_type
 	var/ammo_name
 
-/obj/item/weapon/gun/launcher/alien/New()
-	..()
-	processing_objects.Add(src)
+/obj/item/weapon/gun/launcher/alien/Initialize()
+	. = ..()
+	START_PROCESSING(SSobj, src)
 	last_regen = world.time
 
 /obj/item/weapon/gun/launcher/alien/Destroy()
-	processing_objects.Remove(src)
+	STOP_PROCESSING(SSobj, src)
 	return ..()
 
-/obj/item/weapon/gun/launcher/alien/process()
+/obj/item/weapon/gun/launcher/alien/Process()
 	if(ammo < max_ammo && world.time > last_regen + ammo_gen_time)
 		ammo++
 		last_regen = world.time
@@ -35,7 +35,7 @@
 /obj/item/weapon/gun/launcher/alien/special_check(user)
 	if(istype(user,/mob/living/carbon/human))
 		var/mob/living/carbon/human/H = user
-		if(H.species && H.species.get_bodytype(H) != "Vox")
+		if(H.species && H.species.get_bodytype(H) != SPECIES_VOX)
 			to_chat(user, "<span class='warning'>\The [src] does not respond to you!</span>")
 			return 0
 	return ..()

@@ -14,8 +14,11 @@
 	var/delay = 2 SECONDS
 	activators = list("incoming pulse","outgoing pulse")
 
-/obj/item/integrated_circuit/time/delay/do_work()
+/obj/item/integrated_circuit/time/delay/do_work(var/activated_pulse)
 	set waitfor = 0  // Don't sleep in a proc that is called by a processor without this set, otherwise it'll delay the entire thing
+
+	if(activated_pulse != activators[1])
+		return
 
 	var/datum/integrated_io/activate/out_pulse = activators[2]
 	sleep(delay)
@@ -78,24 +81,23 @@
 
 /obj/item/integrated_circuit/time/ticker/Destroy()
 	if(is_running)
-		processing_objects -= src
+		STOP_PROCESSING(SSobj, src)
 	. = ..()
 
 /obj/item/integrated_circuit/time/ticker/on_data_written()
 	var/datum/integrated_io/do_tick = inputs[1]
 	if(do_tick.data && !is_running)
 		is_running = TRUE
-		processing_objects |= src
+		START_PROCESSING(SSobj, src)
 	else if(is_running)
 		is_running = FALSE
-		processing_objects -= src
+		STOP_PROCESSING(SSobj, src)
 		ticks_completed = 0
 
-/obj/item/integrated_circuit/time/ticker/process()
-	var/process_ticks = process_schedule_interval("obj")
-	ticks_completed += process_ticks
+/obj/item/integrated_circuit/time/ticker/Process(var/wait)
+	ticks_completed += wait
 	if(ticks_completed >= ticks_to_pulse)
-		if(ticks_to_pulse >= process_ticks)
+		if(ticks_to_pulse >= wait)
 			ticks_completed -= ticks_to_pulse
 		else
 			ticks_completed = 0
@@ -117,7 +119,7 @@
 
 /obj/item/integrated_circuit/time/clock
 	name = "integrated clock"
-	desc = "Tells you what the local time is, specific to your station or planet."
+	desc = "Tells you what the local time is, specific to the local reference time."
 	icon_state = "clock"
 	inputs = list()
 	outputs = list("time (string)", "hours (number)", "minutes (number)", "seconds (number)")

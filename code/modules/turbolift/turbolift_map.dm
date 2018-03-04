@@ -22,8 +22,8 @@
 	turbolifts += src
 	..()
 
-/obj/turbolift_map_holder/initialize()
-
+/obj/turbolift_map_holder/Initialize()
+	. = ..()
 	// Create our system controller.
 	var/datum/turbolift/lift = new()
 
@@ -192,7 +192,7 @@
 		panel_ext.set_dir(udir)
 		cfloor.ext_panel = panel_ext
 
-        // Place lights
+		// Place lights
 		var/turf/placing1 = locate(light_x1, light_y1, cz)
 		var/turf/placing2 = locate(light_x2, light_y2, cz)
 		var/obj/machinery/light/light1 = new(placing1, light)
@@ -221,7 +221,7 @@
 	var/turf/T = locate(int_panel_x, int_panel_y, uz)
 	lift.control_panel_interior = new(T, lift)
 	lift.control_panel_interior.set_dir(udir)
-	lift.current_floor = lift.floors[uz]
+	lift.current_floor = lift.floors[1]
 
 	lift.open_doors()
 

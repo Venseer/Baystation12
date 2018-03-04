@@ -24,10 +24,10 @@
 					feedback_add_details(feedback_tag,"[O.type]|FAIL")
 					failed = 1
 				num++
-				if(failed)
-					text += "<br><font color='red'><B>The [role_text] has failed.</B></font>"
-				else
-					text += "<br><font color='green'><B>The [role_text] was successful!</B></font>"
+			if(failed)
+				text += "<br><font color='red'><B>The [role_text] has failed.</B></font>"
+			else
+				text += "<br><font color='green'><B>The [role_text] was successful!</B></font>"
 
 	if(global_objectives && global_objectives.len)
 		text += "<BR><FONT size = 2>Their objectives were:</FONT>"
@@ -57,7 +57,7 @@
 		if(ply.current.stat == DEAD)
 			text += "died"
 		else if(isNotStationLevel(ply.current.z))
-			text += "fled the station"
+			text += "fled"
 		else
 			text += "survived"
 		if(ply.current.real_name != ply.name)

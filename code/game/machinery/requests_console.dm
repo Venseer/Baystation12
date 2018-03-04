@@ -24,7 +24,7 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 
 /obj/machinery/requests_console
 	name = "Requests Console"
-	desc = "A console intended to send requests to different departments on the station."
+	desc = "A console intended to send requests to different departments."
 	anchored = 1
 	icon = 'icons/obj/terminals.dmi'
 	icon_state = "req_comp0"
@@ -120,7 +120,7 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 	data["msgVerified"] = msgVerified
 	data["announceAuth"] = announceAuth
 
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "request_console.tmpl", "[department] Request Console", 520, 410)
 		ui.set_initial_data(data)
@@ -129,7 +129,6 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 /obj/machinery/requests_console/Topic(href, href_list)
 	if(..())	return
 	usr.set_machine(src)
-	add_fingerprint(usr)
 
 	if(reject_bad_text(href_list["write"]))
 		recipient = href_list["write"] //write contains the string of the receiving department's name

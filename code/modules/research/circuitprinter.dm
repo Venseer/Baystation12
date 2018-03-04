@@ -7,7 +7,7 @@ using metal and glass, it uses glass and reagents (usually sulphuric acid).
 /obj/machinery/r_n_d/circuit_imprinter
 	name = "\improper Circuit Imprinter"
 	icon_state = "circuit_imprinter"
-	flags = OPENCONTAINER
+	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 	var/list/datum/design/queue = list()
 	var/progress = 0
 
@@ -31,7 +31,7 @@ using metal and glass, it uses glass and reagents (usually sulphuric acid).
 	component_parts += new /obj/item/weapon/reagent_containers/glass/beaker(src)
 	RefreshParts()
 
-/obj/machinery/r_n_d/circuit_imprinter/process()
+/obj/machinery/r_n_d/circuit_imprinter/Process()
 	..()
 	if(stat)
 		update_icon()
@@ -114,15 +114,7 @@ using metal and glass, it uses glass and reagents (usually sulphuric acid).
 		return 1
 
 	var/obj/item/stack/material/stack = O
-	var/amount = round(input("How many sheets do you want to add?") as num)
-	if(!O)
-		return
-	if(amount <= 0)//No negative numbers
-		return
-	if(amount > stack.get_amount())
-		amount = stack.get_amount()
-	if(max_material_storage - TotalMaterials() < (amount * SHEET_MATERIAL_AMOUNT)) //Can't overfill
-		amount = min(stack.get_amount(), round((max_material_storage - TotalMaterials()) / SHEET_MATERIAL_AMOUNT))
+	var/amount = min(stack.get_amount(), round((max_material_storage - TotalMaterials()) / SHEET_MATERIAL_AMOUNT))
 
 	busy = 1
 	use_power(max(1000, (SHEET_MATERIAL_AMOUNT * amount / 10)))
