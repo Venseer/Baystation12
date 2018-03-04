@@ -14,14 +14,12 @@
 				"hail_Human0"        = "Hello hueman! Kiikikikiki! MOB trade with us, yes? Good!",
 				"hail_Human1"        = "Friend of Vox is friend of all Vox! MOB you trade now!",
 				"hail_Vox1"          = "SKREEEE! May the Shoal make this trade good, MOB!",
-				"hail_Resomi0"       = "Hello MOB! You tiny thing, how pilot ship? Maybe come for dinner! KIKIKIKI!",
-				"hail_Resomi1"       = "Greetings, MOB, be dinner or friend? KIKIKIKIKII!",
 				"hail_deny0"         = "Trade closed, GO AWAY!",
 				"hail_deny-1"        = "We no trade with shit like you!",
 				"hail_deny1"         = "Trade gone now. Goodbye.",
 
 				"trade_complete0"    = "Yes, kikikikikiki! You will not regret this trade!",
-				"trade_complete1"    = "Yes... this is a good trade for the Shaol!",
+				"trade_complete1"    = "Yes... this is a good trade for the Shoal!",
 				"trade_no_money0"    = "Money? Vox no need money. GOODS! Give it GOODS!",
 				"trade_no_money1"    = "You know as well as it that money is no good.",
 				"trade_not_enough0"  = "It wants MORE for that. Give it more.",
@@ -59,7 +57,7 @@
 								/obj/item/robot_parts/robot_component                   = TRADER_BLACKLIST
 								)
 
-	mob_transfer_message = "<span class='danger'>You are transported to the ORIGIN, when the transportation dizziness wears off, you find you are surrounded by cackling Vox...</span>"
+	mob_transfer_message = "<span class='danger'>You are transported to the ORIGIN. When the transportation dizziness wears off, you find you are surrounded by cackling Vox...</span>"
 
 
 /datum/trader/ship/vox/hail(var/mob/user)
@@ -71,9 +69,6 @@
 				if(SPECIES_VOX)
 					disposition = 1000
 					hailed_vox = 1
-				if(SPECIES_VOXPARIAH)
-					hailed_vox = -1
-					disposition = -1000
 			specific = H.species.name
 	else if(istype(user, /mob/living/silicon))
 		specific = "silicon"

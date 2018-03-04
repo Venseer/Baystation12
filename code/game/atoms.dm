@@ -1,6 +1,6 @@
 /atom
 	var/level = 2
-	var/flags = 0
+	var/atom_flags
 	var/list/blood_DNA
 	var/was_bloodied
 	var/blood_color
@@ -20,10 +20,54 @@
 
 	var/list/climbers = list()
 
+	var/initialized = FALSE
+
+/atom/New(loc, ...)
+	//. = ..() //uncomment if you are dumb enough to add a /datum/New() proc
+
+	if(GLOB.use_preloader && (src.type == GLOB._preloader.target_path))//in case the instanciated atom is creating other atoms in New()
+		GLOB._preloader.load(src)
+
+	var/do_initialize = SSatoms.initialized
+	if(do_initialize > INITIALIZATION_INSSATOMS)
+		args[1] = do_initialize == INITIALIZATION_INNEW_MAPLOAD
+		if(SSatoms.InitAtom(src, args))
+			//we were deleted
+			return
+
+	var/list/created = SSatoms.created_atoms
+	if(created)
+		created += src
+
+	if(atom_flags & ATOM_FLAG_CLIMBABLE)
+		verbs += /atom/proc/climb_on
+
+	if(opacity)
+		updateVisibility(src)
+
+//Called after New if the map is being loaded. mapload = TRUE
+//Called from base of New if the map is not being loaded. mapload = FALSE
+//This base must be called or derivatives must set initialized to TRUE
+//must not sleep
+//Other parameters are passed from New (excluding loc), this does not happen if mapload is TRUE
+//Must return an Initialize hint. Defined in __DEFINES/subsystems.dm
+
+/atom/proc/Initialize(mapload, ...)
+	if(initialized)
+		crash_with("Warning: [src]([type]) initialized multiple times!")
+	initialized = TRUE
+
+	if(light_power && light_range)
+		update_light()
+
+	return INITIALIZE_HINT_NORMAL
+
+//called if Initialize returns INITIALIZE_HINT_LATELOAD
+/atom/proc/LateInitialize()
+	return
+
 /atom/Destroy()
-	if(reagents)
-		qdel(reagents)
-		reagents = null
+	QDEL_NULL(reagents)
 	. = ..()
 
 /atom/proc/reveal_blood()
@@ -58,7 +102,7 @@
 // returns true if open
 // false if closed
 /atom/proc/is_open_container()
-	return flags & OPENCONTAINER
+	return atom_flags & ATOM_FLAG_OPEN_CONTAINER
 
 /*//Convenience proc to see whether a container can be accessed in a certain way.
 
@@ -225,6 +269,17 @@ its easier to just keep the beam vertical.
 	dir = new_dir
 	return TRUE
 
+/atom/proc/set_icon_state(var/new_icon_state)
+	if(has_extension(src, /datum/extension/base_icon_state))
+		var/datum/extension/base_icon_state/bis = get_extension(src, /datum/extension/base_icon_state)
+		bis.base_icon_state = new_icon_state
+		update_icon()
+	else
+		icon_state = new_icon_state
+
+/atom/proc/update_icon()
+	return
+
 /atom/proc/ex_act()
 	return
 
@@ -245,15 +300,14 @@ its easier to just keep the beam vertical.
 
 //returns 1 if made bloody, returns 0 otherwise
 /atom/proc/add_blood(mob/living/carbon/human/M as mob)
-
-	if(flags & NOBLOODY)
+	if(atom_flags & ATOM_FLAG_NO_BLOOD)
 		return 0
 
 	if(!blood_DNA || !istype(blood_DNA, /list))	//if our list of DNA doesn't exist yet (or isn't a list) initialise it.
 		blood_DNA = list()
 
 	was_bloodied = 1
-	blood_color = "#A10808"
+	blood_color = COLOR_BLOOD_HUMAN
 	if(istype(M))
 		if (!istype(M.dna, /datum/dna))
 			M.dna = new /datum/dna(null)
@@ -281,12 +335,12 @@ its easier to just keep the beam vertical.
 		return 1
 
 /atom/proc/get_global_map_pos()
-	if(!islist(global_map) || isemptylist(global_map)) return
+	if(!islist(GLOB.global_map) || isemptylist(GLOB.global_map)) return
 	var/cur_x = null
 	var/cur_y = null
 	var/list/y_arr = null
-	for(cur_x=1,cur_x<=global_map.len,cur_x++)
-		y_arr = global_map[cur_x]
+	for(cur_x=1,cur_x<=GLOB.global_map.len,cur_x++)
+		y_arr = GLOB.global_map[cur_x]
 		cur_y = y_arr.Find(src.z)
 		if(cur_y)
 			break
@@ -372,11 +426,6 @@ its easier to just keep the beam vertical.
 					"<span class='notice'>You shake \the [src].</span>")
 		object_shaken()
 
-/atom/New()
-	..()
-	if(flags & OBJ_CLIMBABLE)
-		verbs += /atom/proc/climb_on
-
 /atom/proc/climb_on()
 
 	set name = "Climb"
@@ -387,7 +436,7 @@ its easier to just keep the beam vertical.
 	do_climb(usr)
 
 /atom/proc/can_climb(var/mob/living/user, post_climb_check=0)
-	if (!(flags & OBJ_CLIMBABLE) || !can_touch(user) || (!post_climb_check && (user in climbers)))
+	if (!(atom_flags & ATOM_FLAG_CLIMBABLE) || !can_touch(user) || (!post_climb_check && (user in climbers)))
 		return 0
 
 	if (!user.Adjacent(src))
@@ -419,10 +468,11 @@ its easier to just keep the beam vertical.
 	var/turf/T = get_turf(src)
 	if(!T || !istype(T))
 		return 0
-	for(var/obj/O in T.contents)
-		if(O.flags & OBJ_CLIMBABLE) continue
-		if(O && O.density && !(O.flags & ON_BORDER)) //ON_BORDER structures are handled by the Adjacent() check.
-			return O
+	for(var/atom/A in T.contents)
+		if(A.atom_flags & ATOM_FLAG_CLIMBABLE)
+			continue
+		if(A.density && !(A.atom_flags & ATOM_FLAG_CHECKS_BORDER)) //ON_BORDER structures are handled by the Adjacent() check.
+			return A
 	return 0
 
 /atom/proc/do_climb(var/mob/living/user)

@@ -9,7 +9,7 @@
 	siemens_coefficient = 0.4
 	emp_protection = 10
 	online_slowdown = 0
-	item_flags = STOPPRESSUREDAMAGE | THICKMATERIAL
+	item_flags = ITEM_FLAG_STOPPRESSUREDAMAGE | ITEM_FLAG_THICKMATERIAL
 	offline_slowdown = TINT_NONE
 	offline_vision_restriction = TINT_NONE
 
@@ -27,17 +27,9 @@
 
 /obj/item/clothing/shoes/magboots/rig/light
 	name = "shoes"
-	
-	sprite_sheets = list(
-		SPECIES_RESOMI = 'icons/mob/species/resomi/shoes.dmi'
-	)
 
 /obj/item/clothing/head/helmet/space/rig/light
 	name = "hood"
-	
-	sprite_sheets = list(
-		SPECIES_RESOMI = 'icons/mob/species/resomi/helmet.dmi'
-	)
 
 /obj/item/weapon/rig/light/hacker
 	name = "cybersuit control module"
@@ -62,19 +54,20 @@
 		/obj/item/rig_module/electrowarfare_suite,
 		/obj/item/rig_module/voice,
 		/obj/item/rig_module/vision,
+		/obj/item/rig_module/cooling_unit
 		)
 
 //The cybersuit is not space-proof. It does however, have good siemens_coefficient values
 /obj/item/clothing/head/lightrig/hacker
 	name = "HUD"
-	flags = 0
+	item_flags = 0
 
 /obj/item/clothing/suit/lightrig/hacker
 	siemens_coefficient = 0.2
 
 /obj/item/clothing/shoes/lightrig/hacker
 	siemens_coefficient = 0.2
-	flags = NOSLIP //All the other rigs have magboots anyways, hopefully gives the hacker suit something more going for it.
+	item_flags = ITEM_FLAG_NOSLIP //All the other rigs have magboots anyways, hopefully gives the hacker suit something more going for it.
 
 /obj/item/clothing/gloves/lightrig/hacker
 	siemens_coefficient = 0
@@ -88,7 +81,7 @@
 	siemens_coefficient = 0.2 //heavy hardsuit level shock protection
 	emp_protection = 40 //change this to 30 if too high.
 	online_slowdown = 0
-	aimove_power_usage = 50	
+	aimove_power_usage = 50
 	chest_type = /obj/item/clothing/suit/space/rig/light/ninja
 	glove_type = /obj/item/clothing/gloves/rig/light/ninja
 	cell_type =  /obj/item/weapon/cell/hyper
@@ -103,19 +96,16 @@
 		/obj/item/rig_module/voice,
 		/obj/item/rig_module/fabricator/energy_net,
 		/obj/item/rig_module/chem_dispenser,
-		/obj/item/rig_module/grenade_launcher,
+		/obj/item/rig_module/grenade_launcher/ninja,
 		/obj/item/rig_module/ai_container,
 		/obj/item/rig_module/power_sink,
 		/obj/item/rig_module/datajack,
-		/obj/item/rig_module/self_destruct
+		/obj/item/rig_module/self_destruct,
+		/obj/item/rig_module/cooling_unit
 		)
-	
-	sprite_sheets = list(
-		SPECIES_RESOMI = 'icons/mob/species/resomi/back.dmi'
-	)
 
 	..()
-	
+
 /obj/item/weapon/rig/light/ninja/verb/rename_suit()
 	set name = "Name Ninja Suit"
 	set desc = "Rename your black voidsuit."
@@ -127,12 +117,12 @@
 	if(src && input && !M.incapacitated() && in_range(M,src))
 		if(!findtext(input, "the", 1, 4))
 			input = "\improper [input]"
-		name = input
+		SetName(input)
 		to_chat(M, "Suit naming succesful!")
 		verbs -= /obj/item/weapon/rig/light/ninja/verb/rename_suit
 		return 1
-	
-	
+
+
 /obj/item/weapon/rig/light/ninja/verb/rewrite_suit_desc()
 	set name = "Describe Ninja suit"
 	set desc = "Give your voidsuit a custom description."
@@ -150,17 +140,9 @@
 /obj/item/clothing/gloves/rig/light/ninja
 	name = "insulated gloves"
 	siemens_coefficient = 0
-	
-	sprite_sheets = list(
-		SPECIES_RESOMI = 'icons/mob/species/resomi/gloves.dmi'
-	)
 
 /obj/item/clothing/suit/space/rig/light/ninja
 	breach_threshold = 38 //comparable to regular hardsuits
-	
-	sprite_sheets = list(
-		SPECIES_RESOMI = 'icons/mob/species/resomi/suit.dmi'
-	)
 
 /obj/item/weapon/rig/light/stealth
 	name = "stealth suit control module"
