@@ -5,7 +5,7 @@
 
 /obj/machinery/computer/power_monitor
 	name = "Power Monitoring Console"
-	desc = "Computer designed to remotely monitor power levels around the station."
+	desc = "Computer designed to remotely monitor power levels."
 	icon = 'icons/obj/computer.dmi'
 	icon_keyboard = "power_key"
 	icon_screen = "power"
@@ -22,7 +22,7 @@
 	var/datum/nano_module/power_monitor/power_monitor
 
 // Checks the sensors for alerts. If change (alerts cleared or detected) occurs, calls for icon update.
-/obj/machinery/computer/power_monitor/process()
+/obj/machinery/computer/power_monitor/Process()
 	var/alert = check_warnings()
 	if(alert != alerting)
 		alerting = !alerting

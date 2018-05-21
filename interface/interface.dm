@@ -1,6 +1,6 @@
 //Please use mob or src (not usr) in these procs. This way they can be called in the same fashion as procs.
 /client/verb/wiki()
-	set name = "wiki"
+	set name = "Wiki"
 	set desc = "Visit the wiki."
 	set hidden = 1
 	if( config.wikiurl )
@@ -12,7 +12,7 @@
 	return
 
 /client/verb/forum()
-	set name = "forum"
+	set name = "Forum"
 	set desc = "Visit the forum."
 	set hidden = 1
 	if( config.forumurl )
@@ -31,8 +31,16 @@
 	src << browse(file(RULES_FILE), "window=rules;size=480x320")
 #undef RULES_FILE
 
+#define LORE_FILE "config/lore.html"
+/client/verb/lore_splash()
+	set name = "Lore"
+	set desc = "Links to the beginner Lore wiki."
+	set hidden = 1
+	show_browser(src, file(LORE_FILE), "window=lore;size=480x320")
+#undef LORE_FILE
+
 /client/verb/hotkeys_help()
-	set name = "hotkeys-help"
+	set name = "Hotkeys Help"
 	set category = "OOC"
 
 	var/admin = {"<font color='purple'>
@@ -66,8 +74,6 @@ Hotkey-Mode: (hotkey-mode must be on)
 \t2 = disarm-intent
 \t3 = grab-intent
 \t4 = harm-intent
-\tCtrl = drag
-\tShift = examine
 </font>"}
 
 	var/other = {"<font color='purple'>
@@ -79,7 +85,7 @@ Any-Mode: (hotkey doesn't need to be on)
 \tCtrl+q = drop
 \tCtrl+e = equip
 \tCtrl+r = throw
-\tCtrl+x = swap-hand
+\tCtrl+x or Middle Mouse = swap-hand
 \tCtrl+z = activate held object (or Ctrl+y)
 \tCtrl+f = cycle-intents-left
 \tCtrl+g = cycle-intents-right
@@ -94,9 +100,13 @@ Any-Mode: (hotkey doesn't need to be on)
 \tDEL = pull
 \tINS = cycle-intents-right
 \tHOME = drop
-\tPGUP = swap-hand
+\tPGUP or Middle Mouse = swap-hand
 \tPGDN = activate held object
 \tEND = throw
+\tCtrl + Click = drag
+\tShift + Click = examine
+\tAlt + Click = show entities on turf
+\tCtrl + Alt + Click = interact with certain items
 </font>"}
 
 	var/robot_hotkey_mode = {"<font color='purple'>
@@ -117,8 +127,6 @@ Hotkey-Mode: (hotkey-mode must be on)
 \t3 = activate module 3
 \t4 = toggle intents
 \t5 = emote
-\tCtrl = drag
-\tShift = examine
 </font>"}
 
 	var/robot_other = {"<font color='purple'>
@@ -144,6 +152,10 @@ Any-Mode: (hotkey doesn't need to be on)
 \tINS = toggle intents
 \tPGUP = cycle active modules
 \tPGDN = activate held object
+\tCtrl + Click = drag or bolt doors
+\tShift + Click = examine or open doors
+\tAlt + Click = show entities on turf
+\tCtrl + Alt + Click = electrify doors
 </font>"}
 
 	if(isrobot(src.mob))

@@ -14,15 +14,13 @@
 	var/perunit = SHEET_MATERIAL_AMOUNT
 	var/apply_colour //temp pending icon rewrite
 
-/obj/item/stack/material/New(atom/newloc, var/amount=null)
-	..(newloc, amount)
-
+/obj/item/stack/material/Initialize()
+	. = ..()
 	if(!default_type)
 		default_type = DEFAULT_WALL_MATERIAL
 	material = get_material_by_name("[default_type]")
 	if(!material)
-		qdel(src)
-		return 0
+		return INITIALIZE_HINT_QDEL
 
 	recipes = material.get_recipes()
 	stacktype = material.stack_type
@@ -33,13 +31,12 @@
 		color = material.icon_colour
 
 	if(material.conductive)
-		flags |= CONDUCT
+		obj_flags |= OBJ_FLAG_CONDUCTIBLE
 	else
-		flags &= (~CONDUCT)
+		obj_flags &= (~OBJ_FLAG_CONDUCTIBLE)
 
 	matter = material.get_matter()
 	update_strings()
-	return 1
 
 /obj/item/stack/material/get_material()
 	return material
@@ -49,11 +46,11 @@
 	singular_name = material.sheet_singular_name
 
 	if(amount>1)
-		name = "[material.use_name] [material.sheet_plural_name]"
+		SetName("[material.use_name] [material.sheet_plural_name]")
 		desc = "A stack of [material.use_name] [material.sheet_plural_name]."
 		gender = PLURAL
 	else
-		name = "[material.use_name] [material.sheet_singular_name]"
+		SetName("[material.use_name] [material.sheet_singular_name]")
 		desc = "A [material.sheet_singular_name] of [material.use_name]."
 		gender = NEUTER
 
@@ -76,7 +73,7 @@
 		..()
 
 /obj/item/stack/material/attackby(var/obj/item/W, var/mob/user)
-	if(istype(W,/obj/item/stack/cable_coil))
+	if(isCoil(W))
 		material.build_wired_product(user, W, src)
 		return
 	else if(istype(W, /obj/item/stack/rods))
@@ -100,25 +97,46 @@
 	icon_state = "sheet-marble"
 	default_type = "marble"
 
+/obj/item/stack/material/marble/ten
+	amount = 10
+
+/obj/item/stack/material/marble/fifty
+	amount = 50
+
 /obj/item/stack/material/diamond
 	name = "diamond"
 	icon_state = "sheet-diamond"
 	default_type = "diamond"
+
+/obj/item/stack/material/diamond/ten
+	amount = 10
 
 /obj/item/stack/material/uranium
 	name = "uranium"
 	icon_state = "sheet-uranium"
 	default_type = "uranium"
 
+/obj/item/stack/material/uranium/ten
+	amount = 10
+
 /obj/item/stack/material/phoron
 	name = "solid phoron"
 	icon_state = "sheet-phoron"
 	default_type = "phoron"
 
+/obj/item/stack/material/phoron/ten
+	amount = 10
+
+/obj/item/stack/material/phoron/fifty
+	amount = 50
+
 /obj/item/stack/material/plastic
 	name = "plastic"
 	icon_state = "sheet-plastic"
 	default_type = "plastic"
+
+/obj/item/stack/material/plastic/ten
+	amount = 10
 
 /obj/item/stack/material/plastic/fifty
 	amount = 50
@@ -128,10 +146,16 @@
 	icon_state = "sheet-gold"
 	default_type = "gold"
 
+/obj/item/stack/material/gold/ten
+	amount = 10
+
 /obj/item/stack/material/silver
 	name = "silver"
 	icon_state = "sheet-silver"
 	default_type = "silver"
+
+/obj/item/stack/material/silver/ten
+	amount = 10
 
 //Valuable resource, cargo can sell it.
 /obj/item/stack/material/platinum
@@ -139,11 +163,17 @@
 	icon_state = "sheet-adamantine"
 	default_type = "platinum"
 
+/obj/item/stack/material/platinum/ten
+	amount = 10
+
 //Extremely valuable to Research.
 /obj/item/stack/material/mhydrogen
 	name = "metallic hydrogen"
 	icon_state = "sheet-mythril"
 	default_type = "mhydrogen"
+
+/obj/item/stack/material/mhydrogen/ten
+	amount = 10
 
 //Fuel for MRSPACMAN generator.
 /obj/item/stack/material/tritium
@@ -151,6 +181,9 @@
 	icon_state = "sheet-silver"
 	default_type = "tritium"
 	apply_colour = 1
+
+/obj/item/stack/material/tritium/ten
+	amount = 10
 
 /obj/item/stack/material/tritium/fifty
 	amount = 50
@@ -161,12 +194,21 @@
 	default_type = "osmium"
 	apply_colour = 1
 
+/obj/item/stack/material/osmium/ten
+	amount = 10
+
 /obj/item/stack/material/ocp
 	name = "osmium-carbide plasteel"
 	icon_state = "sheet-plasteel"
 	item_state = "sheet-metal"
 	default_type = "osmium-carbide plasteel"
 	apply_colour = 1
+
+/obj/item/stack/material/ocp/ten
+	amount = 10
+
+/obj/item/stack/material/ocp/fifty
+	amount = 50
 
 // Fusion fuel.
 /obj/item/stack/material/deuterium
@@ -183,6 +225,9 @@
 	icon_state = "sheet-metal"
 	default_type = DEFAULT_WALL_MATERIAL
 
+/obj/item/stack/material/steel/ten
+	amount = 10
+
 /obj/item/stack/material/steel/fifty
 	amount = 50
 
@@ -192,6 +237,9 @@
 	item_state = "sheet-metal"
 	default_type = "plasteel"
 
+/obj/item/stack/material/plasteel/ten
+	amount = 10
+
 /obj/item/stack/material/plasteel/fifty
 	amount = 50
 
@@ -199,6 +247,9 @@
 	name = "wooden plank"
 	icon_state = "sheet-wood"
 	default_type = "wood"
+
+/obj/item/stack/material/wood/ten
+	amount = 10
 
 /obj/item/stack/material/wood/fifty
 	amount = 50
@@ -212,6 +263,9 @@
 	name = "cardboard"
 	icon_state = "sheet-card"
 	default_type = "cardboard"
+
+/obj/item/stack/material/cardboard/ten
+	amount = 10
 
 /obj/item/stack/material/cardboard/fifty
 	amount = 50
@@ -227,6 +281,9 @@
 	icon_state = "sheet-glass"
 	default_type = "glass"
 
+/obj/item/stack/material/glass/ten
+	amount = 10
+
 /obj/item/stack/material/glass/fifty
 	amount = 50
 
@@ -234,6 +291,12 @@
 	name = "reinforced glass"
 	icon_state = "sheet-rglass"
 	default_type = "rglass"
+
+/obj/item/stack/material/glass/reinforced/ten
+	amount = 10
+
+/obj/item/stack/material/glass/reinforced/fifty
+	amount = 50
 
 /obj/item/stack/material/glass/phoronglass
 	name = "borosilicate glass"
@@ -248,3 +311,6 @@
 	singular_name = "reinforced borosilicate glass sheet"
 	icon_state = "sheet-phoronrglass"
 	default_type = "rphglass"
+
+/obj/item/stack/material/glass/phoronrglass/ten
+	amount = 10

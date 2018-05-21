@@ -1,6 +1,7 @@
 /mob/living/bot/cleanbot
 	name = "Cleanbot"
 	desc = "A little cleaning robot, he looks so excited!"
+	icon = 'icons/mob/bot/cleanbot.dmi'
 	icon_state = "cleanbot0"
 	req_one_access = list(access_janitor, access_robotics)
 	botcard_access = list(access_janitor, access_maint_tunnels)
@@ -11,6 +12,7 @@
 	var/cleaning = 0
 	var/screwloose = 0
 	var/oddbutton = 0
+	var/booped = 0
 	var/blood = 1
 	var/list/target_types = list()
 
@@ -19,6 +21,9 @@
 	get_targets()
 
 /mob/living/bot/cleanbot/handleIdle()
+	if(!target && !booped)
+		playsound(src, 'sound/machines/boop2.ogg', 15)
+		booped = 1
 	if(!screwloose && !oddbutton && prob(5))
 		visible_message("\The [src] makes an excited beeping booping sound!")
 
@@ -36,11 +41,11 @@
 			ignore_list -= g
 
 /mob/living/bot/cleanbot/lookForTargets()
-	for(var/obj/effect/decal/cleanable/D in view(world.view, src)) // There was some odd code to make it start with nearest decals, it's unnecessary, this works
+	for(var/obj/effect/decal/cleanable/D in view(world.view + 1, src))
 		if(confirmTarget(D))
 			target = D
 			return
- 
+
 /mob/living/bot/cleanbot/confirmTarget(var/obj/effect/decal/cleanable/D)
 	if(!..())
 		return 0
@@ -48,7 +53,7 @@
 		if(istype(D, T))
 			return 1
 	return 0
- 
+
 /mob/living/bot/cleanbot/handleAdjacentTarget()
 	if(get_turf(target) == src.loc)
 		UnarmedAttack(target)
@@ -76,6 +81,7 @@
 		qdel(D)
 		if(D == target)
 			target = null
+	booped = 0
 	busy = 0
 	update_icons()
 
@@ -103,7 +109,7 @@
 
 /mob/living/bot/cleanbot/GetInteractTitle()
 	. = "<head><title>Cleanbot controls</title></head>"
-	. += "<b>Automatic Station Cleaner v1.0</b>"
+	. += "<b>Automatic Cleaner v1.0</b>"
 
 /mob/living/bot/cleanbot/GetInteractPanel()
 	. = "Cleans blood: <a href='?src=\ref[src];command=blood'>[blood ? "Yes" : "No"]</a>"
@@ -158,7 +164,7 @@
 /obj/item/weapon/bucket_sensor
 	desc = "It's a bucket. With a sensor attached."
 	name = "proxy bucket"
-	icon = 'icons/obj/aibots.dmi'
+	icon = 'icons/mob/bot/cleanbot.dmi'
 	icon_state = "bucket_proxy"
 	force = 3.0
 	throwforce = 10.0
@@ -174,7 +180,7 @@
 		qdel(O)
 		var/turf/T = get_turf(loc)
 		var/mob/living/bot/cleanbot/A = new /mob/living/bot/cleanbot(T)
-		A.name = created_name
+		A.SetName(created_name)
 		to_chat(user, "<span class='notice'>You add the robot arm to the bucket and sensor assembly. Beep boop!</span>")
 		user.drop_from_inventory(src)
 		qdel(src)

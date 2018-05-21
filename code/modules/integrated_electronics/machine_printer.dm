@@ -1,7 +1,7 @@
 var/list/integrated_circuit_blacklist = list(/obj/item/integrated_circuit, /obj/item/integrated_circuit/arithmetic, /obj/item/integrated_circuit/converter,
 										/obj/item/integrated_circuit/filter, /obj/item/integrated_circuit/filter/ref, /obj/item/integrated_circuit/input,
 										/obj/item/integrated_circuit/output, /obj/item/integrated_circuit/manipulation, /obj/item/integrated_circuit/sensor,
-										/obj/item/integrated_circuit/time, /obj/item/integrated_circuit/manipulation/grenade/frag)
+										/obj/item/integrated_circuit/time, /obj/item/integrated_circuit/manipulation/grenade/frag, /obj/item/integrated_circuit/manipulation/locomotion)
 
 /obj/machinery/integrated_circuit_printer
 	name = "integrated circuit printer"
@@ -9,7 +9,8 @@ var/list/integrated_circuit_blacklist = list(/obj/item/integrated_circuit, /obj/
 	icon = 'icons/obj/machines/research.dmi'
 	icon_state = "integrated"
 	density = 1
-	var/metal = 100
+	anchored = 1
+	var/metal = 0
 	var/maxMetal = 100
 	var/metal_mult = 0.5
 	use_power = 1
@@ -35,24 +36,39 @@ var/list/integrated_circuit_blacklist = list(/obj/item/integrated_circuit, /obj/
 	if(istype(O,/obj/item/stack/material))
 		var/obj/item/stack/material/stack = O
 		if(stack.material.name == DEFAULT_WALL_MATERIAL)
-			var/num = max(0,round(input("How many sheets do you want to add?") as num))
-			if(stack.use(num))
-				to_chat(user, "<span class='notice'>You add [num] sheet\s to \the [src].</span>")
-				metal += num
-				updateUsrDialog()
-				return 1
+			var/num = min(maxMetal - metal, stack.amount)
+			if(do_after(usr, 16, src))
+				if(stack.use(num))
+					to_chat(user, "<span class='notice'>You add [num] sheet\s to \the [src].</span>")
+					metal += num
+					updateUsrDialog()
+					return 1
+	if(default_deconstruction_screwdriver(user, O))
+		if(metal)
+			new /obj/item/stack/material/steel(get_turf(loc), metal)
+			metal = 0
+		return
+	if(default_deconstruction_crowbar(user, O))
+		return
+	if(istype(O,/obj/item/integrated_circuit))
+		to_chat(user, "<span class='notice'>You insert the circuit into [src]. </span>")
+		user.unEquip(O)
+		qdel(O)
+		metal = min(metal+1,maxMetal)
+		return 1
 	return ..()
 
 /obj/machinery/integrated_circuit_printer/attack_hand(var/mob/user)
 	user.set_machine(src)
-	var/dat = "<center><b>Integrated Circuit Printer<br>\
+	var/dat = list()
+	dat += "<center><b>Integrated Circuit Printer<br>\
 				Metal: [metal]/[maxMetal]</b><br>\
 				<a href='?src=\ref[src];mode=Circuits'>Circuits</a>	<a href='?src=\ref[src];mode=Assemblies'>Assemblies</a></center><br><br>"
 	for(var/type in recipe_list[mode])
 		var/obj/O = type
-		dat += "<A href='?src=\ref[src];build=[type]'>[initial(O.name)]</A>: [initial(O.desc)]<br>"
+		dat += "<A href='?src=\ref[src];build=\ref[type]'>[initial(O.name)]</A>: [initial(O.desc)]<br>"
 
-	show_browser(user,dat,"window=integrated")
+	show_browser(user, JOINTEXT(dat),"window=integrated")
 
 /obj/machinery/integrated_circuit_printer/Topic(href, href_list)
 	if(..())
@@ -63,8 +79,8 @@ var/list/integrated_circuit_blacklist = list(/obj/item/integrated_circuit, /obj/
 	if(href_list["mode"])
 		mode = href_list["mode"]
 	else
-		var/build_type = text2path(href_list["build"])
-		if(!build_type || !ispath(build_type))
+		var/build_type = locate(href_list["build"]) in recipe_list[mode]
+		if(!build_type)
 			return 1
 		var/cost = 1
 		if(ispath(build_type, /obj/item/device/electronic_assembly))

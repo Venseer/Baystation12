@@ -30,7 +30,7 @@
 		if("number")
 			new_value = input(usr,"Enter variable value:" ,"Value", value_to_set) as num|null
 		if("mob-reference")
-			new_value = input(usr,"Enter variable value:" ,"Value", value_to_set) as null|mob in mob_list
+			new_value = input(usr,"Enter variable value:" ,"Value", value_to_set) as null|mob in SSmobs.mob_list
 		if("obj-reference")
 			new_value = input(usr,"Enter variable value:" ,"Value", value_to_set) as null|obj in world
 		if("turf-reference")
@@ -41,14 +41,7 @@
 		SetValue(new_value)
 
 /datum/build_mode/edit/OnClick(var/atom/A, var/list/parameters)
-	if(var_to_edit in A.VVlocked())
-		if(!check_rights(R_DEBUG))	return
-	if(var_to_edit in A.VVckey_edit())
-		if(!check_rights(R_SPAWN|R_DEBUG)) return
-	if(var_to_edit in A.VVicon_edit_lock())
-		if(!check_rights(R_FUN|R_DEBUG)) return
-	if(!(var_to_edit in A.vars))
-		to_chat(user, "<span class='warning'>\The [A] does not have a var '[var_to_edit]'</span>")
+	if(!A.may_edit_var(usr, var_to_edit))
 		return
 
 	var/old_value = A.vars[var_to_edit]
@@ -69,13 +62,13 @@
 		return
 	ClearValue()
 	value_to_set = new_value
-	destroyed_event.register(value_to_set, src, /datum/build_mode/edit/proc/ClearValue)
+	GLOB.destroyed_event.register(value_to_set, src, /datum/build_mode/edit/proc/ClearValue)
 
 /datum/build_mode/edit/proc/ClearValue(var/feedback)
 	if(!istype(value_to_set, /datum))
 		return
 
-	destroyed_event.unregister(value_to_set, src, /datum/build_mode/edit/proc/ClearValue)
+	GLOB.destroyed_event.unregister(value_to_set, src, /datum/build_mode/edit/proc/ClearValue)
 	value_to_set = initial(value_to_set)
 	if(feedback)
 		Warn("The selected reference value was deleted. Default value restored.")

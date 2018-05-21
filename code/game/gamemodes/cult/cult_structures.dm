@@ -3,9 +3,6 @@
 	anchored = 1
 	icon = 'icons/obj/cult.dmi'
 
-/obj/structure/cult/cultify()
-	return
-
 /obj/structure/cult/talisman
 	name = "Altar"
 	desc = "A bloodstained altar dedicated to Nar-Sie."
@@ -22,8 +19,9 @@
 	desc = "A floating crystal that hums with an unearthly energy."
 	icon_state = "pylon"
 	var/isbroken = 0
-	light_power = 2
-	light_range = 13
+	light_max_bright = 0.5
+	light_inner_range = 1
+	light_outer_range = 13
 	light_color = "#3e0000"
 	var/obj/item/wepon = null
 
@@ -96,18 +94,8 @@
 	anchored = 1.0
 	var/spawnable = null
 
-/obj/effect/gateway/Bumped(mob/M as mob|obj)
-	spawn(0)
-		return
-	return
-
-/obj/effect/gateway/Crossed(AM as mob|obj)
-	spawn(0)
-		return
-	return
-
 /obj/effect/gateway/active
-	light_range=5
+	light_outer_range=5
 	light_color="#ff0000"
 	spawnable=list(
 		/mob/living/simple_animal/hostile/scarybat,
@@ -116,7 +104,7 @@
 	)
 
 /obj/effect/gateway/active/cult
-	light_range=5
+	light_outer_range=5
 	light_color="#ff0000"
 	spawnable=list(
 		/mob/living/simple_animal/hostile/scarybat/cult,
@@ -124,14 +112,15 @@
 		/mob/living/simple_animal/hostile/faithless/cult
 	)
 
-/obj/effect/gateway/active/cult/cultify()
-	return
-
 /obj/effect/gateway/active/New()
-	spawn(rand(30,60) SECONDS)
-		var/t = pick(spawnable)
-		new t(src.loc)
-		qdel(src)
+	..()
+	addtimer(CALLBACK(src, .proc/create_and_delete), rand(30,60) SECONDS)
+
+
+/obj/effect/gateway/active/proc/create_and_delete()
+	var/t = pick(spawnable)
+	new t(src.loc)
+	qdel(src)
 
 /obj/effect/gateway/active/Crossed(var/atom/A)
 	if(!istype(A, /mob/living))
@@ -152,7 +141,7 @@
 		M.canmove = 0
 		M.icon = null
 		M.overlays.len = 0
-		M.invisibility = 101
+		M.set_invisibility(101)
 
 		if(istype(M, /mob/living/silicon/robot))
 			var/mob/living/silicon/robot/Robot = M

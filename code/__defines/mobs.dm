@@ -15,12 +15,21 @@
 #define NO_ANTAG    0x4000  // Players are restricted from gaining antag roles when occupying this mob
 #define XENO_HOST   0x8000  // Tracks whether we're gonna be a baby alien's mummy.
 
+// Grab Types
+#define GRAB_NORMAL			"normal"
+#define GRAB_NAB			"nab"
+#define GRAB_NAB_SPECIAL	"special nab"
+
 // Grab levels.
-#define GRAB_PASSIVE    1
-#define GRAB_AGGRESSIVE 2
-#define GRAB_NECK       3
-#define GRAB_UPGRADING  4
-#define GRAB_KILL       5
+#define NORM_PASSIVE    "normal passive"
+#define NORM_STRUGGLE   "normal struggle"
+#define NORM_AGGRESSIVE "normal aggressive"
+#define NORM_NECK       "normal neck"
+#define NORM_KILL       "normal kill"
+
+#define NAB_PASSIVE		"nab passive"
+#define NAB_AGGRESSIVE	"nab aggressive"
+#define NAB_KILL		"nab kill"
 
 #define BORGMESON 0x1
 #define BORGTHERM 0x2
@@ -34,8 +43,9 @@
 #define HOSTILE_STANCE_TIRED     5
 #define HOSTILE_STANCE_INSIDE    6
 
-#define LEFT  1
-#define RIGHT 2
+#define LEFT  0x1
+#define RIGHT 0x2
+#define UNDER 0x4
 
 // Pulse levels, very simplified.
 #define PULSE_NONE    0 // So !M.pulse checks would be possible.
@@ -47,11 +57,15 @@
 #define GETPULSE_HAND 0 // Less accurate. (hand)
 #define GETPULSE_TOOL 1 // More accurate. (med scanner, sleeper, etc.)
 
-//intent flags, why wasn't this done the first time?
+//intent flags
 #define I_HELP		"help"
 #define I_DISARM	"disarm"
 #define I_GRAB		"grab"
 #define I_HURT		"harm"
+
+// Movement flags
+#define M_RUN  "run"
+#define M_WALK "walk"
 
 //These are used Bump() code for living mobs, in the mob_bump_flag, mob_swap_flags, and mob_push_flags vars to determine whom can bump/swap with whom.
 #define HUMAN 1
@@ -108,6 +122,13 @@
 #define MOB_TINY 		5
 #define MOB_MINISCULE	1
 
+// Defines how strong the species is compared to humans. Think like strength in D&D
+#define STR_VHIGH       2
+#define STR_HIGH        1
+#define STR_MEDIUM      0
+#define STR_LOW        -1
+#define STR_VLOW       -2
+
 // Gluttony levels.
 #define GLUT_TINY 1       // Eat anything tiny and smaller
 #define GLUT_SMALLER 2    // Eat anything smaller than we are
@@ -127,6 +148,7 @@
 #define TINT_HEAVY 2
 #define TINT_BLIND 3
 
+#define FLASH_PROTECTION_VULNERABLE -2
 #define FLASH_PROTECTION_REDUCED -1
 #define FLASH_PROTECTION_NONE 0
 #define FLASH_PROTECTION_MODERATE 1
@@ -154,14 +176,13 @@
 #define BP_EYES     "eyes"
 #define BP_HEART    "heart"
 #define BP_LUNGS    "lungs"
+#define BP_TRACH	"tracheae"
 #define BP_BRAIN    "brain"
 #define BP_LIVER    "liver"
 #define BP_KIDNEYS  "kidneys"
 #define BP_PLASMA   "plasma vessel"
-#define BP_STACK    "stack"
 #define BP_APPENDIX "appendix"
 #define BP_CELL     "cell"
-#define BP_OPTICS   "optics"
 #define BP_HIVE     "hive node"
 #define BP_NUTRIENT "nutrient vessel"
 #define BP_ACID     "acid gland"
@@ -172,6 +193,14 @@
 #define BP_GBLADDER "gas bladder"
 #define BP_POLYP    "polyp segment"
 #define BP_ANCHOR   "anchoring ligament"
+#define BP_PHORON   "phoron filter"
+#define BP_ACETONE  "acetone reactor"
+
+// Robo Organs.
+#define BP_POSIBRAIN	"posibrain"
+#define BP_VOICE		"vocal synthesiser"
+#define BP_STACK		"stack"
+#define BP_OPTICS		"optics"
 
 // Limbs.
 #define BP_L_FOOT "l_foot"
@@ -225,3 +254,34 @@
 
 #define CORPSE_CAN_REENTER 1
 #define CORPSE_CAN_REENTER_AND_RESPAWN 2
+
+#define SPECIES_HUMAN       "Human"
+#define SPECIES_TAJARA      "Tajara"
+#define SPECIES_DIONA       "Diona"
+#define SPECIES_VOX         "Vox"
+#define SPECIES_IPC         "Machine"
+#define SPECIES_UNATHI      "Unathi"
+#define SPECIES_SKRELL      "Skrell"
+#define SPECIES_NABBER      "giant armoured serpentid"
+#define SPECIES_PROMETHEAN  "Promethean"
+#define SPECIES_BOGANI      "Bogani"
+#define SPECIES_EGYNO       "Egyno"
+#define SPECIES_XENO        "Xenophage"
+
+#define SURGERY_CLOSED 0
+#define SURGERY_OPEN 1
+#define SURGERY_RETRACTED 2
+#define SURGERY_ENCASED 3
+
+#define STASIS_MISC     "misc"
+#define STASIS_CRYOBAG  "cryobag"
+#define STASIS_COLD     "cold"
+
+#define AURA_CANCEL 1
+#define AURA_FALSE  2
+#define AURA_TYPE_BULLET "Bullet"
+#define AURA_TYPE_WEAPON "Weapon"
+#define AURA_TYPE_THROWN "Thrown"
+#define AURA_TYPE_LIFE   "Life"
+
+#define SPECIES_BLOOD_DEFAULT 560

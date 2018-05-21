@@ -33,8 +33,8 @@
 	if(sensitivity)
 		extended_desc += "<br>This ensor will only trigger if movement is confirmed twice within [sensitivity] second\s (but not necessarily from the same source)"
 
-/obj/item/integrated_circuit/sensor/proximity/initialize()
-	..()
+/obj/item/integrated_circuit/sensor/proximity/Initialize()
+	. = ..()
 
 	var/datum/integrated_io/range = inputs[2]
 	if(islist(proximity_trigger))
@@ -50,9 +50,12 @@
 		proximity_trigger = null
 	. = ..()
 
-/obj/item/integrated_circuit/sensor/proximity/do_work()
-	var/active = set_pin_data(IC_INPUT, 1)
-	var/range = set_pin_data(IC_INPUT, 2)
+/obj/item/integrated_circuit/sensor/proximity/do_work(var/activated_pin)
+	if(activated_pin != activators[1])
+		return
+
+	var/active = get_pin_data(IC_INPUT, 1)
+	var/range = get_pin_data(IC_INPUT, 2)
 
 	var/do_activate = isnum(active) && active
 	var/turn_on = !proximity_trigger.is_active() && do_activate
@@ -106,8 +109,8 @@
 	var/list/seen_turfs
 	var/list/beams
 
-/obj/item/integrated_circuit/sensor/proximity/ir/initialize()
-	..()
+/obj/item/integrated_circuit/sensor/proximity/ir/Initialize()
+	. = ..()
 	seen_turfs = list()
 	beams = list()
 
@@ -142,3 +145,42 @@
 	min_range = 0
 	max_range = 0
 	sensitivity = 0
+
+/obj/item/integrated_circuit/accelerometer
+	name = "accelerometer"
+	desc = "A small, square circuit with a box in the middle used to detect motion."
+	icon_state = "sensor_accelerometer"
+	complexity = 3
+	inputs = list()
+	outputs = list()
+	activators = list("toggle power", "motion detected")
+	outputs = list("x motion", "y motion", "z motion")
+	var/list/last_location = list(0,0,0)
+	var/on = 0
+
+/obj/item/integrated_circuit/accelerometer/do_work(var/activated_pin)
+	if(activated_pin != activators[1])
+		return
+	on = !on
+	if(on)
+		START_PROCESSING(SSobj, src)
+		var/turf/T = get_turf(src)
+		if(T)
+			last_location = list(T.x, T.y, T.z)
+	else
+		STOP_PROCESSING(SSobj, src)
+
+/obj/item/integrated_circuit/accelerometer/Process()
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	var/list/cur = list(T.x, T.y, T.z)
+	var/activate = 0
+	for(var/i in 1 to 3)
+		var/acc = cur[i] - last_location[i]
+		if(acc)
+			activate = 1
+		set_pin_data(IC_OUTPUT, i, acc)
+		last_location[i] = cur[i]
+	if(activate)
+		activate_pin(2)

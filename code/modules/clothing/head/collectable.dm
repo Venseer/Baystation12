@@ -10,8 +10,7 @@
 	desc = "an ultra rare hat. It commands a certain respect."
 	icon_state = "petehat"
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/head.dmi',
-		"Resomi" = 'icons/mob/species/resomi/head.dmi'
+		SPECIES_VOX = 'icons/mob/species/vox/head.dmi',
 		)
 
 /obj/item/clothing/head/collectable/slime
@@ -21,7 +20,7 @@
 	body_parts_covered = 0
 
 /obj/item/clothing/head/collectable/xenom
-	name = "collectable xenomorph helmet!"
+	name = "collectable alien monster helmet!"
 	desc = "Hiss hiss hiss!"
 	icon_state = "xenom"
 	item_state_slots = list(

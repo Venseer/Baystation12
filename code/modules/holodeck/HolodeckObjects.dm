@@ -14,9 +14,9 @@
 	return
 
 /turf/simulated/floor/holofloor/carpet
-	name = "carpet"
+	name = "brown carpet"
 	icon = 'icons/turf/flooring/carpet.dmi'
-	icon_state = "carpet"
+	icon_state = "brown"
 	initial_flooring = /decl/flooring/carpet
 
 /turf/simulated/floor/holofloor/tiled
@@ -79,8 +79,8 @@
 
 /turf/simulated/floor/holofloor/beach/sand
 	name = "sand"
-	icon_state = "desert"
-	base_icon_state = "desert"
+	icon_state = "desert0"
+	base_icon_state = "desert0"
 
 /turf/simulated/floor/holofloor/beach/coastline
 	name = "coastline"
@@ -126,14 +126,8 @@
 	..()
 
 /obj/structure/window/reinforced/holowindow/attackby(obj/item/W as obj, mob/user as mob)
-	if(!istype(W)) return//I really wish I did not need this
-	if (istype(W, /obj/item/weapon/grab) && get_dist(src,user)<2)
-		var/obj/item/weapon/grab/G = W
-		if(istype(G.affecting,/mob/living))
-			grab_smash_attack(G, PAIN)
-			return
 
-	if(W.flags & NOBLUDGEON) return
+	if(!istype(W) || W.item_flags & ITEM_FLAG_NO_BLUDGEON) return
 
 	if(istype(W, /obj/item/weapon/screwdriver))
 		to_chat(user, ("<span class='notice'>It's a holowindow, you can't unfasten it!</span>"))
@@ -222,7 +216,7 @@
 	throw_range = 5
 	throwforce = 0
 	w_class = ITEM_SIZE_SMALL
-	flags = NOBLOODY
+	atom_flags = ATOM_FLAG_NO_BLOOD
 	var/active = 0
 	var/item_color
 
@@ -287,22 +281,6 @@
 	density = 1
 	throwpass = 1
 
-/obj/structure/holohoop/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if (istype(W, /obj/item/weapon/grab) && get_dist(src,user)<2)
-		var/obj/item/weapon/grab/G = W
-		if(G.state<2)
-			to_chat(user, "<span class='warning'>You need a better grip to do that!</span>")
-			return
-		G.affecting.loc = src.loc
-		G.affecting.Weaken(5)
-		visible_message("<span class='warning'>[G.assailant] dunks [G.affecting] into the [src]!</span>", 3)
-		qdel(W)
-		return
-	else if (istype(W, /obj/item) && get_dist(src,user)<2)
-		user.drop_item(src.loc)
-		visible_message("<span class='notice'>[user] dunks [W] into the [src]!</span>", 3)
-		return
-
 /obj/structure/holohoop/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
 	if (istype(mover,/obj/item) && mover.throwing)
 		var/obj/item/I = mover
@@ -334,7 +312,7 @@
 	power_channel = ENVIRON
 
 /obj/machinery/readybutton/attack_ai(mob/user as mob)
-	to_chat(user, "The station AI is not to interact with these devices!")
+	to_chat(user, "The AI is not to interact with these devices!")
 	return
 
 /obj/machinery/readybutton/New()
@@ -405,7 +383,7 @@
 
 /mob/living/simple_animal/hostile/carp/holodeck/New()
 	..()
-	set_light(2) //hologram lighting
+	set_light(0.5, 0.1, 2) //hologram lighting
 
 /mob/living/simple_animal/hostile/carp/holodeck/proc/set_safety(var/safe)
 	if (safe)
@@ -422,12 +400,8 @@
 		destroy_surroundings = initial(destroy_surroundings)
 
 /mob/living/simple_animal/hostile/carp/holodeck/gib()
-	derez() //holograms can't gib
+	death()
 
 /mob/living/simple_animal/hostile/carp/holodeck/death()
-	..()
-	derez()
-
-/mob/living/simple_animal/hostile/carp/holodeck/proc/derez()
-	visible_message("<span class='notice'>\The [src] fades away!</span>")
+	..(null, "fades away!", "You have been destroyed.")
 	qdel(src)

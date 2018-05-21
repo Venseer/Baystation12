@@ -20,7 +20,7 @@ var/datum/robolimb/basic_robolimb
 	var/use_eye_icon = "eyes_s"
 	var/can_feel_pain
 	var/skintone
-	var/list/species_cannot_use = list("Resomi")
+	var/list/species_cannot_use = list()
 	var/list/restricted_to = list()
 	var/list/applies_to_part = list() //TODO.
 
@@ -39,7 +39,7 @@ var/datum/robolimb/basic_robolimb
 /datum/robolimb/bishop/alt/monitor
 	company = "Bishop Monitor."
 	icon = 'icons/mob/human_races/cyberlimbs/bishop/bishop_monitor.dmi'
-	restricted_to = list("Machine")
+	restricted_to = list(SPECIES_IPC)
 	unavailable_at_fab = 1
 
 /datum/robolimb/hephaestus
@@ -57,7 +57,7 @@ var/datum/robolimb/basic_robolimb
 /datum/robolimb/hesphiastos/alt/monitor
 	company = "Hephaestus Monitor."
 	icon = 'icons/mob/human_races/cyberlimbs/hephaestus/hephaestus_monitor.dmi'
-	restricted_to = list("Machine")
+	restricted_to = list(SPECIES_IPC)
 	can_eat = null
 	unavailable_at_fab = 1
 
@@ -67,6 +67,7 @@ var/datum/robolimb/basic_robolimb
 	icon = 'icons/mob/human_races/cyberlimbs/zenghu/zenghu_main.dmi'
 	can_eat = 1
 	unavailable_at_fab = 1
+	restricted_to = list(SPECIES_HUMAN, SPECIES_IPC)
 
 /datum/robolimb/xion
 	company = "Xion"
@@ -83,7 +84,7 @@ var/datum/robolimb/basic_robolimb
 /datum/robolimb/xion/alt/monitor
 	company = "Xion Monitor."
 	icon = 'icons/mob/human_races/cyberlimbs/xion/xion_monitor.dmi'
-	restricted_to = list("Machine")
+	restricted_to = list(SPECIES_IPC)
 	can_eat = null
 	unavailable_at_fab = 1
 
@@ -108,7 +109,7 @@ var/datum/robolimb/basic_robolimb
 /datum/robolimb/wardtakahashi/alt/monitor
 	company = "Ward-Takahashi Monitor."
 	icon = 'icons/mob/human_races/cyberlimbs/wardtakahashi/wardtakahashi_monitor.dmi'
-	restricted_to = list("Machine")
+	restricted_to = list(SPECIES_IPC)
 	can_eat = null
 	unavailable_at_fab = 1
 
@@ -116,15 +117,16 @@ var/datum/robolimb/basic_robolimb
 	company = "Morpheus"
 	desc = "This limb is simple and functional; no effort has been made to make it look human."
 	icon = 'icons/mob/human_races/cyberlimbs/morpheus/morpheus_main.dmi'
-	restricted_to = list("Machine")
-	use_eye_icon = "blank_eyes"
 	unavailable_at_fab = 1
 
-/datum/robolimb/morpheus/alt
-	company = "Morpheus Alt."
-	icon = 'icons/mob/human_races/cyberlimbs/morpheus/morpheus_alt.dmi'
+
+/datum/robolimb/morpheus/monitor
+	company = "Morpheus Monitor."
+	icon = 'icons/mob/human_races/cyberlimbs/morpheus/morpheus_monitor.dmi'
 	applies_to_part = list(BP_HEAD)
 	unavailable_at_fab = 1
+	use_eye_icon = "blank_eyes"
+	restricted_to = list(SPECIES_IPC)
 
 /datum/robolimb/veymed
 	company = "Vey-Med"
@@ -133,12 +135,23 @@ var/datum/robolimb/basic_robolimb
 	can_eat = 1
 	skintone = 1
 	unavailable_at_fab = 1
-	
-/datum/robolimb/resomi
-	company = "Small prosthetic"
-	desc = "This prosthetic is small and fit for nonhuman proportions."
-	icon = 'icons/mob/human_races/cyberlimbs/resomi/resomi_main.dmi'
-	restricted_to = list("Resomi")
-	species_cannot_use = list()
-	applies_to_part = list(BP_L_ARM, BP_R_ARM, BP_L_LEG, BP_R_LEG, BP_L_FOOT, BP_R_FOOT, BP_L_HAND, BP_R_HAND)
-	
+	restricted_to = list(SPECIES_HUMAN)
+
+/datum/robolimb/grayson
+	company = "Grayson"
+	desc = "This limb has a sturdy and heavy build to it."
+	icon = 'icons/mob/human_races/cyberlimbs/grayson/grayson_main.dmi'
+	unavailable_at_fab = 1
+
+/datum/robolimb/grayson/alt
+	company = "Grayson Alt."
+	icon = 'icons/mob/human_races/cyberlimbs/grayson/grayson_alt.dmi'
+	applies_to_part = list(BP_HEAD)
+	unavailable_at_fab = 1
+
+/datum/robolimb/grayson/alt/monitor
+	company = "Grayson Monitor."
+	icon = 'icons/mob/human_races/cyberlimbs/grayson/grayson_monitor.dmi'
+	applies_to_part = list(BP_HEAD)
+	unavailable_at_fab = 1
+	restricted_to = list(SPECIES_IPC)

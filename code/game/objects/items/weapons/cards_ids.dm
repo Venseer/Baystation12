@@ -18,6 +18,7 @@
 	w_class = ITEM_SIZE_TINY
 	slot_flags = SLOT_EARS
 	var/associated_account_number = 0
+	var/list/associated_email_login = list("login" = "", "password" = "")
 
 	var/list/files = list(  )
 
@@ -36,9 +37,9 @@
 	set src in usr
 
 	if (t)
-		src.name = text("data disk- '[]'", t)
+		src.SetName(text("data disk- '[]'", t))
 	else
-		src.name = "data disk"
+		src.SetName("data disk")
 	src.add_fingerprint(usr)
 	return
 
@@ -92,13 +93,9 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id
 	name = "identification card"
-	desc = "A card used to provide ID and determine access across the station."
+	desc = "A card used to provide ID and determine access."
 	icon_state = "id"
 	item_state = "card-id"
-
-	sprite_sheets = list(
-		"Resomi" = 'icons/mob/species/resomi/id.dmi'
-		)
 
 	var/access = list()
 	var/registered_name = "Unknown" // The name registered_name on the card
@@ -131,13 +128,25 @@ var/const/NO_EMAG_ACT = -50
 			assignment = rank
 			access |= j.get_access()
 
+/obj/item/weapon/card/id/get_examine_line()
+	. = ..()
+	. += "  <a href='?src=\ref[src];look_at_id=1'>\[View\]</a>"
+
+/obj/item/weapon/card/id/CanUseTopic(var/user)
+	if(user in view(get_turf(src)))
+		return STATUS_INTERACTIVE
+
+/obj/item/weapon/card/id/OnTopic(var/mob/user, var/list/href_list)
+	if(href_list["look_at_id"])
+		if(istype(user))
+			user.examinate(src)
+			return TOPIC_HANDLED
+
 /obj/item/weapon/card/id/examine(mob/user)
-	set src in oview(1)
-	if(in_range(usr, src))
-		show(usr)
-		to_chat(usr, desc)
-	else
-		to_chat(usr, "<span class='warning'>It is too far away.</span>")
+	..()
+	to_chat(user, "It says '[get_display_name()]'.")
+	if(in_range(user, src))
+		show(user)
 
 /obj/item/weapon/card/id/proc/prevent_tracking()
 	return 0
@@ -152,11 +161,12 @@ var/const/NO_EMAG_ACT = -50
 	popup.open()
 	return
 
-/obj/item/weapon/card/id/proc/update_name()
+/obj/item/weapon/card/id/proc/get_display_name()
+	. = registered_name
+	if(military_rank && military_rank.name_short)
+		. = military_rank.name_short + " " + .
 	if(assignment)
-		name = "[registered_name]'s ID Card ([assignment])"
-	else
-		name = "[registered_name]'s ID Card"
+		. += ", [assignment]"
 
 /obj/item/weapon/card/id/proc/set_id_photo(var/mob/M)
 	front = getFlatIcon(M, SOUTH, always_use_defdir = 1)
@@ -172,19 +182,16 @@ var/const/NO_EMAG_ACT = -50
 		id_card.blood_type		= dna.b_type
 		id_card.dna_hash		= dna.unique_enzymes
 		id_card.fingerprint_hash= md5(dna.uni_identity)
-	id_card.update_name()
-
-	if(ishuman(src))
-		var/mob/living/carbon/human/h = src
-		if(using_map.flags & MAP_HAS_BRANCH)
-			id_card.military_branch = h.char_branch
-
-		if(using_map.flags & MAP_HAS_RANK)
-			id_card.military_rank = h.char_rank
 
 /mob/living/carbon/human/set_id_info(var/obj/item/weapon/card/id/id_card)
 	..()
 	id_card.age = age
+
+	if(GLOB.using_map.flags & MAP_HAS_BRANCH)
+		id_card.military_branch = char_branch
+
+	if(GLOB.using_map.flags & MAP_HAS_RANK)
+		id_card.military_rank = char_rank
 
 /obj/item/weapon/card/id/proc/dat()
 	var/list/dat = list("<table><tr><td>")
@@ -192,9 +199,9 @@ var/const/NO_EMAG_ACT = -50
 	dat += text("Sex: []</A><BR>\n", sex)
 	dat += text("Age: []</A><BR>\n", age)
 
-	if(using_map.flags & MAP_HAS_BRANCH)
+	if(GLOB.using_map.flags & MAP_HAS_BRANCH)
 		dat += text("Branch: []</A><BR>\n", military_branch ? military_branch.name : "\[UNSET\]")
-	if(using_map.flags & MAP_HAS_RANK)
+	if(GLOB.using_map.flags & MAP_HAS_RANK)
 		dat += text("Rank: []</A><BR>\n", military_rank ? military_rank.name : "\[UNSET\]")
 
 	dat += text("Assignment: []</A><BR>\n", assignment)
@@ -310,7 +317,7 @@ var/const/NO_EMAG_ACT = -50
 // Department-flavor IDs
 /obj/item/weapon/card/id/medical
 	name = "identification card"
-	desc = "A card issued to station medical staff."
+	desc = "A card issued to medical staff."
 	icon_state = "med"
 	job_access_type = /datum/job/doctor
 
@@ -334,7 +341,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/security
 	name = "identification card"
-	desc = "A card issued to station security staff."
+	desc = "A card issued to security staff."
 	icon_state = "sec"
 	job_access_type = /datum/job/officer
 
@@ -352,7 +359,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/engineering
 	name = "identification card"
-	desc = "A card issued to station engineering staff."
+	desc = "A card issued to engineering staff."
 	icon_state = "eng"
 	job_access_type = /datum/job/engineer
 
@@ -367,7 +374,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/science
 	name = "identification card"
-	desc = "A card issued to station science staff."
+	desc = "A card issued to science staff."
 	icon_state = "sci"
 	job_access_type = /datum/job/scientist
 
@@ -385,7 +392,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/cargo
 	name = "identification card"
-	desc = "A card issued to station cargo staff."
+	desc = "A card issued to cargo staff."
 	icon_state = "cargo"
 	job_access_type = /datum/job/cargo_tech
 
@@ -400,7 +407,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/civilian
 	name = "identification card"
-	desc = "A card issued to station civilian staff."
+	desc = "A card issued to civilian staff."
 	icon_state = "civ"
 	job_access_type = /datum/job/assistant
 
@@ -435,4 +442,3 @@ var/const/NO_EMAG_ACT = -50
 	desc = "A card issued to Merchants, indicating their right to sell and buy goods."
 	icon_state = "trader"
 	access = list(access_merchant)
-

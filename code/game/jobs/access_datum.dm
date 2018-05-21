@@ -49,7 +49,7 @@
 /var/const/access_tox = 7
 /datum/access/tox
 	id = access_tox
-	desc = "R&D Lab"
+	desc = "Research Labs"
 	region = ACCESS_REGION_RESEARCH
 
 /var/const/access_tox_storage = 8
@@ -259,7 +259,7 @@
 /var/const/access_network = 42
 /datum/access/network
 	id = access_network
-	desc = "Station Network"
+	desc = "Primary Network"
 	region = ACCESS_REGION_RESEARCH
 
 // /var/const/free_access_id = 43

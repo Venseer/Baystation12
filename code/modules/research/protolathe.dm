@@ -1,7 +1,7 @@
 /obj/machinery/r_n_d/protolathe
 	name = "\improper Protolathe"
 	icon_state = "protolathe"
-	flags = OPENCONTAINER
+	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 
 	use_power = 1
 	idle_power_usage = 30
@@ -28,7 +28,7 @@
 	component_parts += new /obj/item/weapon/reagent_containers/glass/beaker(src)
 	RefreshParts()
 
-/obj/machinery/r_n_d/protolathe/process()
+/obj/machinery/r_n_d/protolathe/Process()
 	..()
 	if(stat)
 		update_icon()
@@ -111,15 +111,7 @@
 		return 1
 
 	var/obj/item/stack/material/stack = O
-	var/amount = round(input("How many sheets do you want to add?") as num)//No decimals
-	if(!O)
-		return
-	if(amount <= 0)//No negative numbers
-		return
-	if(amount > stack.get_amount())
-		amount = stack.get_amount()
-		if(max_material_storage - TotalMaterials() < (amount * SHEET_MATERIAL_AMOUNT)) //Can't overfill
-			amount = min(stack.get_amount(), round((max_material_storage - TotalMaterials()) / SHEET_MATERIAL_AMOUNT))
+	var/amount = min(stack.get_amount(), round((max_material_storage - TotalMaterials()) / SHEET_MATERIAL_AMOUNT))
 
 	var/t = stack.material.name
 	overlays += "protolathe_[t]"

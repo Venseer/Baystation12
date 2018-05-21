@@ -1,11 +1,15 @@
 /*
  * Contains
- * /obj/item/rig_module/grenade_launcher
- * /obj/item/rig_module/mounted
- * /obj/item/rig_module/mounted/taser
- * /obj/item/rig_module/shield
- * /obj/item/rig_module/fabricator
  * /obj/item/rig_module/device/flash
+ * /obj/item/rig_module/device/flash/advanced
+ * /obj/item/rig_module/grenade_launcher (cleaner, smoke, mfoam)
+ * /obj/item/rig_module/mounted (laser cannon)
+ * /obj/item/rig_module/mounted/egun
+ * /obj/item/rig_module/mounted/taser
+ * /obj/item/rig_module/mounted/plasmacutter
+ * /obj/item/rig_module/mounted/energy_blade
+ * /obj/item/rig_module/fabricator
+ * /obj/item/rig_module/fabricator/wf_sign
  */
 
 /obj/item/rig_module/device/flash
@@ -13,11 +17,16 @@
 	desc = "You are the law."
 	icon_state = "flash"
 	interface_name = "mounted flash"
-	interface_desc = "Stuns your target by blinding them with a bright light."
+	interface_desc = "Disorientates your target by blinding them with a bright light."
 	device_type = /obj/item/device/flash
+	origin_tech = list(TECH_COMBAT = 2, TECH_MAGNET = 3, TECH_ENGINEERING = 5)
+
+/obj/item/rig_module/device/flash/advanced
+	name = "advanced mounted flash"
+	device_type = /obj/item/device/flash/advanced
+	origin_tech = list(TECH_COMBAT = 3, TECH_MAGNET = 3, TECH_ENGINEERING = 5)
 
 /obj/item/rig_module/grenade_launcher
-
 	name = "mounted grenade launcher"
 	desc = "A shoulder-mounted micro-explosive dispenser."
 	selectable = 1
@@ -92,10 +101,38 @@
 
 /obj/item/rig_module/grenade_launcher/cleaner
 	name = "mounted cleaning grenade launcher"
-	desc = "A specialty shoulder-mounted micro-explosive dispenser."
+	interface_name = "cleaning grenade launcher"
+	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard cleaning foam grenades."
 
 	charges = list(
 		list("cleaning grenade",   "cleaning grenade",   /obj/item/weapon/grenade/chem_grenade/cleaner,  9),
+		)
+
+/obj/item/rig_module/grenade_launcher/smoke
+	name = "mounted smoke grenade launcher"
+	interface_name = "smoke grenade launcher"
+	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard smoke grenades."
+
+	charges = list(
+		list("smoke bomb",   "smoke bomb",   /obj/item/weapon/grenade/smokebomb,  6),
+		)
+
+/obj/item/rig_module/grenade_launcher/mfoam
+	name = "mounted foam grenade launcher"
+	interface_name = "foam grenade launcher"
+	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard metal foam grenades."
+
+	charges = list(
+		list("metal foam grenade",   "metal foam grenade",   /obj/item/weapon/grenade/chem_grenade/metalfoam,  4),
+		)
+
+/obj/item/rig_module/grenade_launcher/light
+	name = "mounted illumination grenade launcher"
+	interface_name = "illumination grenade launcher"
+	desc = "A shoulder-mounted micro-explosive dispenser designed only to accept standard illumination grenades."
+
+	charges = list(
+		list("illumination grenade",   "illumination grenade",   /obj/item/weapon/grenade/light,  6),
 		)
 
 /obj/item/rig_module/mounted
@@ -107,17 +144,19 @@
 	module_cooldown = 0
 	icon_state = "lcannon"
 
+	suit_overlay = "mounted-lascannon"
+
 	engage_string = "Configure"
 
 	interface_name = "mounted laser cannon"
 	interface_desc = "A shoulder-mounted cell-powered laser cannon."
 
-	var/gun_type = /obj/item/weapon/gun/energy/lasercannon/mounted
-	var/obj/item/weapon/gun/gun
+	var/obj/item/weapon/gun/gun = /obj/item/weapon/gun/energy/lasercannon/mounted
 
-/obj/item/rig_module/mounted/New()
-	..()
-	gun = new gun_type(src)
+/obj/item/rig_module/mounted/Initialize()
+	. = ..()
+	if(gun)
+		gun = new gun(src)
 
 /obj/item/rig_module/mounted/engage(atom/target)
 
@@ -139,8 +178,8 @@
 
 	interface_name = "mounted energy gun"
 	interface_desc = "A forearm-mounted suit-powered energy gun."
-
-	gun_type = /obj/item/weapon/gun/energy/gun/mounted
+	origin_tech = list(TECH_POWER = 6, TECH_COMBAT = 6, TECH_ENGINEERING = 6)
+	gun = /obj/item/weapon/gun/energy/gun/mounted
 
 /obj/item/rig_module/mounted/taser
 
@@ -150,19 +189,30 @@
 
 	usable = 0
 
-	suit_overlay_active = "mounted-taser"
-	suit_overlay_inactive = "mounted-taser"
+	suit_overlay_active = null
+	suit_overlay_inactive = null
 
 	interface_name = "mounted taser"
-	interface_desc = "A shoulder-mounted cell-powered taser."
+	interface_desc = "A palm-mounted, cell-powered taser."
+	origin_tech = list(TECH_POWER = 5, TECH_COMBAT = 5, TECH_ENGINEERING = 6)
+	gun = /obj/item/weapon/gun/energy/taser/mounted
 
-	gun_type = /obj/item/weapon/gun/energy/taser/mounted
+/obj/item/rig_module/mounted/plasmacutter
+	name = "mounted plasma cutter"
+	desc = "A knee-mounted plasma cutter. Don't question it."
+	icon_state = "plasmacutter"
+	interface_name = "mounted plasma cutter"
+	interface_desc = "A knee-mounted suit-powered plasma cutter. Don't question it."
+	origin_tech = list(TECH_MATERIAL = 5, TECH_PHORON = 4, TECH_ENGINEERING = 7, TECH_COMBAT = 5)
+	gun = /obj/item/weapon/gun/energy/plasmacutter/mounted
 
 /obj/item/rig_module/mounted/energy_blade
 
 	name = "energy blade projector"
 	desc = "A powerful cutting beam projector."
 	icon_state = "eblade"
+
+	suit_overlay = null
 
 	activate_string = "Project Blade"
 	deactivate_string = "Cancel Blade"
@@ -177,9 +227,9 @@
 	active_power_cost = 500
 	passive_power_cost = 0
 
-	gun_type = /obj/item/weapon/gun/energy/crossbow/ninja
+	gun = /obj/item/weapon/gun/energy/crossbow/ninja
 
-/obj/item/rig_module/mounted/energy_blade/process()
+/obj/item/rig_module/mounted/energy_blade/Process()
 
 	if(holder && holder.wearer)
 		if(!(locate(/obj/item/weapon/melee/energy/blade) in holder.wearer))

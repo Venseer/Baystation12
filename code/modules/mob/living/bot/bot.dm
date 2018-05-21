@@ -2,7 +2,7 @@
 	name = "Bot"
 	health = 20
 	maxHealth = 20
-	icon = 'icons/obj/aibots.dmi'
+	icon = 'icons/mob/bot/placeholder.dmi'
 	universal_speak = 1
 	density = 0
 	var/obj/item/weapon/card/id/botcard = null
@@ -37,6 +37,9 @@
 	var/frustration = 0
 	var/max_frustration = 0
 
+	plane = HIDING_MOB_PLANE
+	layer = HIDING_MOB_LAYER
+
 /mob/living/bot/New()
 	..()
 	update_icons()
@@ -48,8 +51,8 @@
 	access_scanner.req_access = req_access.Copy()
 	access_scanner.req_one_access = req_one_access.Copy()
 
-/mob/living/bot/initialize()
-	..()
+/mob/living/bot/Initialize()
+	. = ..()
 	if(on)
 		turn_on() // Update lights and other stuff
 	else
@@ -74,8 +77,8 @@
 		set_stat(CONSCIOUS)
 	else
 		health = maxHealth - getFireLoss() - getBruteLoss()
-	oxyloss = 0
-	toxloss = 0
+	setOxyLoss(0)
+	setToxLoss(0)
 
 /mob/living/bot/death()
 	explode()
@@ -91,7 +94,7 @@
 		else
 			to_chat(user, "<span class='warning'>Access denied.</span>")
 		return
-	else if(istype(O, /obj/item/weapon/screwdriver))
+	else if(isScrewdriver(O))
 		if(!locked)
 			open = !open
 			to_chat(user, "<span class='notice'>Maintenance panel is now [open ? "opened" : "closed"].</span>")
@@ -99,7 +102,7 @@
 		else
 			to_chat(user, "<span class='notice'>You need to unlock the controls first.</span>")
 		return
-	else if(istype(O, /obj/item/weapon/weldingtool))
+	else if(isWelder(O))
 		if(health < maxHealth)
 			if(open)
 				health = min(maxHealth, health + 10)
@@ -347,7 +350,7 @@
 	if(stat)
 		return 0
 	on = 1
-	set_light(light_strength)
+	set_light(0.5, 0.1, light_strength)
 	update_icons()
 	resetTarget()
 	patrol_path = list()
@@ -374,7 +377,7 @@
 
 	//	for(var/turf/simulated/t in oview(src,1))
 
-	for(var/d in cardinal)
+	for(var/d in GLOB.cardinal)
 		var/turf/simulated/T = get_step(src, d)
 		if(istype(T) && !T.density)
 			if(!LinkBlockedWithAccess(src, T, ID))
@@ -406,7 +409,7 @@
 		return 1
 
 	for(var/obj/O in B)
-		if(O.density && !istype(O, /obj/machinery/door) && !(O.flags & ON_BORDER))
+		if(O.density && !istype(O, /obj/machinery/door) && !(O.atom_flags & ATOM_FLAG_CHECKS_BORDER))
 			return 1
 
 	return 0

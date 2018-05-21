@@ -18,7 +18,7 @@
 /obj/item/integrated_circuit/input/button/get_topic_data(mob/user)
 	return list("Press" = "press=1")
 
-/obj/item/integrated_circuit/input/button/OnTopic(href_list, user)
+/obj/item/integrated_circuit/input/button/OnICTopic(href_list, user)
 	if(href_list["press"])
 		to_chat(user, "<span class='notice'>You press the button labeled '[src.name]'.</span>")
 		activate_pin(1)
@@ -39,7 +39,7 @@
 /obj/item/integrated_circuit/input/toggle_button/get_topic_data(mob/user)
 	return list("Toggle [get_pin_data(IC_OUTPUT, 1) ? "Off" : "On"]" = "toggle=1")
 
-/obj/item/integrated_circuit/input/toggle_button/OnTopic(href_list, user)
+/obj/item/integrated_circuit/input/toggle_button/OnICTopic(href_list, user)
 	if(href_list["toggle"])
 		set_pin_data(IC_OUTPUT, 1, !get_pin_data(IC_OUTPUT, 1))
 		activate_pin(1)
@@ -60,10 +60,10 @@
 /obj/item/integrated_circuit/input/numberpad/get_topic_data(mob/user)
 	return list("Enter Number" = "enter_number=1")
 
-/obj/item/integrated_circuit/input/numberpad/OnTopic(href_list, user)
+/obj/item/integrated_circuit/input/numberpad/OnICTopic(href_list, user)
 	if(href_list["enter_number"])
 		var/new_input = input(user, "Enter a number, please.","Number pad") as null|num
-		if(isnum(new_input) && CanInteract(user, physical_state))
+		if(isnum(new_input) && CanInteract(user, GLOB.physical_state))
 			set_pin_data(IC_OUTPUT, 1, new_input)
 			activate_pin(1)
 		return IC_TOPIC_REFRESH
@@ -80,10 +80,10 @@
 /obj/item/integrated_circuit/input/textpad/get_topic_data(mob/user)
 	return list("Enter Words" = "enter_words=1")
 
-/obj/item/integrated_circuit/input/textpad/OnTopic(href_list, user)
+/obj/item/integrated_circuit/input/textpad/OnICTopic(href_list, user)
 	if(href_list["enter_words"])
 		var/new_input = input(user, "Enter some words, please.","Number pad") as null|text
-		if(istext(new_input) && CanInteract(user, physical_state))
+		if(istext(new_input) && CanInteract(user, GLOB.physical_state))
 			set_pin_data(IC_OUTPUT, 1, new_input)
 			activate_pin(1)
 			return IC_TOPIC_REFRESH
@@ -97,16 +97,18 @@
 	outputs = list("total health %", "total missing health")
 	activators = list("scan")
 
+	dist_check = /decl/dist_check/in_view
+
 /obj/item/integrated_circuit/input/med_scanner/do_work()
 	var/mob/living/carbon/human/H = get_pin_data_as_type(IC_INPUT, 1, /mob/living/carbon/human)
 	if(!istype(H)) //Invalid input
 		return
-	if(H.Adjacent(get_turf(src))) // Like normal analysers, it can't be used at range.
-		var/total_health = round(H.health/H.maxHealth, 0.1)*100
-		var/missing_health = H.maxHealth - H.health
 
-		set_pin_data(IC_OUTPUT, 1, total_health)
-		set_pin_data(IC_OUTPUT, 2, missing_health)
+	var/total_health = round(H.health/H.maxHealth, 0.1)*100
+	var/missing_health = H.maxHealth - H.health
+
+	set_pin_data(IC_OUTPUT, 1, total_health)
+	set_pin_data(IC_OUTPUT, 2, missing_health)
 	push_data()
 
 /obj/item/integrated_circuit/input/adv_med_scanner
@@ -127,22 +129,24 @@
 	)
 	activators = list("scan")
 
+	dist_check = /decl/dist_check/in_view
+
 /obj/item/integrated_circuit/input/adv_med_scanner/do_work()
 	var/datum/integrated_io/I = inputs[1]
 	var/mob/living/carbon/human/H = I.data_as_type(/mob/living/carbon/human)
 	if(!istype(H)) //Invalid input
 		return
-	if(H.Adjacent(get_turf(src))) // Like normal analysers, it can't be used at range.
-		var/total_health = round(H.health/H.maxHealth, 0.1)*100
-		var/missing_health = H.maxHealth - H.health
 
-		set_pin_data(IC_OUTPUT, 1, total_health)
-		set_pin_data(IC_OUTPUT, 2, missing_health)
-		set_pin_data(IC_OUTPUT, 3, H.getBruteLoss())
-		set_pin_data(IC_OUTPUT, 4, H.getFireLoss())
-		set_pin_data(IC_OUTPUT, 5, H.getToxLoss())
-		set_pin_data(IC_OUTPUT, 6, H.getOxyLoss())
-		set_pin_data(IC_OUTPUT, 7, H.getCloneLoss())
+	var/total_health = round(H.health/H.maxHealth, 0.1)*100
+	var/missing_health = H.maxHealth - H.health
+
+	set_pin_data(IC_OUTPUT, 1, total_health)
+	set_pin_data(IC_OUTPUT, 2, missing_health)
+	set_pin_data(IC_OUTPUT, 3, H.getBruteLoss())
+	set_pin_data(IC_OUTPUT, 4, H.getFireLoss())
+	set_pin_data(IC_OUTPUT, 5, H.getToxLoss())
+	set_pin_data(IC_OUTPUT, 6, H.getOxyLoss())
+	set_pin_data(IC_OUTPUT, 7, H.getCloneLoss())
 
 /obj/item/integrated_circuit/input/local_locator
 	name = "local locator"
@@ -201,73 +205,122 @@
 	inputs = list("frequency","code")
 	outputs = list()
 	activators = list("send signal","on signal received")
-
-	var/frequency = 1457
-	var/code = 30
 	var/datum/radio_frequency/radio_connection
+	var/frequency = 1357
 
-/obj/item/integrated_circuit/input/signaler/initialize()
-	..()
-	set_frequency(frequency)
+/obj/item/integrated_circuit/input/signaler/Initialize()
+	. = ..()
+
 	var/datum/integrated_io/new_freq = inputs[1]
 	var/datum/integrated_io/new_code = inputs[2]
 	// Set the pins so when someone sees them, they won't show as null
 	new_freq.data = frequency
-	new_code.data = code
+	new_code.data = 30
+	set_frequency(new_freq.data)
 
 /obj/item/integrated_circuit/input/signaler/Destroy()
 	if(radio_controller)
 		radio_controller.remove_object(src,frequency)
-	frequency = 0
 	. = ..()
 
 /obj/item/integrated_circuit/input/signaler/on_data_written()
 	var/datum/integrated_io/new_freq = inputs[1]
-	var/datum/integrated_io/new_code = inputs[2]
 	if(isnum(new_freq.data) && new_freq.data > 0)
 		set_frequency(new_freq.data)
-	if(isnum(new_code.data))
-		code = new_code.data
 
-
-/obj/item/integrated_circuit/input/signaler/do_work() // Sends a signal.
-	if(!radio_connection)
-		return
-
+/obj/item/integrated_circuit/input/signaler/proc/create_signal()
+	var/datum/integrated_io/code = inputs[2]
 	var/datum/signal/signal = new()
 	signal.source = src
-	signal.encryption = code
+	signal.encryption = code.data
 	signal.data["message"] = "ACTIVATE"
-	radio_connection.post_signal(src, signal)
+	return signal
 
-/obj/item/integrated_circuit/input/signaler/proc/set_frequency(new_frequency)
-	if(!frequency)
+/obj/item/integrated_circuit/input/signaler/do_work(var/datum/io) // Sends a signal.
+	if(!radio_connection || io != activators[1])
 		return
+
+	radio_connection.post_signal(src, create_signal())
+
+/obj/item/integrated_circuit/input/signaler/proc/set_frequency(var/new_frequency)
 	if(!radio_controller)
 		sleep(20)
 	if(!radio_controller)
 		return
+
 	radio_controller.remove_object(src, frequency)
 	frequency = new_frequency
-	radio_connection = radio_controller.add_object(src, frequency, RADIO_CHAT)
+	radio_connection = radio_controller.add_object(src, new_frequency, RADIO_CHAT)
 
-/obj/item/integrated_circuit/input/signaler/receive_signal(datum/signal/signal)
-	var/datum/integrated_io/new_code = inputs[2]
-	var/code = 0
-
-	if(isnum(new_code.data))
-		code = new_code.data
+/obj/item/integrated_circuit/input/signaler/proc/signal_good(var/datum/signal/signal)
 	if(!signal)
 		return 0
-	if(signal.encryption != code)
+	if(signal.source == src)
 		return 0
-	if(signal.source == src) // Don't trigger ourselves.
+
+	if(signal.encryption)
+		var/datum/integrated_io/cur_code = inputs[2]
+		var/code = 0
+		if(isnum(cur_code.data))
+			code = cur_code.data
+		if(signal.encryption != code)
+			return 0
+
+	return 1
+
+/obj/item/integrated_circuit/input/signaler/receive_signal(var/datum/signal/signal)
+
+	if(!signal_good(signal))
 		return 0
 
 	activate_pin(2)
 
 	for(var/mob/O in hearers(1, get_turf(src)))
 		O.show_message(text("\icon[] *beep* *beep*", src), 3, "*beep* *beep*", 2)
+
+	return 1
+
+/obj/item/integrated_circuit/input/signaler/advanced
+	name = "advanced integrated signaler"
+	icon_state = "signal_advanced"
+	desc = "Signals from a signaler can be received with this, allowing for remote control.  Additionally, it can send signals as well."
+	extended_desc = "When a signal is received from another signaler with the right id tag, the 'on signal received' activator pin will be pulsed and the command output is updated.  \
+	The two input pins are to configure the integrated signaler's settings.  Note that the frequency should not have a decimal in it.  \
+	Meaning the default frequency is expressed as 1457, not 145.7.  To send a signal, pulse the 'send signal' activator pin. Set the command output to set the message received."
+	complexity = 8
+	inputs = list("frequency", "id tag", "command")
+	outputs = list("received command")
+
+/obj/item/integrated_circuit/input/signaler/advanced/Initialize()
+	. = ..()
+	var/datum/integrated_io/new_com = inputs[3]
+	var/datum/integrated_io/new_id = inputs[2]
+	var/datum/integrated_io/new_rec = outputs[1]
+	new_com.data = "ACTIVATE"
+	new_id.data = "Integrated_Circuit"
+	new_rec.data = "ACTIVATE"
+
+/obj/item/integrated_circuit/input/signaler/signal_good(var/datum/signal/signal)
+	. = ..()
+	var/datum/integrated_io/id_tag = inputs[2]
+	if(!id_tag.data || id_tag.data != signal.data["tag"])
+		return 0
+
+/obj/item/integrated_circuit/input/signaler/advanced/create_signal()
+	var/datum/signal/signal = ..()
+	var/datum/integrated_io/new_id = inputs[2]
+	var/datum/integrated_io/new_com = inputs[3]
+	signal.data["tag"] = new_id.data
+	signal.data["command"] = new_com.data
+	signal.encryption = null
+	return signal
+
+/obj/item/integrated_circuit/input/signaler/advanced/receive_signal(var/datum/signal/signal)
+	if(!signal_good(signal))
+		return 0
+	if(signal.data["command"])
+		set_pin_data(IC_OUTPUT, 1, signal.data["command"])
+	return ..()
 
 /obj/item/integrated_circuit/input/teleporter_locator
 	name = "teleporter locator"
@@ -278,6 +331,8 @@
 	outputs = list("teleporter")
 	activators = list("on selected")
 
+	dist_check = /decl/dist_check/omni
+
 /obj/item/integrated_circuit/input/teleporter_locator/get_topic_data(mob/user)
 	var/datum/integrated_io/O = outputs[1]
 	var/obj/machinery/computer/teleporter/current_console = O.data_as_type(/obj/machinery/computer/teleporter)
@@ -285,13 +340,13 @@
 	. = list()
 	. += "Current selection: [(current_console && current_console.id) || "None"]"
 	. += "Please select a teleporter to lock in on:"
-	for(var/obj/machinery/teleport/hub/R in machines)
+	for(var/obj/machinery/teleport/hub/R in SSmachines.machinery)
 		var/obj/machinery/computer/teleporter/com = R.com
 		if (istype(com, /obj/machinery/computer/teleporter) && com.locked && !com.one_time_use && com.operable())
 			.["[com.id] ([R.icon_state == "tele1" ? "Active" : "Inactive"])"] = "tport=[any2ref(com)]"
 	.["None (Dangerous)"] = "tport=random"
 
-/obj/item/integrated_circuit/input/teleporter_locator/OnTopic(href_list, user)
+/obj/item/integrated_circuit/input/teleporter_locator/OnICTopic(href_list, user)
 	if(href_list["tport"])
 		var/output = href_list["tport"] == "random" ? null : locate(href_list["tport"])
 		set_pin_data(IC_OUTPUT, 1, output && weakref(output))
@@ -316,7 +371,7 @@
 	scanned_access = new()
 
 /obj/item/integrated_circuit/input/access_scanner/Destroy()
-	qdel_null(scanned_access)
+	QDEL_NULL(scanned_access)
 	if(contained_id)
 		contained_id.dropInto(loc)
 		contained_id = null
@@ -369,7 +424,7 @@
 /obj/item/integrated_circuit/input/access_scanner/get_topic_data(mob/user)
 	return contained_id ? ..() : list("Access Scan" = "access_scan=1")
 
-/obj/item/integrated_circuit/input/access_scanner/OnTopic(href_list, var/mob/user)
+/obj/item/integrated_circuit/input/access_scanner/OnICTopic(href_list, var/mob/user)
 	if(href_list["access_scan"])
 		if(contained_id)
 			return
@@ -391,6 +446,50 @@
 
 /obj/item/integrated_circuit/input/access_scanner/GetIdCard()
 	return contained_id
+
+/obj/item/integrated_circuit/tile_sensor
+	name = "bottom facing sensor"
+	desc = "A small downward facing camera designed to parse nearby objects on the floor."
+	extended_desc = "When the examine activator is pulsed, the examined ref is updated to what the camera senses below the assembly.\
+	next-in-stack is an activator that will move the next examined ref to be that number (from the top) in the stack. \
+	This does not update examined ref, the examine activator will still need to be pulsed. \
+	Should the next-in-stack number be higher than the current number of items in the stack, it will loop around to one. \
+	ref found pulses when the tile finds something. This should always happen unless the area where the assembly is has nothing on it. \
+	If nothing is found, nothing updates."
+	icon_state = "tile"
+	complexity = 8
+	size = 3
+	cooldown_per_use = 2 SECONDS
+	inputs = list()
+	activators = list("examine", "next-in-stack", "ref found")
+	outputs = list("examined ref")
+	var/stack_number = 1
+
+/obj/item/integrated_circuit/tile_sensor/do_work(var/activated_pin)
+	if(activated_pin == activators[1])
+		var/turf/T = get_turf(src)
+		var/first_found //The first valid object we find
+		var/found //The current object we find
+		var/count = 0 //The amount of objects we find.
+		for(var/c in T.contents) //Cycle through the turf's shit
+			var/atom/a = c
+			if(a == src.loc || !a.simulated || a.invisibility || !a.alpha) //cant see wont see
+				continue
+			if(!first_found) //If we just started, find something first.
+				first_found = a
+			if(++count == stack_number) //If we have found the amount of objects we want, set that up.
+				found = a
+				break
+		if(!found) //If we haven't found anything, just use the first thing we found and reset the stack.
+			if(!first_found) //If we have literally nothing do nothing
+				return
+			found = first_found
+			stack_number = 1
+		set_pin_data(IC_OUTPUT, 1, weakref(found)) //Output that and activate the pin
+		activate_pin(3)
+	else if(activated_pin == activators[2])
+		stack_number++
+
 
 /obj/item/integrated_circuit/output/screen
 	name = "screen"
@@ -429,7 +528,7 @@
 	activators = list("toggle light")
 	var/light_toggled = 0
 	var/light_brightness = 3
-	var/light_rgb = "#FFFFFF"
+	var/light_rgb = "#ffffff"
 
 /obj/item/integrated_circuit/output/light/do_work()
 	light_toggled = !light_toggled
@@ -437,7 +536,7 @@
 
 /obj/item/integrated_circuit/output/light/proc/update_lighting()
 	if(light_toggled)
-		set_light(l_range = light_brightness, l_power = light_brightness, l_color = light_rgb)
+		set_light(0.5, 0.1, light_brightness, l_color = light_rgb)
 	else
 		set_light(0)
 

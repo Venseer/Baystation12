@@ -5,10 +5,30 @@
 	item_state = null	//so the human update icon uses the icon_state instead.
 	max_shots = 5
 	projectile_type = /obj/item/projectile/beam/stun
+	combustion = 0
 
 	firemodes = list(
 		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun),
 		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock),
+		)
+
+/obj/item/weapon/gun/energy/taser/carbine
+	name = "taser carbine"
+	desc = "The NT Mk44 NL is a high capacity gun used for non-lethal takedowns. It can switch between high and low intensity stun shots."
+	icon_state = "tasercarbine"
+	w_class = ITEM_SIZE_LARGE
+	slot_flags = SLOT_BELT|SLOT_BACK
+	one_hand_penalty = 3
+	origin_tech = list(TECH_COMBAT = 4, TECH_MATERIAL = 3, TECH_POWER = 3)
+	force = 8
+	max_shots = 12
+	accuracy = 1
+	projectile_type = /obj/item/projectile/beam/stun/heavy
+	wielded_item_state = "tasercarbine-wielded"
+
+	firemodes = list(
+		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun/heavy),
+		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock/heavy),
 		)
 
 /obj/item/weapon/gun/energy/taser/mounted
@@ -24,13 +44,28 @@
 
 /obj/item/weapon/gun/energy/stunrevolver
 	name = "stun revolver"
-	desc = "A LAEP20 Zeus. Designed by Lawson Arms and produced under the wing of the FTU, several TSCs have been trying to get a hold of the blueprints for half a decade."
+	desc = "An A&M X6 Zeus. Designed by al-Maliki & Mosley, but produced under the wing of the Free Trade Union. Industry spies have been trying to get a hold of the blueprints for half a decade."
 	icon_state = "stunrevolver"
 	item_state = "stunrevolver"
 	origin_tech = list(TECH_COMBAT = 3, TECH_MATERIAL = 3, TECH_POWER = 2)
 	projectile_type = /obj/item/projectile/energy/electrode
-	max_shots = 8
+	max_shots = 6
+	combustion = 0
 
+/obj/item/weapon/gun/energy/stunrevolver/rifle
+	name = "stun rifle"
+	desc = "An A&M X10 Thor. A vastly oversized variant of the A&M X6 Zeus. Fires overcharged electrodes to take down hostile armored targets without harming them too much."
+	icon_state = "stunrifle"
+	item_state = "stunrifle"
+	w_class = ITEM_SIZE_HUGE
+	slot_flags = SLOT_BACK
+	one_hand_penalty = 6
+	origin_tech = list(TECH_COMBAT = 4, TECH_MATERIAL = 3, TECH_POWER = 3)
+	force = 10
+	max_shots = 10
+	accuracy = 1
+	projectile_type = /obj/item/projectile/energy/electrode/stunshot
+	wielded_item_state = "stunrifle-wielded"
 
 /obj/item/weapon/gun/energy/crossbow
 	name = "mini energy-crossbow"
@@ -47,6 +82,7 @@
 	max_shots = 8
 	self_recharge = 1
 	charge_meter = 0
+	combustion = 0
 
 /obj/item/weapon/gun/energy/crossbow/ninja
 	name = "energy dart thrower"
@@ -58,7 +94,7 @@
 	desc = "A weapon favored by mercenary infiltration teams."
 	w_class = ITEM_SIZE_LARGE
 	force = 10
-	requires_two_hands = 1
+	one_hand_penalty = 1
 	matter = list(DEFAULT_WALL_MATERIAL = 200000)
 	projectile_type = /obj/item/projectile/energy/bolt/large
 
@@ -71,3 +107,4 @@
 	fire_delay = 20
 	max_shots = 4
 	projectile_type = /obj/item/projectile/energy/plasmastun
+	combustion = 0

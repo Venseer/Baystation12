@@ -1,6 +1,6 @@
 /obj/machinery/computer/drone_control
 	name = "Maintenance Drone Control"
-	desc = "Used to monitor the station's drone population and the assembler that services them."
+	desc = "Used to monitor the drone population and the assembler that services them."
 	icon = 'icons/obj/computer.dmi'
 	icon_keyboard = "power_key"
 	icon_screen = "power"
@@ -45,7 +45,7 @@
 
 
 /obj/machinery/computer/drone_control/Topic(href, href_list)
-	if(..())
+	if((. = ..()))
 		return
 
 	if(!allowed(usr))
@@ -58,7 +58,7 @@
 	if (href_list["setarea"])
 
 		//Probably should consider using another list, but this one will do.
-		var/t_area = input("Select the area to ping.", "Set Target Area", null) as null|anything in tagger_locations
+		var/t_area = input("Select the area to ping.", "Set Target Area", null) as null|anything in GLOB.tagger_locations
 
 		if(!t_area)
 			return

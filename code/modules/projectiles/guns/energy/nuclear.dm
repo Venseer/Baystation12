@@ -13,7 +13,22 @@
 	firemodes = list(
 		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun, modifystate="energystun"),
 		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock, modifystate="energyshock"),
-		list(mode_name="lethal", projectile_type=/obj/item/projectile/beam, modifystate="energykill"),
+		list(mode_name="kill", projectile_type=/obj/item/projectile/beam, modifystate="energykill"),
+		)
+
+/obj/item/weapon/gun/energy/gun/small
+	name = "small energy gun"
+	desc = "A smaller model of the versatile LAEP90 Perun, the LAEP90-C packs considerable utility in a smaller package. Best used in situations where full-sized sidearms are inappropriate."
+	icon_state = "smallgunstun"
+	max_shots = 5
+	w_class = ITEM_SIZE_SMALL
+	force = 2 //it's the size of a car key, what did you expect?
+	modifystate = "smallgunstun"
+
+	firemodes = list(
+		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun, modifystate="smallgunstun"),
+		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock, modifystate="smallgunshock"),
+		list(mode_name="kill", projectile_type=/obj/item/projectile/beam/smalllaser, modifystate="smallgunkill"),
 		)
 
 /obj/item/weapon/gun/energy/gun/mounted
@@ -31,18 +46,18 @@
 	force = 8 //looks heavier than a pistol
 	self_recharge = 1
 	modifystate = null
-	requires_two_hands = 1 //bulkier than an e-gun, but not quite the size of a carbine
+	one_hand_penalty = 1 //bulkier than an e-gun, but not quite the size of a carbine
 
 	firemodes = list(
 		list(mode_name="stun", projectile_type=/obj/item/projectile/beam/stun),
 		list(mode_name="shock", projectile_type=/obj/item/projectile/beam/stun/shock),
-		list(mode_name="lethal", projectile_type=/obj/item/projectile/beam),
+		list(mode_name="kill", projectile_type=/obj/item/projectile/beam),
 		)
 
 	var/fail_counter = 0
 
 //override for failcheck behaviour
-/obj/item/weapon/gun/energy/gun/nuclear/process()
+/obj/item/weapon/gun/energy/gun/nuclear/Process()
 	if(fail_counter > 0)
 		radiation_repository.radiate(src, fail_counter--)
 
@@ -75,7 +90,7 @@
 	var/datum/firemode/current_mode = firemodes[sel_mode]
 	switch(current_mode.name)
 		if("stun") return "nucgun-stun"
-		if("lethal") return "nucgun-kill"
+		if("kill") return "nucgun-kill"
 
 /obj/item/weapon/gun/energy/gun/nuclear/update_icon()
 	var/list/new_overlays = list()
