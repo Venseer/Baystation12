@@ -1,6 +1,7 @@
 /mob/living/bot/cleanbot
 	name = "Cleanbot"
 	desc = "A little cleaning robot, he looks so excited!"
+	icon = 'icons/mob/bot/cleanbot.dmi'
 	icon_state = "cleanbot0"
 	req_one_access = list(access_janitor, access_robotics)
 	botcard_access = list(access_janitor, access_maint_tunnels)
@@ -11,6 +12,7 @@
 	var/cleaning = 0
 	var/screwloose = 0
 	var/oddbutton = 0
+	var/booped = 0
 	var/blood = 1
 	var/list/target_types = list()
 
@@ -19,6 +21,9 @@
 	get_targets()
 
 /mob/living/bot/cleanbot/handleIdle()
+	if(!target && !booped)
+		playsound(src, 'sound/machines/boop2.ogg', 15)
+		booped = 1
 	if(!screwloose && !oddbutton && prob(5))
 		visible_message("\The [src] makes an excited beeping booping sound!")
 
@@ -36,7 +41,7 @@
 			ignore_list -= g
 
 /mob/living/bot/cleanbot/lookForTargets()
-	for(var/obj/effect/decal/cleanable/D in view(world.view, src)) // There was some odd code to make it start with nearest decals, it's unnecessary, this works
+	for(var/obj/effect/decal/cleanable/D in view(world.view + 1, src))
 		if(confirmTarget(D))
 			target = D
 			return
@@ -76,6 +81,7 @@
 		qdel(D)
 		if(D == target)
 			target = null
+	booped = 0
 	busy = 0
 	update_icons()
 
@@ -158,7 +164,7 @@
 /obj/item/weapon/bucket_sensor
 	desc = "It's a bucket. With a sensor attached."
 	name = "proxy bucket"
-	icon = 'icons/obj/aibots.dmi'
+	icon = 'icons/mob/bot/cleanbot.dmi'
 	icon_state = "bucket_proxy"
 	force = 3.0
 	throwforce = 10.0

@@ -187,9 +187,14 @@
 		else if(!client)
 			msg += "<span class='deadsay'>[T.He] [T.is] [ssd_msg].</span>\n"
 
+	var/obj/item/organ/external/head/H = organs_by_name[BP_HEAD]
+	if(istype(H) && H.forehead_graffiti && H.graffiti_style)
+		msg += "<span class='notice'>[T.He] [T.has] \"[H.forehead_graffiti]\" written on [T.his] [H.name] in [H.graffiti_style]!</span>\n"
+
 	var/list/wound_flavor_text = list()
 	var/applying_pressure = ""
 	var/list/shown_objects = list()
+	var/list/hidden_bleeders = list()
 
 	for(var/organ_tag in species.has_limbs)
 
@@ -215,7 +220,9 @@
 
 		if(hidden && user != src)
 			if(E.status & ORGAN_BLEEDING && !(hidden.item_flags & ITEM_FLAG_THICKMATERIAL)) //not through a spacesuit
-				wound_flavor_text[hidden.name] = "<span class='danger'>[T.He] [T.has] blood soaking through [hidden]!</span><br>"
+				if(!hidden_bleeders[hidden])
+					hidden_bleeders[hidden] = list()
+				hidden_bleeders[hidden] += E.name
 		else
 			if(E.is_stump())
 				wound_flavor_text[E.name] += "<b>[T.He] [T.has] a stump where [T.his] [organ_descriptor] should be.</b>\n"
@@ -245,6 +252,8 @@
 						parsedembed.Remove(embedded.name)
 						parsedembed.Add("multiple "+embedded.name)
 				wound_flavor_text["[E.name]"] += "The [wound.desc] on [T.his] [E.name] has \a [english_list(parsedembed, and_text = " and \a ", comma_text = ", \a ")] sticking out of it!<br>"
+	for(var/hidden in hidden_bleeders)
+		wound_flavor_text[hidden] = "[T.He] [T.has] blood soaking through [hidden] around [T.his] [english_list(hidden_bleeders[hidden])]!<br>"
 
 	msg += "<span class='warning'>"
 	for(var/limb in wound_flavor_text)
@@ -258,41 +267,35 @@
 	if(digitalcamo)
 		msg += "[T.He] [T.is] repulsively uncanny!\n"
 
-	if(hasHUD(user,"security"))
+	if(hasHUD(user, HUD_SECURITY))
 		var/perpname = "wot"
 		var/criminal = "None"
 
-		if(wear_id)
-			var/obj/item/weapon/card/id/I = wear_id.GetIdCard()
-			if(I)
-				perpname = I.registered_name
-			else
-				perpname = name
+		var/obj/item/weapon/card/id/id = GetIdCard()
+		if(istype(id))
+			perpname = id.registered_name
 		else
-			perpname = name
+			perpname = src.name
 
 		if(perpname)
-			var/datum/computer_file/crew_record/R = get_crewmember_record(perpname)
+			var/datum/computer_file/report/crew_record/R = get_crewmember_record(perpname)
 			if(R)
 				criminal = R.get_criminalStatus()
 
 			msg += "<span class = 'deptradio'>Criminal status:</span> <a href='?src=\ref[src];criminal=1'>\[[criminal]\]</a>\n"
 			msg += "<span class = 'deptradio'>Security records:</span> <a href='?src=\ref[src];secrecord=`'>\[View\]</a>\n"
 
-	if(hasHUD(user,"medical"))
+	if(hasHUD(user, HUD_MEDICAL))
 		var/perpname = "wot"
 		var/medical = "None"
 
-		if(wear_id)
-			if(istype(wear_id,/obj/item/weapon/card/id))
-				perpname = wear_id:registered_name
-			else if(istype(wear_id,/obj/item/device/pda))
-				var/obj/item/device/pda/tempPda = wear_id
-				perpname = tempPda.owner
+		var/obj/item/weapon/card/id/id = GetIdCard()
+		if(istype(id))
+			perpname = id.registered_name
 		else
 			perpname = src.name
 
-		var/datum/computer_file/crew_record/R = get_crewmember_record(perpname)
+		var/datum/computer_file/report/crew_record/R = get_crewmember_record(perpname)
 		if(R)
 			medical = R.get_status()
 
@@ -317,32 +320,14 @@
 	if(istype(M, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = M
 		var/obj/item/clothing/glasses/G = H.glasses
-		if(G.hud_type == hudtype)
-			return TRUE
-		else
-			return FALSE
-
+		return istype(G) && ((G.hud_type & hudtype) || (G.hud && (G.hud.hud_type & hudtype)))
 	else if(istype(M, /mob/living/silicon/robot))
 		var/mob/living/silicon/robot/R = M
-		var/obj/item/borg/sight/sight
+		for(var/obj/item/borg/sight/sight in list(R.module_state_1, R.module_state_2, R.module_state_3))
+			if(istype(sight) && (sight.hud_type & hudtype))
+				return TRUE
 
-//These borg slots really should be a list.
-		if(istype(R.module_state_1, /obj/item/borg/sight/))
-			sight = R.module_state_1
-		if(istype(R.module_state_2, /obj/item/borg/sight/))
-			sight = R.module_state_2
-		if(istype(R.module_state_3, /obj/item/borg/sight/))
-			sight = R.module_state_3
-
-		if(sight == initial(sight)) //Prevent runtimes if nothing was found.
-			return FALSE
-
-		if(sight.hud_type == hudtype)
-			return TRUE
-		else
-			return FALSE
-	else
-		return FALSE
+	return FALSE
 
 /mob/living/carbon/human/verb/pose()
 	set name = "Set Pose"

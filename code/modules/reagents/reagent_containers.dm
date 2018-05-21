@@ -179,6 +179,7 @@
 		return 1
 
 	var/trans = reagents.trans_to(target, amount_per_transfer_from_this)
+	playsound(src, 'sound/effects/pour.ogg', 25, 1)
 	to_chat(user, "<span class='notice'>You transfer [trans] unit\s of the solution to \the [target].</span>")
 	return 1
 
@@ -195,5 +196,5 @@
 
 /obj/item/weapon/reagent_containers/examine(mob/user)
 	. = ..()
-	if(hasHUD(user, "science"))
+	if(hasHUD(user, HUD_SCIENCE))
 		to_chat(user, "<span class='notice'>The [src] contains: [reagents.get_reagents()].</span>")

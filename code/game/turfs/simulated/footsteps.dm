@@ -102,12 +102,15 @@
 	if(buckled || lying || throwing)
 		return //people flying, lying down or sitting do not step
 
-	if(m_intent == "run")
+	if(m_intent == M_RUN)
 		if(step_count % 2) //every other turf makes a sound
 			return
 
 	if(species.silent_steps)
 		return //species is silent
+
+	if(shoes && (shoes.item_flags & ITEM_FLAG_SILENT))
+		return // quiet shoes
 
 	if(!has_gravity(src))
 		if(step_count % 3) // don't need to step as often when you hop around
@@ -120,7 +123,7 @@
 	if(S)
 		var/range = -(world.view - 2)
 		var/volume = 70
-		if(m_intent == "walk")
+		if(m_intent == M_WALK)
 			volume -= 45
 			range -= 0.333
 		if(!shoes)

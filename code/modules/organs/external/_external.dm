@@ -15,12 +15,11 @@
 	var/damage_state = "00"            // Modifier used for generating the on-mob damage overlay for this limb.
 
 	// Damage vars.
-	var/brute_mod = 1                  // Multiplier for incoming brute damage.
-	var/burn_mod = 1                   // As above for burn.
 	var/brute_dam = 0                  // Actual current brute damage.
 	var/brute_ratio = 0                // Ratio of current brute damage to max damage.
 	var/burn_dam = 0                   // Actual current burn damage.
 	var/burn_ratio = 0                 // Ratio of current burn damage to max damage.
+	var/can_heal_overkill = 0          // Whether organ can be still healed once past max_damage in brute/burn.
 	var/last_dam = -1                  // used in healing/processing calculations.
 	var/pain = 0                       // How much the limb hurts.
 	var/pain_disability_threshold      // Point at which a limb becomes unusable due to pain.
@@ -141,7 +140,7 @@
 			burn_damage = 7
 		if (3)
 			burn_damage = 3
-	burn_damage *= robotic/burn_mod //ignore burn mod for EMP damage
+	burn_damage *= robotic/species.burn_mod //ignore burn mod for EMP damage
 
 	var/power = 4 - severity //stupid reverse severity
 	for(var/obj/item/I in implants)
@@ -444,7 +443,7 @@ This function completely restores a damaged organ to perfect condition.
 		switch(type)
 			if(BURN)  fluid_loss_severity = FLUIDLOSS_WIDE_BURN
 			if(LASER) fluid_loss_severity = FLUIDLOSS_CONC_BURN
-		var/fluid_loss = (damage/(owner.maxHealth - config.health_threshold_dead)) * owner.species.blood_volume * fluid_loss_severity
+		var/fluid_loss = (damage/(owner.maxHealth - config.health_threshold_dead)) * SPECIES_BLOOD_DEFAULT * fluid_loss_severity
 		owner.remove_blood(fluid_loss)
 
 	// first check whether we can widen an existing wound
@@ -474,7 +473,7 @@ This function completely restores a damaged organ to perfect condition.
 	var/wound_type = get_wound_type(type, damage)
 
 	if(wound_type)
-		var/datum/wound/W = new wound_type(damage)
+		var/datum/wound/W = new wound_type(damage, src)
 
 		//Check whether we can add the wound to an existing wound
 		if(surgical)
@@ -663,11 +662,6 @@ Note that amputating the affected organ does in fact remove the infection from t
 		if(owner.can_autoheal(dam_type))
 			W.heal_damage(heal_amt)
 
-		// Salving also helps against infection
-		if(W.germ_level > 0 && W.salved && prob(2))
-			W.disinfected = 1
-			W.germ_level = 0
-
 	// sync the organ's damage with its wounds
 	src.update_damages()
 	if (update_damstate())
@@ -790,6 +784,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 	if(parent_organ)
 		var/datum/wound/lost_limb/W = new (src, disintegrate, clean)
 		if(clean)
+			W.parent_organ = parent_organ
 			parent_organ.wounds |= W
 			parent_organ.update_damages()
 		else
@@ -800,6 +795,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 			stump.add_pain(max_damage)
 			if(robotic >= ORGAN_ROBOT)
 				stump.robotize()
+			W.parent_organ = stump
 			stump.wounds |= W
 			victim.organs |= stump
 			if(disintegrate != DROPLIMB_BURN)
@@ -930,6 +926,17 @@ Note that amputating the affected organ does in fact remove the infection from t
 	for(var/datum/wound/W in wounds)
 		if(W.clamped)
 			return 1
+
+// open incisions and expose implants
+// this is the retract step of surgery
+/obj/item/organ/external/proc/open_incision()
+	var/datum/wound/W = get_incision()
+	if(!W)	return
+	W.open_wound(min(W.damage * 2, W.damage_list[1] - W.damage))
+
+	if(!encased)
+		for(var/obj/item/weapon/implant/I in implants)
+			I.exposed()
 
 /obj/item/organ/external/proc/fracture()
 	if(!config.bones_can_break)
@@ -1183,7 +1190,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 			incision = W
 	return incision
 
-/obj/item/organ/external/proc/open()
+/obj/item/organ/external/proc/how_open()
 	var/datum/wound/cut/incision = get_incision()
 	. = 0
 	if(!incision)
@@ -1261,14 +1268,18 @@ Note that amputating the affected organ does in fact remove the infection from t
 		else
 			wound_descriptors[this_wound_desc] = W.amount
 
-	if(open() >= (encased ? SURGERY_ENCASED : SURGERY_RETRACTED))
-		var/list/bits = list()
+	if(how_open() >= SURGERY_RETRACTED)
+		var/bone = encased ? encased : "bone"
 		if(status & ORGAN_BROKEN)
-			bits += "broken bones"
-		for(var/obj/item/organ/organ in internal_organs)
-			bits += "[organ.damage ? "damaged " : ""][organ.name]"
-		if(bits.len)
-			wound_descriptors["[english_list(bits)] visible in the wounds"] = 1
+			bone = "broken [bone]"
+		wound_descriptors["a [bone] exposed"] = 1
+
+		if(!encased || how_open() >= SURGERY_ENCASED)
+			var/list/bits = list()
+			for(var/obj/item/organ/internal/organ in internal_organs)
+				bits += organ.get_visible_state()
+			if(bits.len)
+				wound_descriptors["[english_list(bits)] visible in the wounds"] = 1
 
 	for(var/wound in wound_descriptors)
 		switch(wound_descriptors[wound])

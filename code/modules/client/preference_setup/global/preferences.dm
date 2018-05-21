@@ -91,7 +91,8 @@ var/list/_client_preferences_by_type
 
 /datum/client_preference/play_lobby_music/changed(var/mob/preference_mob, var/new_value)
 	if(new_value == GLOB.PREF_YES)
-		GLOB.using_map.lobby_music.play_to(preference_mob)
+		if(isnewplayer(preference_mob))
+			GLOB.using_map.lobby_track.play_to(preference_mob)
 	else
 		sound_to(preference_mob, sound(null, repeat = 0, wait = 0, volume = 85, channel = 1))
 
@@ -192,6 +193,11 @@ var/list/_client_preferences_by_type
 	description = "Hardsuit Module Activation Key"
 	key = "HARDSUIT_ACTIVATION"
 	options = list(GLOB.PREF_MIDDLE_CLICK, GLOB.PREF_CTRL_CLICK, GLOB.PREF_ALT_CLICK, GLOB.PREF_CTRL_SHIFT_CLICK)
+
+/datum/client_preference/show_credits
+	description = "Show End Titles"
+	key = "SHOW_CREDITS"
+
 
 /********************
 * General Staff Preferences *
