@@ -5214,10 +5214,6 @@
 	},
 /turf/simulated/floor/tiled,
 /area/engineering/engineering_monitoring)
-"kL" = (
-/obj/machinery/computer/teleporter,
-/turf/simulated/floor/tiled/dark,
-/area/teleporter/seconddeck)
 "kM" = (
 /obj/machinery/alarm{
 	dir = 1;
@@ -7497,13 +7493,6 @@
 "qo" = (
 /turf/simulated/floor/reinforced/hydrogen/fuel,
 /area/engineering/fuelbay)
-"qs" = (
-/obj/machinery/computer/drone_control{
-	icon_state = "computer";
-	dir = 1
-	},
-/turf/simulated/floor/plating,
-/area/engineering/drone_fabrication)
 "qu" = (
 /turf/simulated/wall/r_wall/prepainted,
 /area/teleporter/seconddeck)
@@ -13411,6 +13400,12 @@
 /obj/effect/shuttle_landmark/torch/deck3/aquila,
 /turf/space,
 /area/space)
+"FV" = (
+/obj/machinery/computer/teleporter{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/dark,
+/area/teleporter/seconddeck)
 "Gb" = (
 /obj/effect/shuttle_landmark/torch/deck3/guppy,
 /turf/space,
@@ -13569,6 +13564,15 @@
 "GW" = (
 /turf/simulated/wall/r_wall/hull,
 /area/storage/tech)
+"GY" = (
+/obj/structure/cable/green{
+	d1 = 1;
+	d2 = 2;
+	icon_state = "1-2"
+	},
+/obj/machinery/vending/lavatory,
+/turf/simulated/floor/plating,
+/area/maintenance/seconddeck/foreport)
 "Hb" = (
 /obj/effect/shuttle_landmark/petrov/out,
 /turf/space,
@@ -13731,6 +13735,11 @@
 /obj/machinery/access_button/airlock_exterior{
 	master_tag = "prototype_controller";
 	pixel_x = 23;
+	pixel_y = 23
+	},
+/obj/machinery/access_button/airlock_interior{
+	master_tag = "prototype_controller";
+	pixel_x = -23;
 	pixel_y = 23
 	},
 /turf/simulated/floor/plating,
@@ -14238,15 +14247,6 @@
 	},
 /turf/simulated/floor/tiled,
 /area/engineering/atmos)
-"KA" = (
-/obj/structure/cable/green{
-	d1 = 1;
-	d2 = 2;
-	icon_state = "1-2"
-	},
-/obj/machinery/vending/lavatory,
-/turf/simulated/floor/plating,
-/area/maintenance/seconddeck/foreport)
 "Lb" = (
 /obj/effect/shuttle_landmark/ninja/deck2,
 /turf/space,
@@ -16112,6 +16112,13 @@
 "Wp" = (
 /turf/simulated/wall/r_wall/hull,
 /area/maintenance/seconddeck/foreport)
+"WN" = (
+/obj/machinery/computer/drone_control{
+	icon_state = "computer";
+	dir = 1
+	},
+/turf/simulated/floor/plating,
+/area/engineering/drone_fabrication)
 "Xb" = (
 /obj/machinery/atmospherics/pipe/simple/visible{
 	icon_state = "intact";
@@ -30417,7 +30424,7 @@ gT
 qv
 rz
 sC
-qs
+WN
 qv
 uR
 vz
@@ -32040,7 +32047,7 @@ qx
 qx
 qx
 qx
-KA
+GY
 zM
 AE
 ls
@@ -36079,7 +36086,7 @@ jR
 jT
 ka
 kx
-kL
+kG
 qu
 zS
 AN
@@ -36483,7 +36490,7 @@ sQ
 jW
 kh
 kB
-kG
+FV
 qu
 zT
 AN
