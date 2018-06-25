@@ -9,6 +9,8 @@
 	canhear_range = 0 // can't hear headsets from very far away
 
 	slot_flags = SLOT_EARS
+	cell = null
+	power_usage = 0
 	var/translate_binary = 0
 	var/translate_hive = 0
 	var/list/encryption_keys = list()
@@ -216,6 +218,11 @@
 	item_state = "headset"
 	ks1type = /obj/item/device/encryptionkey/heads/ce
 
+/obj/item/device/radio/headset/heads/ce/alt
+	name = "chief engineer's bowman headset"
+	icon_state = "com_headset_alt"
+	item_state = "com_headset_alt"
+
 /obj/item/device/radio/headset/heads/cmo
 	name = "chief medical officer's headset"
 	desc = "The headset of the highly trained medical chief."
@@ -224,7 +231,7 @@
 	ks1type = /obj/item/device/encryptionkey/heads/cmo
 
 /obj/item/device/radio/headset/heads/cmo/alt
-	name = "chief medical officer's headset"
+	name = "chief medical officer's bowman headset"
 	icon_state = "com_headset_alt"
 	item_state = "com_headset_alt"
 
@@ -295,7 +302,7 @@
 	icon_state = "cent_headset"
 	item_state = "headset"
 	ks1type = /obj/item/device/encryptionkey/specops
-	
+
 /obj/item/device/radio/headset/attackby(obj/item/weapon/W as obj, mob/user as mob)
 //	..()
 	user.set_machine(src)
@@ -321,9 +328,10 @@
 		if(encryption_keys.len >= max_keys)
 			to_chat(user, "The headset can't hold another key!")
 			return
-		W.forceMove(src)
-		encryption_keys += W
-		recalculateChannels(1)
+		if(user.unEquip(W, target = src))
+			to_chat(user, "<span class='notice'>You put \the [W] into \the [src].</span>")
+			encryption_keys += W
+			recalculateChannels(1)
 
 /obj/item/device/radio/headset/MouseDrop(var/obj/over_object)
 	var/mob/M = usr
