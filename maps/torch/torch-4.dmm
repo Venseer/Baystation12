@@ -1678,7 +1678,7 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/maintenance{
-	req_one_access = list(12,5,39)
+	req_access = list(12)
 	},
 /obj/structure/cable/green{
 	d1 = 4;
@@ -3030,6 +3030,7 @@
 "agr" = (
 /obj/structure/ladder,
 /obj/effect/floor_decal/industrial/hatch/yellow,
+/obj/structure/catwalk,
 /turf/simulated/floor/plating,
 /area/maintenance/firstdeck/aftstarboard)
 "ags" = (
@@ -3393,6 +3394,7 @@
 "ahb" = (
 /obj/structure/ladder,
 /obj/effect/floor_decal/industrial/hatch/yellow,
+/obj/structure/catwalk,
 /turf/simulated/floor/plating,
 /area/maintenance/firstdeck/centralstarboard)
 "ahw" = (
@@ -4112,7 +4114,7 @@
 	},
 /obj/machinery/door/airlock/maintenance{
 	name = "Crematorium Maintenance";
-	req_access = list(27)
+	req_access = list(12,27)
 	},
 /obj/structure/cable/green{
 	d1 = 4;
@@ -4608,7 +4610,7 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/maintenance{
 	name = "Synthetic Storage";
-	req_one_access = list(16)
+	req_access = list(12,16)
 	},
 /obj/structure/catwalk,
 /turf/simulated/floor/plating,
@@ -5742,7 +5744,7 @@
 /obj/machinery/alarm{
 	frequency = 1439;
 	pixel_y = 23;
-	req_one_access = list(11, 24)
+	req_one_access = list(11,24)
 	},
 /obj/structure/catwalk,
 /turf/simulated/floor/plating,
@@ -9334,6 +9336,7 @@
 	dir = 6
 	},
 /obj/structure/ladder,
+/obj/effect/catwalk_plated,
 /turf/simulated/floor/tiled/steel_grid,
 /area/hallway/primary/firstdeck/center)
 "aBP" = (
@@ -10062,7 +10065,7 @@
 	},
 /obj/machinery/door/airlock/maintenance{
 	name = "First Deck Teleporter Access";
-	req_access = list(17)
+	req_access = list(12,17)
 	},
 /turf/simulated/floor/tiled/dark/monotile,
 /area/teleporter/firstdeck)
@@ -10364,6 +10367,7 @@
 	},
 /obj/machinery/door/airlock/maintenance{
 	name = "Auxiliary Cryogenic Storage Maintenance"
+	req_access = list(12)
 	},
 /turf/simulated/floor/tiled/white,
 /area/crew_quarters/sleep/cryo/aux)
@@ -12397,7 +12401,7 @@
 	dir = 8;
 	pixel_x = 25;
 	pixel_y = 0;
-	req_one_access = list(11, 24)
+	req_one_access = list(11,24)
 	},
 /turf/simulated/floor/tiled/white/monotile,
 /area/crew_quarters/sleep/cryo/aux)
@@ -13197,6 +13201,7 @@
 "aOM" = (
 /obj/structure/ladder,
 /obj/effect/floor_decal/industrial/hatch/yellow,
+/obj/structure/catwalk,
 /turf/simulated/floor/plating,
 /area/maintenance/firstdeck/foreport)
 "aON" = (
@@ -13275,7 +13280,7 @@
 	dir = 8;
 	pixel_x = 25;
 	pixel_y = 0;
-	req_one_access = list(11, 24)
+	req_one_access = list(11,24)
 	},
 /obj/effect/floor_decal/techfloor,
 /turf/simulated/floor/tiled/dark,
@@ -13645,6 +13650,7 @@
 "aPU" = (
 /obj/structure/ladder,
 /obj/effect/floor_decal/industrial/hatch/yellow,
+/obj/structure/catwalk,
 /turf/simulated/floor/plating,
 /area/maintenance/firstdeck/centralport)
 "aPV" = (
@@ -13984,6 +13990,7 @@
 /obj/effect/floor_decal/industrial/warning{
 	dir = 4
 	},
+/obj/structure/catwalk,
 /turf/simulated/floor/plating,
 /area/maintenance/firstdeck/aftport)
 "aRe" = (
@@ -17123,7 +17130,7 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/maintenance{
-	req_one_access = list(12,5,39)
+	req_access = list(12)
 	},
 /obj/structure/cable/green{
 	d1 = 4;
@@ -17180,11 +17187,6 @@
 	},
 /turf/simulated/floor/plating,
 /area/maintenance/firstdeck/aftstarboard)
-"cpb" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/catwalk,
-/turf/simulated/floor/plating,
-/area/maintenance/firstdeck/aftstarboard)
 "cqb" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table/rack,
@@ -17198,7 +17200,7 @@
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers,
 /obj/machinery/door/airlock/maintenance{
 	name = "Morgue Maintenance";
-	req_access = list(6)
+	req_access = list(6,12)
 	},
 /obj/structure/cable/green{
 	d1 = 1;
@@ -17313,6 +17315,7 @@
 	name = "Medical Reception";
 	req_access = list(5)
 	},
+/obj/effect/catwalk_plated,
 /turf/simulated/floor/tiled/white,
 /area/medical/sleeper)
 "cAb" = (
@@ -17394,7 +17397,7 @@
 "cGb" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Infirmary Maintenance Access";
-	req_one_access = list(66)
+	req_access = list(12,66)
 	},
 /obj/machinery/door/firedoor/border_only,
 /turf/simulated/floor/tiled/white/monotile,
@@ -17665,7 +17668,7 @@
 "ddb" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Infirmary Maintenance Access";
-	req_one_access = list(66)
+	req_access = list(12,66)
 	},
 /turf/simulated/floor/tiled/white/monotile,
 /area/medical/sleeper)
@@ -22193,7 +22196,7 @@
 "jtb" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Research Maintenance Access";
-	req_one_access = list(47)
+	req_access = list(12,47)
 	},
 /obj/machinery/door/firedoor/border_only,
 /obj/structure/cable/green{
@@ -23006,8 +23009,7 @@
 /obj/machinery/door/firedoor/border_only,
 /obj/machinery/door/airlock/maintenance{
 	name = "Robotics Maintenance";
-	req_access = list(82);
-	req_one_access = newlist()
+	req_access = list(82)
 	},
 /turf/simulated/floor/tiled/steel_ridged,
 /area/assembly/robotics)
@@ -23561,6 +23563,7 @@
 	pixel_x = 32;
 	pixel_y = 0
 	},
+/obj/effect/catwalk_plated,
 /turf/simulated/floor/tiled/steel_grid,
 /area/hallway/primary/firstdeck/center)
 "ltb" = (
@@ -24358,6 +24361,13 @@
 	},
 /turf/simulated/floor/carpet/blue2,
 /area/command/captainmess)
+"mJY" = (
+/obj/effect/floor_decal/corner/paleblue{
+	dir = 9
+	},
+/obj/machinery/washing_machine,
+/turf/simulated/floor/tiled/white,
+/area/medical/locker)
 "mKb" = (
 /obj/structure/bed/chair/wood/wings{
 	dir = 8;
@@ -27591,6 +27601,7 @@
 "rQb" = (
 /obj/structure/ladder,
 /obj/effect/floor_decal/industrial/hatch/yellow,
+/obj/effect/catwalk_plated,
 /turf/simulated/floor/tiled/white,
 /area/rnd/research)
 "rRb" = (
@@ -27730,10 +27741,13 @@
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers,
 /turf/simulated/floor/tiled/white,
 /area/rnd/research)
+"sde" = (
+/turf/simulated/floor/plating,
+/area/maintenance/firstdeck/aftstarboard)
 "seb" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Xenoflora Lab Maintenance";
-	req_access = list(55)
+	req_access = list(12,55)
 	},
 /obj/machinery/door/firedoor/border_only,
 /turf/simulated/floor/tiled/white,
@@ -28751,6 +28765,14 @@
 /obj/structure/noticeboard,
 /turf/simulated/wall/r_wall/prepainted,
 /area/command/conference)
+"udY" = (
+/obj/effect/floor_decal/corner/paleblue{
+	dir = 6
+	},
+/obj/structure/table/standard,
+/obj/machinery/recharger,
+/turf/simulated/floor/tiled/white,
+/area/medical/locker)
 "ugg" = (
 /obj/structure/cable/green{
 	d1 = 4;
@@ -28928,6 +28950,7 @@
 	pixel_y = -20;
 	pixel_z = 0
 	},
+/obj/effect/catwalk_plated,
 /turf/simulated/floor/tiled/steel_grid,
 /area/hallway/primary/firstdeck/center)
 "wRs" = (
@@ -51334,13 +51357,13 @@ mpy
 mpy
 acL
 adu
-acL
 afZ
 cxb
 dqb
 dEb
 dQb
 aeY
+mJY
 afZ
 fab
 fSb
@@ -51536,9 +51559,9 @@ mpy
 mpy
 acM
 adv
-cob
 afZ
 aak
+cVb
 cVb
 cVb
 cVb
@@ -51738,12 +51761,12 @@ mpy
 mpy
 acN
 adt
-cpb
 cGb
 cVb
 drb
 drb
 drb
+cVb
 ejb
 eIb
 feb
@@ -51940,10 +51963,10 @@ mpy
 mpy
 chb
 adt
-cqb
 afZ
 cWb
 dsb
+dGb
 dGb
 dGb
 ekb
@@ -52139,16 +52162,16 @@ aaa
 aaa
 mpy
 mpy
-mpy
 acP
+sde
 adt
-acV
 afZ
 cXb
 dpb
 dHb
 dVb
 elb
+udY
 afZ
 fib
 fUb
@@ -52341,8 +52364,8 @@ aaa
 aaa
 mpy
 mpy
-mpy
 acQ
+sde
 adv
 aep
 aep
@@ -52543,8 +52566,8 @@ aaa
 aaa
 mpy
 mpy
-mpy
-acR
+acS
+sde
 adt
 aep
 afn
@@ -52745,8 +52768,8 @@ aaa
 aaa
 mpy
 mpy
-mpy
-acS
+acT
+sde
 adt
 aep
 kYM
@@ -52948,7 +52971,7 @@ aaa
 mpy
 mpy
 mpy
-acT
+acR
 adw
 aep
 mww
@@ -53150,7 +53173,7 @@ aaa
 mpy
 mpy
 mpy
-abL
+cob
 bGb
 crb
 cJb
@@ -53352,7 +53375,7 @@ aaa
 mpy
 mpy
 mpy
-abL
+cqb
 adv
 aep
 cKb
@@ -53554,7 +53577,7 @@ aaa
 mpy
 mpy
 mpy
-abL
+acV
 adt
 aep
 afq
