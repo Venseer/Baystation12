@@ -1,9 +1,9 @@
 /obj/item/weapon/gun/magnetic
 	name = "improvised coilgun"
 	desc = "A coilgun hastily thrown together out of a basic frame and advanced power storage components. Is it safe for it to be duct-taped together like that?"
+	icon = 'icons/obj/guns/coilgun.dmi'
 	icon_state = "coilgun"
 	item_state = "coilgun"
-	icon = 'icons/obj/railgun.dmi'
 	one_hand_penalty = 5
 	fire_delay = 20
 	origin_tech = list(TECH_COMBAT = 5, TECH_MATERIAL = 4, TECH_ILLEGAL = 2, TECH_MAGNET = 4)
@@ -16,7 +16,7 @@
 	var/gun_unreliable = 15                                    // Percentage chance of detonating in your hands.
 
 	var/obj/item/loaded                                        // Currently loaded object, for retrieval/unloading.
-	var/load_type = /obj/item/stack/rods                       // Type of stack to load with.
+	var/load_type = /obj/item/stack/material/rods                       // Type of stack to load with.
 	var/load_sheet_max = 1									   // Maximum number of "sheets" you can load from a stack.
 	var/projectile_type = /obj/item/projectile/bullet/magnetic // Actual fire type, since this isn't throw_at rod launcher.
 
@@ -49,7 +49,7 @@
 			capacitor.use(capacitor.charge * 0.05)
 	update_icon()
 
-/obj/item/weapon/gun/magnetic/update_icon()
+/obj/item/weapon/gun/magnetic/on_update_icon()
 	var/list/overlays_to_add = list()
 	if(removable_components)
 		if(cell)
@@ -110,7 +110,6 @@
 			if(!capacitor)
 				to_chat(user, "<span class='warning'>\The [src] has no capacitor installed.</span>")
 				return
-			capacitor.forceMove(get_turf(src))
 			user.put_in_hands(capacitor)
 			user.visible_message("<span class='notice'>\The [user] unscrews \the [capacitor] from \the [src].</span>")
 			playsound(loc, 'sound/items/Screwdriver.ogg', 50, 1)
@@ -182,7 +181,6 @@
 			cell = null
 
 		if(removing)
-			removing.forceMove(get_turf(src))
 			user.put_in_hands(removing)
 			user.visible_message("<span class='notice'>\The [user] removes \the [removing] from \the [src].</span>")
 			playsound(loc, 'sound/machines/click.ogg', 10, 1)

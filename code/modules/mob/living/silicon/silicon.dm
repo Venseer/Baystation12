@@ -181,7 +181,7 @@
 	return universal_speak || (speaking in src.speech_synthesizer_langs)	//need speech synthesizer support to vocalize a language
 
 /mob/living/silicon/add_language(var/language, var/can_speak=1)
-	var/var/datum/language/added_language = all_languages[language]
+	var/datum/language/added_language = all_languages[language]
 	if(!added_language)
 		return
 
@@ -360,16 +360,13 @@
 
 /mob/living/silicon/proc/clear_client()
 	//Handle job slot/tater cleanup.
-	var/job = mind.assigned_role
-
-	job_master.FreeRole(job)
-
-	if(mind.objectives.len)
-		qdel(mind.objectives)
-		mind.special_role = null
-
-	clear_antag_roles(mind)
-
+	if(mind)
+		if(mind.assigned_job)
+			mind.assigned_job.clear_slot()
+		if(mind.objectives.len)
+			qdel(mind.objectives)
+			mind.special_role = null
+		clear_antag_roles(mind)
 	ghostize(0)
 	qdel(src)
 

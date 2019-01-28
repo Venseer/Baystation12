@@ -15,12 +15,22 @@
 	var/list/stasis_settings = list(1, 2, 5)
 	var/stasis = 1
 
-	use_power = 1
 	idle_power_usage = 15
 	active_power_usage = 200 //builtin health analyzer, dialysis machine, injectors.
 
 /obj/machinery/sleeper/Initialize()
 	. = ..()
+	component_parts = list(
+		new /obj/item/weapon/circuitboard/sleeper(src),
+		new /obj/item/weapon/stock_parts/scanning_module(src),
+		new /obj/item/weapon/stock_parts/manipulator(src),
+		new /obj/item/weapon/stock_parts/manipulator(src),
+		new /obj/item/weapon/stock_parts/console_screen(src),
+		new /obj/item/weapon/reagent_containers/syringe(src),
+		new /obj/item/weapon/reagent_containers/syringe(src),
+		new /obj/item/weapon/reagent_containers/glass/beaker/large(src))
+	RefreshParts()
+
 	beaker = new /obj/item/weapon/reagent_containers/glass/beaker/large(src)
 	update_icon()
 
@@ -42,15 +52,17 @@
 	if(pump > 0)
 		if(beaker && istype(occupant))
 			if(beaker.reagents.total_volume < beaker.reagents.maximum_volume)
-				for(var/datum/reagent/x in occupant.ingested.reagent_list)
-					occupant.ingested.trans_to_obj(beaker, 3)
+				var/datum/reagents/ingested = occupant.get_ingested_reagents()
+				if(ingested)
+					for(var/datum/reagent/x in ingested.reagent_list)
+						ingested.trans_to_obj(beaker, 3)
 		else
 			toggle_pump()
 
 	if(iscarbon(occupant) && stasis > 1)
 		occupant.SetStasis(stasis)
 
-/obj/machinery/sleeper/update_icon()
+/obj/machinery/sleeper/on_update_icon()
 	icon_state = "sleeper_[occupant ? "1" : "0"]"
 
 /obj/machinery/sleeper/attack_hand(var/mob/user)
@@ -101,8 +113,8 @@
 	if(user == occupant)
 		to_chat(usr, "<span class='warning'>You can't reach the controls from the inside.</span>")
 		return STATUS_CLOSE
-	return ..()
-	    
+	. = ..()
+
 /obj/machinery/sleeper/OnTopic(user, href_list)
 	if(href_list["eject"])
 		go_out()
@@ -133,6 +145,13 @@
 	return attack_hand(user)
 
 /obj/machinery/sleeper/attackby(var/obj/item/I, var/mob/user)
+	if(default_deconstruction_screwdriver(user, I))
+		updateUsrDialog()
+		return
+	if(default_deconstruction_crowbar(user, I))
+		return
+	if(default_part_replacement(user, I))
+		return
 	if(istype(I, /obj/item/weapon/reagent_containers/glass))
 		add_fingerprint(user)
 		if(!beaker)
@@ -209,7 +228,7 @@
 			M.client.perspective = EYE_PERSPECTIVE
 			M.client.eye = src
 		M.forceMove(src)
-		update_use_power(2)
+		update_use_power(POWER_USE_ACTIVE)
 		occupant = M
 		update_icon()
 
@@ -221,11 +240,12 @@
 		occupant.client.perspective = MOB_PERSPECTIVE
 	occupant.dropInto(loc)
 	occupant = null
-	for(var/atom/movable/A in src) // In case an object was dropped inside or something
-		if(A == beaker)
+
+	for(var/obj/O in (contents - component_parts)) // In case an object was dropped inside or something. Excludes the beaker and component parts.
+		if(O == beaker)
 			continue
-		A.dropInto(loc)
-	update_use_power(1)
+		O.dropInto(loc)
+	update_use_power(POWER_USE_IDLE)
 	update_icon()
 	toggle_filter()
 
@@ -243,7 +263,7 @@
 	var/chemical_type = available_chemicals[chemical_name]
 	if(occupant && occupant.reagents)
 		if(occupant.reagents.get_reagent_amount(chemical_type) + amount <= 20)
-			use_power(amount * CHEM_SYNTH_ENERGY)
+			use_power_oneoff(amount * CHEM_SYNTH_ENERGY)
 			occupant.reagents.add_reagent(chemical_type, amount)
 			to_chat(user, "Occupant now has [occupant.reagents.get_reagent_amount(chemical_type)] unit\s of [chemical_name] in their bloodstream.")
 		else
