@@ -1,21 +1,38 @@
+/decl/closet_appearance/secure_closet/torch/sol
+	color = COLOR_BABY_BLUE
+	extra_decals = list(
+		"stripe_vertical_mid_full" =  COLOR_OFF_WHITE
+	)
+
+/decl/closet_appearance/secure_closet/torch/sol/rep
+	color = COLOR_BABY_BLUE
+	extra_decals = list(
+		"stripe_vertical_left_full" =  COLOR_OFF_WHITE,
+		"stripe_vertical_right_full" =  COLOR_OFF_WHITE
+	)
+
+/decl/closet_appearance/secure_closet/torch/corporate
+	color = COLOR_BOTTLE_GREEN
+	extra_decals = list(
+		"stripe_vertical_mid_full" = COLOR_OFF_WHITE
+	)
+
+/decl/closet_appearance/secure_closet/torch/corporate/liaison
+	extra_decals = list(
+		"stripe_vertical_left_full" =  COLOR_OFF_WHITE,
+		"stripe_vertical_right_full" = COLOR_OFF_WHITE,
+	)
+
 /obj/structure/closet/secure_closet/liaison
-	name = "\improper NanoTrasen liaison's locker"
+	name = "\improper corporate liaison's locker"
 	req_access = list(access_liaison)
-	icon_state = "nanottwo1"
-	icon_closed = "nanottwo"
-	icon_locked = "nanottwo1"
-	icon_opened = "nanottwoopen"
-	icon_off = "nanottwooff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/corporate/liaison
 
 /obj/structure/closet/secure_closet/liaison/WillContain()
 	return list(
 		/obj/item/device/flash,
-		/obj/item/weapon/hand_labeler,
-		/obj/item/device/camera,
-		/obj/item/device/camera_film = 2,
 		/obj/item/weapon/clipboard,
 		/obj/item/weapon/folder,
-		/obj/item/device/taperecorder,
 		/obj/item/device/tape/random = 3,
 		/obj/item/weapon/storage/secure/briefcase,
 		/obj/item/clothing/shoes/laceup,
@@ -23,7 +40,6 @@
 		/obj/item/clothing/suit/storage/toggle/suit/black,
 		/obj/item/clothing/glasses/sunglasses/big,
 		/obj/item/weapon/storage/belt/general,
-		/obj/item/device/radio/headset/heads/torchntcommand/alt,
 		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack, /obj/item/weapon/storage/backpack/satchel)),
 		new /datum/atom_creator/simple(/obj/item/weapon/storage/backpack/messenger, 50),
 		/obj/item/weapon/storage/fakebook
@@ -32,25 +48,17 @@
 /obj/structure/closet/secure_closet/representative
 	name = "\improper Sol Central Government representative's locker"
 	req_access = list(access_representative)
-	icon_state = "solsecure1"
-	icon_closed = "solsecure"
-	icon_locked = "solsecure1"
-	icon_opened = "solsecureopen"
-	icon_off = "solsecureoff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/sol/rep
 
 /obj/structure/closet/secure_closet/representative/WillContain()
 	return list(
 		/obj/item/device/flash,
-		/obj/item/weapon/hand_labeler,
-		/obj/item/device/camera,
 		/obj/item/device/camera_film = 2,
 		/obj/item/weapon/clipboard,
 		/obj/item/weapon/folder,
-		/obj/item/device/taperecorder,
 		/obj/item/device/tape/random = 3,
 		/obj/item/weapon/storage/secure/briefcase,
 		/obj/item/device/radio/headset/headset_com,
-		/obj/item/device/radio/headset/headset_com/alt,
 		/obj/item/clothing/shoes/laceup,
 		/obj/item/clothing/under/rank/internalaffairs/plain/solgov,
 		/obj/item/clothing/suit/storage/toggle/suit/black,
@@ -64,11 +72,7 @@
 /obj/structure/closet/secure_closet/crew
 	name = "crew equipment locker"
 	req_access = list(access_solgov_crew)
-	icon_state = "sol1"
-	icon_closed = "sol"
-	icon_locked = "sol1"
-	icon_opened = "solopen"
-	icon_off = "soloff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/sol
 
 /obj/structure/closet/secure_closet/crew/WillContain()
 	return list(
@@ -81,11 +85,8 @@
 /obj/structure/closet/secure_closet/crew/research
 	name = "research equipment locker"
 	req_access = list(access_nanotrasen)
-	icon_state = "nanot1"
-	icon_closed = "nanot"
-	icon_locked = "nanot1"
-	icon_opened = "nanotopen"
-	icon_off = "nanotoff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/corporate
+
 
 /obj/structure/closet/secure_closet/guncabinet/sidearm
 	name = "sidearm cabinet"

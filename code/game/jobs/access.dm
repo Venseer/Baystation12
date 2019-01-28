@@ -164,6 +164,8 @@
 			return "General"
 		if(ACCESS_REGION_SUPPLY) //supply
 			return "Supply"
+		if(ACCESS_REGION_NT) //nt
+			return "Corporate"
 
 /proc/get_access_desc(id)
 	var/list/AS = priv_all_access_datums_id || get_all_access_datums_by_id()
@@ -243,7 +245,7 @@
 	return missing_id_name
 
 /proc/get_all_job_icons() //For all existing HUD icons
-	return joblist + list("Prisoner")
+	return SSjobs.titles_to_datums + list("Prisoner")
 
 /obj/proc/GetJobName() //Used in secHUD icon generation
 	var/obj/item/weapon/card/id/I = GetIdCard()
@@ -264,3 +266,7 @@
 		return
 
 	return "Unknown" //Return unknown if none of the above apply
+
+/proc/get_access_region_by_id(id)
+	var/datum/access/AD = get_access_by_id(id)
+	return AD.region
